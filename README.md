@@ -1,4 +1,4 @@
-xbmc-txupdate
-=============
+xbmc-checkpo
+============
 
-Update utility for keeping git and Transifex in sync
+xbmc-checkpo to check, clean format string po files for xbmc
