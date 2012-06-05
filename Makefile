@@ -1,23 +1,4 @@
-#****************************************************************************
-#
-# Makefile for xbmc-checkpo
-# Attila Jakosa (alanwww1), TeamXBMC
-# www.xbmc.org
-#
-# This is a GNU make (gmake) makefile
-#****************************************************************************
-
-# DEBUG can be set to YES to include debugging info, or NO otherwise
 DEBUG          := YES
-
-# PROFILE can be set to YES to include profiling info, or NO otherwise
-PROFILE        := NO
-
-# TINYXML_USE_STL can be used to turn on STL support. NO, then STL
-# will not be used. YES will include the STL files.
-TINYXML_USE_STL := NO
-
-#****************************************************************************
 
 CC     := gcc
 CXX    := g++
@@ -25,95 +6,41 @@ LD     := g++
 AR     := ar rc
 RANLIB := ranlib
 
-DEBUG_CFLAGS     := -Wall -Wno-format -g -DDEBUG
-RELEASE_CFLAGS   := -Wall -Wno-unknown-pragmas -Wno-format -O3
+DEBUG_CXXFLAGS   := -Wall -Wno-format -g -DDEBUG
+RELEASE_CXXFLAGS := -Wall -Wno-unknown-pragmas -Wno-format -O3
 
 LIBS		 := 
-
-DEBUG_CXXFLAGS   := ${DEBUG_CFLAGS} 
-RELEASE_CXXFLAGS := ${RELEASE_CFLAGS}
 
 DEBUG_LDFLAGS    := -g
 RELEASE_LDFLAGS  :=
 
 ifeq (YES, ${DEBUG})
-   CFLAGS       := ${DEBUG_CFLAGS}
    CXXFLAGS     := ${DEBUG_CXXFLAGS}
    LDFLAGS      := ${DEBUG_LDFLAGS}
 else
-   CFLAGS       := ${RELEASE_CFLAGS}
    CXXFLAGS     := ${RELEASE_CXXFLAGS}
    LDFLAGS      := ${RELEASE_LDFLAGS}
 endif
 
-ifeq (YES, ${PROFILE})
-   CFLAGS   := ${CFLAGS} -pg -O3
-   CXXFLAGS := ${CXXFLAGS} -pg -O3
-   LDFLAGS  := ${LDFLAGS} -pg
-endif
-
-#****************************************************************************
-# Preprocessor directives
-#****************************************************************************
-
-ifeq (YES, ${TINYXML_USE_STL})
-  DEFS := -DTIXML_USE_STL
-else
-  DEFS :=
-endif
-
-#****************************************************************************
-# Include paths
-#****************************************************************************
-
-#INCS := -I/usr/include/g++-2 -I/usr/local/include
 INCS := -I./Libs
 
-
-#****************************************************************************
-# Makefile code common to all platforms
-#****************************************************************************
-
-CFLAGS   := ${CFLAGS}   ${DEFS}
-CXXFLAGS := ${CXXFLAGS} ${DEFS}
-
-#****************************************************************************
-# Targets of the build
-#****************************************************************************
-
-OUTPUT := xbmc-checkpo
+OUTPUT := xbmc-txupdate
 
 all: ${OUTPUT}
 
-
-#****************************************************************************
-# Source files
-#****************************************************************************
-
-SRCS := tinyxml.cpp tinyxmlparser.cpp xbmc-checkpo.cpp tinyxmlerror.cpp tinystr.cpp POUtils.cpp CharsetUtils.cpp
-
-# Add on the sources for libraries
-SRCS := ${SRCS}
+SRCS := lib/TinyXML/tinyxml.cpp lib/TinyXML/tinyxmlparser.cpp lib/TinyXML/tinystr.cpp lib/TinyXML/tinyxmlerror.cpp \
+lib/POUtils/POUtils.cpp \
+lib/CharsetUtils/CharsetUtils.cpp \
+lib/vJSON/json.cpp lib/vJSON/block_allocator.cpp \
+$(OUTPUT)
 
 OBJS := $(addsuffix .o,$(basename ${SRCS}))
 
-#****************************************************************************
-# Output
-#****************************************************************************
+${OUTPUT}: ${OBJS} lib/xbmclangcodes.h
+	${LD} -o $@ ${LDFLAGS} ${OBJS} ${LIBS}
 
-${OUTPUT}: ${OBJS}
-	${LD} -o $@ ${LDFLAGS} ${OBJS} ${LIBS} ${EXTRA_LIBS}
-
-#****************************************************************************
-# common rules
-#****************************************************************************
-
-# Rules for compiling source files to object files
 %.o : %.cpp
 	${CXX} -c ${CXXFLAGS} ${INCS} $< -o $@
-
-%.o : %.c
-	${CC} -c ${CFLAGS} ${INCS} $< -o $@
 
 dist:
 	bash makedistlinux
@@ -121,12 +48,11 @@ dist:
 clean:
 	-rm -f core ${OBJS} ${OUTPUT}
 
-depend:
-	#makedepend ${INCS} ${SRCS}
-
-tinyxml.o: tinyxml.h tinystr.h
-tinyxmlparser.o: tinyxml.h tinystr.h
-str2xml.o: tinyxml.h tinystr.h
-tinyxmlerror.o: tinyxml.h tinystr.h
-POUtils.o: POUtils.h
-CharsteUtils.o: CharsetUtils.h
+tinyxml.o: tinyxml.h tinyxml.cpp tinystr.o tinyparser.o tinyxmlerror.o
+tinyxmlparser.o: tinyxmlparser.cpp tinyxmlparser.h
+tinyxmlerror.o: tinyxmlerror.cpp tinyxmlerror.h
+tinystr.o: tinystr.cpp tinystr.h
+POUtils.o: POUtils.h POUtils.cpp
+CharsteUtils.o: CharsetUtils.h CharsetUtils.cpp
+json.o: json.cpp json.h block_allocator.o
+block_allocator.o: block_allocator.cpp block_allocator.h

@@ -41,16 +41,16 @@
 
 
 #include <stdio.h>
-#include "tinyxml.h"
+#include "lib/TinyXML/tinyxml.h"
 #include <string>
 #include <map>
 #include <list>
 #include "ctime"
 #include <algorithm>
-#include "POUtils.h"
+#include "lib/POUtils/POUtils.h"
 #include <sys/stat.h>
-#include "xbmclangcodes.h"
-#include "CharsetUtils.h"
+#include "lib/xbmclangcodes.h"
+#include "lib/CharsetUtils/CharsetUtils.h"
 
 const std::string VERSION = "0.7";
 
