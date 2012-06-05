@@ -36,8 +36,6 @@
 #include <list>
 #include "ctime"
 #include <algorithm>
-#include "lib/POUtils/POUtils.h"
-#include <sys/stat.h>
 #include "lib/xbmclangcodes.h"
 #include "lib/CharsetUtils/CharsetUtils.h"
 #include <stdio.h>
@@ -47,31 +45,8 @@ const std::string VERSION = "0.7";
 char* pSourceDirectory = NULL;
 bool bCheckSourceLang;
 
-std::string strHeader;
-FILE * pPOTFile;
 FILE * pLogFile;
 
-std::map<uint32_t, CPOEntry> mapStrings;
-typedef std::map<uint32_t, CPOEntry>::iterator itStrings;
-
-std::vector<CPOEntry> vecClassicEntries;
-typedef std::vector<CPOEntry>::iterator itClassicEntries;
-
-struct CAddonXMLEntry
-{
-  std::string strSummary;
-  std::string strDescription;
-  std::string strDisclaimer;
-};
-
-enum
-{
-  SKIN = 0,
-  ADDON = 1,
-  CORE = 2,
-  ADDON_NOSTRINGS = 3,
-  UNKNOWN = 4
-};
 
 std::string addonXMLEncoding;
 std::map<std::string, CAddonXMLEntry> mapAddonXMLData;
@@ -79,11 +54,6 @@ std::map<std::string, CAddonXMLEntry>::iterator itAddonXMLData;
 bool bhasLFWritten;
 std::string WorkingDir;
 std::string ProjRootDir;
-std::string ProjName;
-std::string ProjVersion;
-std::string ProjTextName;
-std::string ProjProvider;
-int projType;
 
 void PrintUsage()
 {
@@ -319,192 +289,9 @@ void WriteMultilineComment(std::vector<std::string> vecCommnts, std::string pref
   return;
 }
 
-bool WritePOFile(std::string strDir, std::string strLang)
-{
-  int writtenEntry = 0;
-  std::string OutputPOFilename;
-  size_t startpos = strHeader.find("Language: ")+10;
-  size_t endpos = strHeader.find_first_of("\\ \n", startpos);
-  std::string LCode = strHeader.substr(startpos, endpos-startpos);
-  bool bIsForeignLang = strLang != "English";
-  bhasLFWritten = false;
-
-  OutputPOFilename = strDir + DirSepChar + strLang + DirSepChar + "strings.po.temp";
-
-  // Initalize the output po document
-  pPOTFile = fopen (OutputPOFilename.c_str(),"wb");
-  if (pPOTFile == NULL)
-  {
-    printf("Error opening output file: %s\n", OutputPOFilename.c_str());
-    return false;
-  }
-  printf("%s\t\t", LCode.c_str());
-
-  size_t startPos;
-  startPos = strHeader.find("msgid \"\"");
-  if ((startPos = strHeader.find("# Translators")) != std::string::npos)
-    strHeader = strHeader.substr(startPos);
-  else if ((startPos = strHeader.find("msgid \"\"")) != std::string::npos)
-    strHeader = strHeader.substr(startPos);
-
-  fprintf(pPOTFile, "# XBMC Media Center language file\n");
-  if (projType != CORE && projType != UNKNOWN)
-  {
-    fprintf(pPOTFile, "# Addon Name: %s\n", ProjTextName.c_str());
-    fprintf(pPOTFile, "# Addon id: %s\n", ProjName.c_str());
-    fprintf(pPOTFile, "# Addon version: %s\n", ProjVersion.c_str());
-    fprintf(pPOTFile, "# Addon Provider: %s\n", ProjProvider.c_str());
-  }
-
-  fprintf(pPOTFile, "%s", strHeader.c_str());
-
-  if (!mapAddonXMLData["en"].strSummary.empty())
-  {
-    WriteStrLine("msgctxt ", "Addon Summary", addonXMLEncoding, pPOTFile);
-    WriteStrLine("msgid ", mapAddonXMLData["en"].strSummary.c_str(), addonXMLEncoding, pPOTFile);
-    WriteStrLine("msgstr ", LCode == "en" ? "": mapAddonXMLData[LCode].strSummary.c_str(), addonXMLEncoding, pPOTFile);
-    bhasLFWritten =false;
-    writtenEntry++;
-  }
-
-  if (!mapAddonXMLData["en"].strDescription.empty())
-  {
-    WriteStrLine("msgctxt ", "Addon Description", addonXMLEncoding, pPOTFile);
-    WriteStrLine("msgid ", mapAddonXMLData["en"].strDescription.c_str(), addonXMLEncoding, pPOTFile);
-    WriteStrLine("msgstr ", LCode == "en" ? "": mapAddonXMLData[LCode].strDescription.c_str(), addonXMLEncoding, pPOTFile);
-    bhasLFWritten =false;
-    writtenEntry++;
-  }
-
-  if (!mapAddonXMLData["en"].strDisclaimer.empty())
-  {
-    WriteStrLine("msgctxt ", "Addon Disclaimer", addonXMLEncoding, pPOTFile);
-    WriteStrLine("msgid ", mapAddonXMLData["en"].strDisclaimer.c_str(), addonXMLEncoding, pPOTFile);
-    WriteStrLine("msgstr ", LCode == "en" ? "": mapAddonXMLData[LCode].strDisclaimer.c_str(), addonXMLEncoding, pPOTFile);
-    bhasLFWritten =false;
-    writtenEntry++;
-  }
-
-  int previd = -1;
-
-  for ( itStrings it = mapStrings.begin() ; it != mapStrings.end() ; it++)
-  {
-    bhasLFWritten =false;
-    int id = it->first;
-    CPOEntry currEntry = it->second;
-
-    if (!bIsForeignLang)
-    {
-      WriteMultilineComment(currEntry.interlineComm, "#");
-      if (id-previd >= 2 && previd > -1)
-      {
-        WriteLF(pPOTFile);
-        if (id-previd == 2)
-          fprintf(pPOTFile,"#empty string with id %i\n", id-1);
-        if (id-previd > 2)
-          fprintf(pPOTFile,"#empty strings from id %i to %i\n", previd+1, id-1);
-      }
-    }
-    bhasLFWritten = false;
-
-    if (!bIsForeignLang)
-    {
-      WriteMultilineComment(currEntry.translatorComm, "# ");
-      WriteMultilineComment(currEntry.extractedComm, "#.");
-      WriteMultilineComment(currEntry.referenceComm, "#:");
-    }
-
-    WriteLF(pPOTFile);
-    fprintf(pPOTFile,"msgctxt \"#%i\"\n", id);
-
-    WriteLF(pPOTFile);
-    fprintf(pPOTFile,"msgid \"%s\"\n", currEntry.msgID.c_str());
-    fprintf(pPOTFile,"msgstr \"%s\"\n", currEntry.msgStr.c_str());
-
-    writtenEntry++;
-    previd =id;
-  }
-  fclose(pPOTFile);
-
-  printf("%i\t\t", writtenEntry);
-  printf("%i\t\t", 0);
-  printf("%s\n", OutputPOFilename.erase(0,strDir.length()).c_str());
-
-  return true;
-}
 
 
-void ClearCPOEntry (CPOEntry &entry)
-{
-  entry.msgStrPlural.clear();
-  entry.referenceComm.clear();
-  entry.extractedComm.clear();
-  entry.translatorComm.clear();
-  entry.interlineComm.clear();
-  entry.numID = 0;
-  entry.msgID.clear();
-  entry.msgStr.clear();
-  entry.msgIDPlur.clear();
-  entry.msgCtxt.clear();
-  entry.Type = UNKNOWN_FOUND;
-};
 
-bool CheckPOFile(std::string strDir, std::string strLang)
-{
-  CPODocument PODoc;
-  if (!PODoc.LoadFile(strDir + DirSepChar + strLang + DirSepChar + "strings.po"))
-    return false;
-  if (PODoc.GetEntryType() != HEADER_FOUND)
-    printf ("POParser: No valid header found for this language");
-
-  strHeader = PODoc.GetEntryData().Content.substr(1);
-
-  mapStrings.clear();
-  vecClassicEntries.clear();
-
-  bool bMultipleComment = false;
-  std::vector<std::string> vecILCommnts;
-  CPOEntry currEntry;
-  int currType = UNKNOWN_FOUND;
-
-  while ((PODoc.GetNextEntry()))
-  {
-    PODoc.ParseEntry();
-    currEntry = PODoc.GetEntryData();
-    currType = PODoc.GetEntryType();
-
-    if (currType == COMMENT_ENTRY_FOUND)
-    {
-      if (!vecILCommnts.empty())
-        bMultipleComment = true;
-      vecILCommnts = currEntry.interlineComm;
-      continue;
-    }
-
-    if (currType == ID_FOUND || currType == MSGID_FOUND || currType == MSGID_PLURAL_FOUND)
-    {
-      if (bMultipleComment)
-        printf("POParser: multiple comment entries found. Using only the last one "
-               "before the real entry. Entry after comments: %s", currEntry.Content.c_str());
-      if (!currEntry.interlineComm.empty())
-        printf("POParser: interline comments (eg. #comment) is not alowed inside "
-               "a real po entry. Cleaned it. Problematic entry: %s", currEntry.Content.c_str());
-      currEntry.interlineComm = vecILCommnts;
-      bMultipleComment = false;
-      vecILCommnts.clear();
-      if (currType == ID_FOUND)
-        mapStrings[currEntry.numID] = currEntry;
-      else
-        vecClassicEntries.push_back(currEntry);
-
-      ClearCPOEntry(currEntry);
-    }
-  }
-
-  WritePOFile(strDir, strLang);
-
-  return true;
-};
 
 int main(int argc, char* argv[])
 {
