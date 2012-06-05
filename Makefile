@@ -32,6 +32,7 @@ SRCS := lib/TinyXML/tinyxml.cpp lib/TinyXML/tinyxmlparser.cpp lib/TinyXML/tinyst
 lib/POUtils/POUtils.cpp \
 lib/CharsetUtils/CharsetUtils.cpp \
 lib/vJSON/json.cpp lib/vJSON/block_allocator.cpp \
+lib/FileUtils/FileUtils.cpp \
 $(OUTPUT)
 
 OBJS := $(addsuffix .o,$(basename ${SRCS}))
@@ -56,3 +57,4 @@ POUtils.o: POUtils.h POUtils.cpp
 CharsteUtils.o: CharsetUtils.h CharsetUtils.cpp
 json.o: json.cpp json.h block_allocator.o
 block_allocator.o: block_allocator.cpp block_allocator.h
+FileUtils.o: FileUtils.h FileUtils.cpp

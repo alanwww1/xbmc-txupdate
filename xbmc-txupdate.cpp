@@ -1,5 +1,5 @@
 /*
- *      Copyright (C) 2005-2008 Team XBMC
+ *      Copyright (C) 2012 Team XBMC
  *      http://xbmc.org
  *
  *  This Program is free software; you can redistribute it and/or modify
@@ -23,24 +23,13 @@
 #define _CRT_SECURE_NO_WARNINGS
 #endif
 
-#include <stdio.h>
-
 #if defined( WIN32 ) && defined( TUNE )
   #include <crtdbg.h>
   _CrtMemState startMemState;
   _CrtMemState endMemState;
 #endif
 
-#ifdef WINDOWS
-    #include <direct.h>
-    #define GetCurrentDir _getcwd
-#else
-    #include <unistd.h>
-    #define GetCurrentDir getcwd
-#endif
-
-
-#include <stdio.h>
+#include "lib/FileUtils/FileUtils.h"
 #include "lib/TinyXML/tinyxml.h"
 #include <string>
 #include <map>
@@ -51,16 +40,9 @@
 #include <sys/stat.h>
 #include "lib/xbmclangcodes.h"
 #include "lib/CharsetUtils/CharsetUtils.h"
+#include <stdio.h>
 
 const std::string VERSION = "0.7";
-
-#ifdef _MSC_VER
-char DirSepChar = '\\';
-  #include "dirent.h"
-#else
-char DirSepChar = '/';
-  #include <dirent.h>
-#endif
 
 char* pSourceDirectory = NULL;
 bool bCheckSourceLang;
@@ -122,41 +104,6 @@ void PrintUsage()
 #endif
 return;
 };
-
-bool MakeDir(std::string Path)
-{
-  #ifdef _MSC_VER
-  return CreateDirectory (Path.c_str(), NULL) != 0;
-  #else
-  return mkdir(Path.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) ==0;
-  #endif
-};
-
-bool DirExists(std::string Path)
-{
-  #ifdef _MSC_VER
-  return !(INVALID_FILE_ATTRIBUTES == GetFileAttributes(Path.c_str()) && GetLastError()==ERROR_FILE_NOT_FOUND);
-  #else
-  struct stat st;
-  return (stat(Path.c_str(), &st) == 0);
-  #endif
-};
-
-bool FileExist(std::string filename) 
-{
-  FILE* pfileToTest = fopen (filename.c_str(),"rb");
-  if (pfileToTest == NULL)
-    return false;
-  fclose(pfileToTest);
-  return true;
-}
-
-std::string AddSlash(std::string strIn)
-{
-  if (strIn[strIn.size()-1] == DirSepChar)
-    return strIn;
-  return strIn + DirSepChar;
-}
 
 bool LoadCoreVersion(std::string filename)
 {
