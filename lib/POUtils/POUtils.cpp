@@ -22,7 +22,8 @@
 #include "POUtils.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <iostream>
+#include <stdio.h>
+#include <sstream>
 
 CPODocument::CPODocument()
 {
@@ -35,9 +36,19 @@ CPODocument::CPODocument()
   m_Entry.interlineComm.clear();
   m_Entry.extractedComm.clear();
   m_Entry.numID = 0;
-}
+  m_bhasLFWritten = false;
+  m_previd = -1;
+  m_writtenEntry = 0;
+};
 
-CPODocument::~CPODocument() {}
+CPODocument::~CPODocument() {};
+
+std::string CPODocument::IntToStr(int number)
+{
+  std::stringstream ss;//create a stringstream
+  ss << number;//add number to the stream
+  return ss.str();//return a string with the contents of the stream
+};
 
 bool CPODocument::LoadFile(const std::string &pofilename)
 {
@@ -93,7 +104,7 @@ bool CPODocument::LoadFile(const std::string &pofilename)
 
   printf("POParser: unable to read PO file header from file: %s", pofilename.c_str());
   return false;
-}
+};
 
 bool CPODocument::GetNextEntry()
 {
@@ -147,7 +158,7 @@ bool CPODocument::GetNextEntry()
   // we reached the end of buffer AND we have not found a valid entry
 
   return false;
-}
+};
 
 void CPODocument::ParseEntry()
 {
@@ -267,7 +278,7 @@ void CPODocument::ParseEntry()
         printf("POParser: unknown line type found. Failed entry: %s", m_Entry.Content.c_str());
   }
   return;
-}
+};
 
 bool CPODocument::ReadStringLine(const std::string &line, std::string * pStrToAppend, int skip)
 {
@@ -275,7 +286,7 @@ bool CPODocument::ReadStringLine(const std::string &line, std::string * pStrToAp
   if (line[linesize-1] != '\"' || line[skip] != '\"') return false;
   pStrToAppend->append(line, skip + 1, linesize - skip - 2);
   return true;
-}
+};
 
 const bool CPODocument::HasPrefix(const std::string &strLine, const std::string &strPrefix)
 {
@@ -283,7 +294,7 @@ const bool CPODocument::HasPrefix(const std::string &strLine, const std::string 
     return false;
   else
     return strLine.compare(0, strPrefix.length(), strPrefix) == 0;
-}
+};
 
 std::string CPODocument::UnescapeString(const std::string &strInput)
 {
@@ -331,7 +342,7 @@ std::string CPODocument::UnescapeString(const std::string &strInput)
     strOutput.push_back(oescchar);
   }
   return strOutput;
-}
+};
 
 bool CPODocument::FindLineStart(const std::string &strToFind)
 {
@@ -340,7 +351,7 @@ bool CPODocument::FindLineStart(const std::string &strToFind)
     return false; // if we don't find the string or if we don't have at least one char after it
 
   return true;
-}
+};
 
 bool CPODocument::ParseNumID(const std::string &strLineToCheck, size_t xIDPos)
 {
@@ -355,7 +366,7 @@ bool CPODocument::ParseNumID(const std::string &strLineToCheck, size_t xIDPos)
          "entry was handled as normal msgid entry");
   printf("POParser: The problematic entry: %s", m_Entry.Content.c_str());
   return false;
-}
+};
 
 void CPODocument::ConvertLineEnds(const std::string &filename)
 {
@@ -384,4 +395,116 @@ void CPODocument::ConvertLineEnds(const std::string &filename)
   }
   m_strBuffer.swap(strTemp);
   m_POfilelength = m_strBuffer.size();
-}
+};
+
+// ********* SAVE part
+
+bool CPODocument::SaveFile(const std::string &pofilename)
+{
+  // Initalize the output po document
+
+  FILE * pPOTFile = fopen (pofilename.c_str(),"wb");
+  if (pPOTFile == NULL)
+  {
+    printf("Error opening output file: %s\n", pofilename.c_str());
+    return false;
+  }
+  fprintf(pPOTFile, "%s", m_strOutBuffer.c_str());
+  fclose(pPOTFile);
+
+  return true;
+};
+
+void CPODocument::WriteHeader(const CResData &ResData, std::string strHeader)
+{
+  size_t startpos = strHeader.find("Language: ")+10;
+  size_t endpos = strHeader.find_first_of("\\ \n", startpos);
+  std::string LCode = strHeader.substr(startpos, endpos-startpos);
+  m_bIsForeignLang = LCode != "en";
+  m_bhasLFWritten = false;
+
+  m_strOutBuffer.clear();
+  size_t startPos;
+  startPos = strHeader.find("msgid \"\"");
+  if ((startPos = strHeader.find("# Translators")) != std::string::npos)
+    strHeader = strHeader.substr(startPos);
+  else if ((startPos = strHeader.find("msgid \"\"")) != std::string::npos)
+    strHeader = strHeader.substr(startPos);
+
+  m_strOutBuffer += "# XBMC Media Center language file\n";
+  if (!ResData.ResTextName.empty())
+    m_strOutBuffer += "# Addon Name: "     + ResData.ResTextName + "\n";
+  if (!ResData.ResName.empty())
+    m_strOutBuffer += "# Addon id: "       + ResData.ResName     + "\n";
+  if (!ResData.ResVersion.empty())
+    m_strOutBuffer += "# Addon version: "  + ResData.ResVersion  + "\n";
+  if (!ResData.ResProvider.empty())
+    m_strOutBuffer += "# Addon Provider: " + ResData.ResProvider + "\n";
+
+  m_strOutBuffer += strHeader;
+};
+
+void CPODocument::WritePOEntry(CPOEntry currEntry)
+{
+  int id = currEntry.numID;
+  if (!m_bIsForeignLang)
+  {
+    WriteMultilineComment(currEntry.interlineComm, "#");
+    if (id-m_previd >= 2 && m_previd > -1)
+    {
+      WriteLF();
+      if (id-m_previd == 2)
+        m_strOutBuffer += "#empty string with id "  + IntToStr(id-1) + "\n";
+      if (id-m_previd > 2)
+        m_strOutBuffer += "#empty strings from id " + IntToStr(m_previd+1) + " to " + IntToStr(id-1) + "\n";
+    }
+  }
+  m_bhasLFWritten = false;
+
+  if (!m_bIsForeignLang)
+  {
+    WriteMultilineComment(currEntry.translatorComm, "# ");
+    WriteMultilineComment(currEntry.extractedComm,  "#.");
+    WriteMultilineComment(currEntry.referenceComm,  "#:");
+  }
+
+  WriteLF();
+  m_strOutBuffer += "msgctxt \"#" + IntToStr(id) + "\"\n";
+
+  WriteLF();
+  m_strOutBuffer += "msgid \""  + currEntry.msgID +  "\"\n";
+  m_strOutBuffer += "msgstr \"" + currEntry.msgStr + "\"\n";
+
+  m_writtenEntry++;
+  m_previd =id;
+};
+
+void CPODocument::WriteLF()
+{
+  if (!m_bhasLFWritten)
+  {
+    m_bhasLFWritten = true;
+    m_strOutBuffer += "\n";
+  }
+};
+
+// we write str lines into the buffer
+void CPODocument::WriteStrLine(std::string prefix, std::string linkedString)
+{
+  WriteLF();
+  m_strOutBuffer += prefix + "\"" + linkedString + "\"\n";
+  return;
+};
+
+void CPODocument::WriteMultilineComment(std::vector<std::string> vecCommnts, std::string prefix)
+{
+  if (vecCommnts.empty())
+    return;
+
+  for (size_t i=0; i < vecCommnts.size(); i++)
+  {
+    WriteLF();
+    m_strOutBuffer += prefix + vecCommnts[i] + "\n";
+  }
+  return;
+};

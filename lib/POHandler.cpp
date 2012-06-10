@@ -19,9 +19,9 @@
  *
  */
 
-#include "POUtils/POUtils.h"
 #include "FileUtils/FileUtils.h"
 #include "POHandler.h"
+#include "CharsetUtils/CharsetUtils.h"
 
 bool CPOHandler::LoadPOFile(std::string strDir, std::string strLang)
 {
@@ -75,8 +75,6 @@ bool CPOHandler::LoadPOFile(std::string strDir, std::string strLang)
     }
   }
 
-  WritePOFile(strDir, strLang);
-
   return true;
 };
 
@@ -95,118 +93,56 @@ void CPOHandler::ClearCPOEntry (CPOEntry &entry)
   entry.Type = UNKNOWN_FOUND;
 };
 
+
 bool CPOHandler::WritePOFile(const std::string &strDir, const std::string &strLang, const int resType,
-                             const std::map<std::string, CAddonXMLEntry> &mapAddonXMLData, const CResData &ResData)
+                             std::map<std::string, CAddonXMLEntry> &mapAddonXMLData, const CResData &ResData)
 {
-  int writtenEntry = 0;
-  std::string OutputPOFilename;
-  size_t startpos = m_strHeader.find("Language: ")+10;
-  size_t endpos = m_strHeader.find_first_of("\\ \n", startpos);
-  std::string LCode = m_strHeader.substr(startpos, endpos-startpos);
-  bool bIsForeignLang = strLang != "English";
-  bhasLFWritten = false;
+  std::string OutputPOFilename = strDir + DirSepChar + strLang + DirSepChar + "strings.po.temp";
 
-  OutputPOFilename = strDir + DirSepChar + strLang + DirSepChar + "strings.po.temp";
+  CPODocument PODoc;
+  PODoc.WriteHeader(ResData, m_strHeader);
 
-  // Initalize the output po document
+  std::string LCode = PODoc.GetLangCode();
+  bool bIsSource = LCode == "en";
 
-  FILE * pPOTFile = fopen (OutputPOFilename.c_str(),"wb");
-  if (pPOTFile == NULL)
+  if (!(mapAddonXMLData["en"].strSummary).empty())
   {
-    printf("Error opening output file: %s\n", OutputPOFilename.c_str());
-    return false;
-  }
-  printf("%s\t\t", LCode.c_str());
-
-  size_t startPos;
-  startPos = m_strHeader.find("msgid \"\"");
-  if ((startPos = m_strHeader.find("# Translators")) != std::string::npos)
-    m_strHeader = m_strHeader.substr(startPos);
-  else if ((startPos = m_strHeader.find("msgid \"\"")) != std::string::npos)
-    m_strHeader = m_strHeader.substr(startPos);
-
-  fprintf(pPOTFile, "# XBMC Media Center language file\n");
-  if (resType != CORE && resType != UNKNOWN)
-  {
-    fprintf(pPOTFile, "# Addon Name: %s\n", ResData.ResTextName.c_str());
-    fprintf(pPOTFile, "# Addon id: %s\n", ResData.ResName.c_str());
-    fprintf(pPOTFile, "# Addon version: %s\n", ResData.ResVersion.c_str());
-    fprintf(pPOTFile, "# Addon Provider: %s\n", ResData.ResProvider.c_str());
+    CPOEntry POEntry;
+    POEntry.Type = MSGID_FOUND;
+    POEntry.msgCtxt = "Addon Summary";
+    POEntry.msgID   = mapAddonXMLData["en"].strSummary;
+    POEntry.msgStr  = bIsSource ? "": mapAddonXMLData[LCode].strSummary;
+    PODoc.WritePOEntry(POEntry);
   }
 
-  fprintf(pPOTFile, "%s", m_strHeader.c_str());
-  
-  if (!mapAddonXMLData["en"].strSummary.empty())
-  {
-    WriteStrLine("msgctxt ", "Addon Summary", addonXMLEncoding, pPOTFile);
-    WriteStrLine("msgid ", mapAddonXMLData["en"].strSummary.c_str(), addonXMLEncoding, pPOTFile);
-    WriteStrLine("msgstr ", LCode == "en" ? "": mapAddonXMLData[LCode].strSummary.c_str(), addonXMLEncoding, pPOTFile);
-    bhasLFWritten =false;
-    writtenEntry++;
-  }
-  
   if (!mapAddonXMLData["en"].strDescription.empty())
   {
-    WriteStrLine("msgctxt ", "Addon Description", addonXMLEncoding, pPOTFile);
-    WriteStrLine("msgid ", mapAddonXMLData["en"].strDescription.c_str(), addonXMLEncoding, pPOTFile);
-    WriteStrLine("msgstr ", LCode == "en" ? "": mapAddonXMLData[LCode].strDescription.c_str(), addonXMLEncoding, pPOTFile);
-    bhasLFWritten =false;
-    writtenEntry++;
+    CPOEntry POEntry;
+    POEntry.Type = MSGID_FOUND;
+    POEntry.msgCtxt = "Addon Description";
+    POEntry.msgID   = mapAddonXMLData["en"].strDescription;
+    POEntry.msgStr  = bIsSource ? "": mapAddonXMLData[LCode].strDescription;
+    PODoc.WritePOEntry(POEntry);
   }
-  
+
   if (!mapAddonXMLData["en"].strDisclaimer.empty())
   {
-    WriteStrLine("msgctxt ", "Addon Disclaimer", addonXMLEncoding, pPOTFile);
-    WriteStrLine("msgid ", mapAddonXMLData["en"].strDisclaimer.c_str(), addonXMLEncoding, pPOTFile);
-    WriteStrLine("msgstr ", LCode == "en" ? "": mapAddonXMLData[LCode].strDisclaimer.c_str(), addonXMLEncoding, pPOTFile);
-    bhasLFWritten =false;
-    writtenEntry++;
+    CPOEntry POEntry;
+    POEntry.Type = MSGID_FOUND;
+    POEntry.msgCtxt = "Addon Disclaimer";
+    POEntry.msgID   = mapAddonXMLData["en"].strDisclaimer;
+    POEntry.msgStr  = bIsSource ? "": mapAddonXMLData[LCode].strDisclaimer;
+    PODoc.WritePOEntry(POEntry);
   }
-  
-  int previd = -1;
-  
-  for ( itStrings it = mapStrings.begin() ; it != mapStrings.end() ; it++)
+
+  for ( itStrings it = m_mapStrings.begin() ; it != m_mapStrings.end() ; it++)
   {
-    bhasLFWritten =false;
     int id = it->first;
     CPOEntry currEntry = it->second;
-    
-    if (!bIsForeignLang)
-    {
-      WriteMultilineComment(currEntry.interlineComm, "#");
-      if (id-previd >= 2 && previd > -1)
-      {
-        WriteLF(pPOTFile);
-        if (id-previd == 2)
-          fprintf(pPOTFile,"#empty string with id %i\n", id-1);
-        if (id-previd > 2)
-          fprintf(pPOTFile,"#empty strings from id %i to %i\n", previd+1, id-1);
-      }
-    }
-    bhasLFWritten = false;
-    
-    if (!bIsForeignLang)
-    {
-      WriteMultilineComment(currEntry.translatorComm, "# ");
-      WriteMultilineComment(currEntry.extractedComm, "#.");
-      WriteMultilineComment(currEntry.referenceComm, "#:");
-    }
-    
-    WriteLF(pPOTFile);
-    fprintf(pPOTFile,"msgctxt \"#%i\"\n", id);
-    
-    WriteLF(pPOTFile);
-    fprintf(pPOTFile,"msgid \"%s\"\n", currEntry.msgID.c_str());
-    fprintf(pPOTFile,"msgstr \"%s\"\n", currEntry.msgStr.c_str());
-    
-    writtenEntry++;
-    previd =id;
+    PODoc.WritePOEntry(currEntry);
   }
-  fclose(pPOTFile);
-  
-  printf("%i\t\t", writtenEntry);
-  printf("%i\t\t", 0);
-  printf("%s\n", OutputPOFilename.erase(0,strDir.length()).c_str());
-  
+
+  PODoc.SaveFile(OutputPOFilename);
+
   return true;
 };

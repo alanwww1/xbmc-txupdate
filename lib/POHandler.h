@@ -20,30 +20,7 @@
  */
 
 #include "POUtils/POUtils.h"
-
-enum
-{
-  SKIN = 0,
-  ADDON = 1,
-  CORE = 2,
-  ADDON_NOSTRINGS = 3,
-  UNKNOWN = 4
-};
-
-struct CAddonXMLEntry
-{
-  std::string strSummary;
-  std::string strDescription;
-  std::string strDisclaimer;
-};
-
-struct CResData
-{
-  std::string ResName;
-  std::string ResVersion;
-  std::string ResTextName;
-  std::string ResProvider;
-};
+#include <map>
 
 class CPOHandler
 {
@@ -52,6 +29,8 @@ public:
   ~CPOHandler();
   bool LoadPOFile(std::string strDir, std::string strLang);
   bool SavePOFile(std::string strDir, std::string strLang);
+  bool WritePOFile(const std::string &strDir, const std::string &strLang, const int resType,
+                   std::map<std::string, CAddonXMLEntry> &mapAddonXMLData, const CResData &ResData);
 
 protected:
   void ClearCPOEntry (CPOEntry &entry);

@@ -47,8 +47,6 @@ bool bCheckSourceLang;
 
 FILE * pLogFile;
 
-
-std::string addonXMLEncoding;
 std::map<std::string, CAddonXMLEntry> mapAddonXMLData;
 std::map<std::string, CAddonXMLEntry>::iterator itAddonXMLData;
 bool bhasLFWritten;
@@ -120,24 +118,6 @@ bool LoadCoreVersion(std::string filename)
   return true;
 }
 
-void WriteLF(FILE* pfile)
-{
-  if (!bhasLFWritten)
-  {
-    bhasLFWritten = true;
-    fprintf (pfile, "\n");
-  }
-};
-
-// we write str lines into the file
-void WriteStrLine(std::string prefix, std::string linkedString, std::string encoding, FILE* pFile)
-{
-  WriteLF(pFile);
-  linkedString = ToUTF8(encoding, linkedString);
-  fprintf (pFile, "%s", prefix.c_str());
-  fprintf (pFile, "\"%s\"\n", linkedString.c_str());
-  return;
-}
 
 std::string EscapeLF(const char * StrToEscape)
 {
@@ -176,6 +156,7 @@ bool GetEncoding(const TiXmlDocument* pDoc, std::string& strEncoding)
 bool loadAddonXMLFile (std::string AddonXMLFilename)
 {
   TiXmlDocument xmlAddonXML;
+  std::string addonXMLEncoding;
 
   if (!xmlAddonXML.LoadFile(AddonXMLFilename.c_str()))
   {
@@ -202,7 +183,7 @@ bool loadAddonXMLFile (std::string AddonXMLFilename)
     ProjName = "xbmc-unnamed";
   }
   else
-    ProjName = EscapeLF(pMainAttrId);
+    ProjName = ToUTF8(addonXMLEncoding, EscapeLF(pMainAttrId));
 
   pMainAttrId=pRootElement->Attribute("version");
   if (!pMainAttrId)
@@ -211,7 +192,7 @@ bool loadAddonXMLFile (std::string AddonXMLFilename)
     ProjVersion = "rev_unknown";
   }
   else
-    ProjVersion = EscapeLF(pMainAttrId);
+    ProjVersion = ToUTF8(addonXMLEncoding, EscapeLF(pMainAttrId));
 
   pMainAttrId=pRootElement->Attribute("name");
   if (!pMainAttrId)
@@ -220,7 +201,7 @@ bool loadAddonXMLFile (std::string AddonXMLFilename)
     ProjTextName = "unknown";
   }
   else
-    ProjTextName = EscapeLF(pMainAttrId);
+    ProjTextName = ToUTF8(addonXMLEncoding, EscapeLF(pMainAttrId));
 
   pMainAttrId=pRootElement->Attribute("provider-name");
   if (!pMainAttrId)
@@ -229,7 +210,7 @@ bool loadAddonXMLFile (std::string AddonXMLFilename)
     ProjProvider = "unknown";
   }
   else
-    ProjProvider = EscapeLF(pMainAttrId);
+    ProjProvider = ToUTF8(addonXMLEncoding, EscapeLF(pMainAttrId));
 
   std::string strAttrToSearch = "xbmc.addon.metadata";
 
@@ -244,7 +225,7 @@ bool loadAddonXMLFile (std::string AddonXMLFilename)
     if (pChildSummElement->FirstChild())
     {
       std::string strValue = EscapeLF(pChildSummElement->FirstChild()->Value());
-      mapAddonXMLData[strLang].strSummary = strValue;
+      mapAddonXMLData[strLang].strSummary = ToUTF8(addonXMLEncoding, strValue);
     }
     pChildSummElement = pChildSummElement->NextSiblingElement("summary");
   }
@@ -256,7 +237,7 @@ bool loadAddonXMLFile (std::string AddonXMLFilename)
     if (pChildDescElement->FirstChild())
     {
       std::string strValue = EscapeLF(pChildDescElement->FirstChild()->Value());
-      mapAddonXMLData[strLang].strDescription = strValue;
+      mapAddonXMLData[strLang].strDescription = ToUTF8(addonXMLEncoding, strValue);
     }
     pChildDescElement = pChildDescElement->NextSiblingElement("description");
   }
@@ -268,29 +249,13 @@ bool loadAddonXMLFile (std::string AddonXMLFilename)
     if (pChildDisclElement->FirstChild())
     {
       std::string strValue = EscapeLF(pChildDisclElement->FirstChild()->Value());
-      mapAddonXMLData[strLang].strDisclaimer = strValue;
+      mapAddonXMLData[strLang].strDisclaimer = ToUTF8(addonXMLEncoding, strValue);
     }
     pChildDisclElement = pChildDisclElement->NextSiblingElement("disclaimer");
   }
 
   return true;
 }
-
-void WriteMultilineComment(std::vector<std::string> vecCommnts, std::string prefix)
-{
-  if (!vecCommnts.empty())
-  {
-    for (size_t i=0; i < vecCommnts.size(); i++)
-    {
-      WriteLF(pPOTFile);
-      fprintf(pPOTFile, "%s%s\n", prefix.c_str(), vecCommnts[i].c_str());
-    }
-  }
-  return;
-}
-
-
-
 
 
 int main(int argc, char* argv[])
