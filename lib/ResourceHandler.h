@@ -20,6 +20,8 @@
  */
 
 #include "POHandler.h"
+#include "POUtils/POUtils.h"
+#include "TinyXML/tinyxml.h"
 
 class CResourceHandler
 {
@@ -28,5 +30,11 @@ public:
   ~CResourceHandler();
 
 protected:
+  bool GetEncoding(const TiXmlDocument* pDoc, std::string& strEncoding);
+  bool LoadCoreVersion(std::string filename);
+  std::string EscapeLF(const char * StrToEscape);
+  std::vector<CResDataElem> m_vecResData;
+  std::map<std::string, CAddonXMLEntry> m_mapAddonXMLData;
+  std::string m_langDir;
 };
 

@@ -415,7 +415,7 @@ bool CPODocument::SaveFile(const std::string &pofilename)
   return true;
 };
 
-void CPODocument::WriteHeader(const CResData &ResData, std::string strHeader)
+void CPODocument::WriteHeader(const std::vector<CResDataElem> vecResData, std::string strHeader)
 {
   size_t startpos = strHeader.find("Language: ")+10;
   size_t endpos = strHeader.find_first_of("\\ \n", startpos);
@@ -426,20 +426,22 @@ void CPODocument::WriteHeader(const CResData &ResData, std::string strHeader)
   m_strOutBuffer.clear();
   size_t startPos;
   startPos = strHeader.find("msgid \"\"");
+
   if ((startPos = strHeader.find("# Translators")) != std::string::npos)
     strHeader = strHeader.substr(startPos);
   else if ((startPos = strHeader.find("msgid \"\"")) != std::string::npos)
     strHeader = strHeader.substr(startPos);
 
   m_strOutBuffer += "# XBMC Media Center language file\n";
-  if (!ResData.ResTextName.empty())
-    m_strOutBuffer += "# Addon Name: "     + ResData.ResTextName + "\n";
-  if (!ResData.ResName.empty())
-    m_strOutBuffer += "# Addon id: "       + ResData.ResName     + "\n";
-  if (!ResData.ResVersion.empty())
-    m_strOutBuffer += "# Addon version: "  + ResData.ResVersion  + "\n";
-  if (!ResData.ResProvider.empty())
-    m_strOutBuffer += "# Addon Provider: " + ResData.ResProvider + "\n";
+
+  for (std::vector<CResDataElem>::iterator vit = vecResData.begin(); vit != vecResData.end(); vit++)
+  {
+    if (!vit->DataName.empty() && !vit->Data.empty())
+    {
+      m_strOutBuffer += vit->DataName + ": ";
+      m_strOutBuffer += vit->Data + "\n";
+    }
+  }
 
   m_strOutBuffer += strHeader;
 };

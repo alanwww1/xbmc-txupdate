@@ -30,7 +30,6 @@
 #endif
 
 #include "lib/FileUtils/FileUtils.h"
-#include "lib/TinyXML/tinyxml.h"
 #include <string>
 #include <map>
 #include <list>
@@ -47,9 +46,7 @@ bool bCheckSourceLang;
 
 FILE * pLogFile;
 
-std::map<std::string, CAddonXMLEntry> mapAddonXMLData;
-std::map<std::string, CAddonXMLEntry>::iterator itAddonXMLData;
-bool bhasLFWritten;
+
 std::string WorkingDir;
 std::string ProjRootDir;
 
@@ -72,191 +69,6 @@ void PrintUsage()
 #endif
 return;
 };
-
-bool LoadCoreVersion(std::string filename)
-{
-  std::string strBuffer;
-  FILE * file;
-
-  file = fopen(filename.c_str(), "rb");
-  if (!file)
-    return false;
-
-  fseek(file, 0, SEEK_END);
-  int64_t fileLength = ftell(file);
-  fseek(file, 0, SEEK_SET);
-
-  if (fileLength < 10)
-  {
-    fclose(file);
-    printf("non valid length found for GUIInfoManager file");
-    return false;
-  }
-
-  strBuffer.resize(fileLength+1);
-
-  unsigned int readBytes =  fread(&strBuffer[1], 1, fileLength, file);
-  fclose(file);
-
-  if (readBytes != fileLength)
-  {
-    printf("actual read data differs from file size, for GUIInfoManager file");
-    return false;
-  }
-  size_t startpos = strBuffer.find("#define VERSION_MAJOR ") + 22;
-  size_t endpos = strBuffer.find_first_of(" \n\r", startpos);
-  ProjVersion = strBuffer.substr(startpos, endpos-startpos);
-  ProjVersion += ".";
-
-  startpos = strBuffer.find("#define VERSION_MINOR ") + 22;
-  endpos = strBuffer.find_first_of(" \n\r", startpos);
-  ProjVersion += strBuffer.substr(startpos, endpos-startpos);
-
-  startpos = strBuffer.find("#define VERSION_TAG \"") + 21;
-  endpos = strBuffer.find_first_of(" \n\r\"", startpos);
-  ProjVersion += strBuffer.substr(startpos, endpos-startpos);
-  return true;
-}
-
-
-std::string EscapeLF(const char * StrToEscape)
-{
-  std::string strIN(StrToEscape);
-  std::string strOut;
-  std::string::iterator it;
-  for (it = strIN.begin(); it != strIN.end(); it++)
-  {
-    if (*it == '\n')
-    {
-      strOut.append("\\n");
-      continue;
-    }
-    if (*it == '\r')
-      continue;
-    strOut += *it;
-  }
-  return strOut;
-}
-
-bool GetEncoding(const TiXmlDocument* pDoc, std::string& strEncoding)
-{
-  const TiXmlNode* pNode=NULL;
-  while ((pNode=pDoc->IterateChildren(pNode)) && pNode->Type()!=TiXmlNode::TINYXML_DECLARATION) {}
-  if (!pNode) return false;
-  const TiXmlDeclaration* pDecl=pNode->ToDeclaration();
-  if (!pDecl) return false;
-  strEncoding=pDecl->Encoding();
-  if (strEncoding.compare("UTF-8") ==0 || strEncoding.compare("UTF8") == 0 ||
-    strEncoding.compare("utf-8") ==0 || strEncoding.compare("utf8") == 0)
-    strEncoding.clear();
-  std::transform(strEncoding.begin(), strEncoding.end(), strEncoding.begin(), ::toupper);
-  return !strEncoding.empty(); // Other encoding then UTF8?
-}
-
-bool loadAddonXMLFile (std::string AddonXMLFilename)
-{
-  TiXmlDocument xmlAddonXML;
-  std::string addonXMLEncoding;
-
-  if (!xmlAddonXML.LoadFile(AddonXMLFilename.c_str()))
-  {
-    printf ("%s %s\n", xmlAddonXML.ErrorDesc(), (AddonXMLFilename + "addon.xml").c_str());
-    return false;
-  }
-
-  GetEncoding(&xmlAddonXML, addonXMLEncoding);
-
-  TiXmlElement* pRootElement = xmlAddonXML.RootElement();
-
-  if (!pRootElement || pRootElement->NoChildren() || pRootElement->ValueTStr()!="addon")
-  {
-    printf ("error: No root element called: \"addon\" or no child found in AddonXML file: %s\n",
-            AddonXMLFilename.c_str());
-    return false;
-  }
-  const char* pMainAttrId = NULL;
-
-  pMainAttrId=pRootElement->Attribute("id");
-  if (!pMainAttrId)
-  {
-    printf ("warning: No addon name was available in addon.xml file: %s\n", AddonXMLFilename.c_str());
-    ProjName = "xbmc-unnamed";
-  }
-  else
-    ProjName = ToUTF8(addonXMLEncoding, EscapeLF(pMainAttrId));
-
-  pMainAttrId=pRootElement->Attribute("version");
-  if (!pMainAttrId)
-  {
-    printf ("warning: No version name was available in addon.xml file: %s\n", AddonXMLFilename.c_str());
-    ProjVersion = "rev_unknown";
-  }
-  else
-    ProjVersion = ToUTF8(addonXMLEncoding, EscapeLF(pMainAttrId));
-
-  pMainAttrId=pRootElement->Attribute("name");
-  if (!pMainAttrId)
-  {
-    printf ("warning: No addon name was available in addon.xml file: %s\n", AddonXMLFilename.c_str());
-    ProjTextName = "unknown";
-  }
-  else
-    ProjTextName = ToUTF8(addonXMLEncoding, EscapeLF(pMainAttrId));
-
-  pMainAttrId=pRootElement->Attribute("provider-name");
-  if (!pMainAttrId)
-  {
-    printf ("warning: No addon provider was available in addon.xml file: %s\n", AddonXMLFilename.c_str());
-    ProjProvider = "unknown";
-  }
-  else
-    ProjProvider = ToUTF8(addonXMLEncoding, EscapeLF(pMainAttrId));
-
-  std::string strAttrToSearch = "xbmc.addon.metadata";
-
-  const TiXmlElement *pChildElement = pRootElement->FirstChildElement("extension");
-  while (pChildElement && strcmp(pChildElement->Attribute("point"), "xbmc.addon.metadata") != 0)
-    pChildElement = pChildElement->NextSiblingElement("extension");
-
-  const TiXmlElement *pChildSummElement = pChildElement->FirstChildElement("summary");
-  while (pChildSummElement && pChildSummElement->FirstChild())
-  {
-    std::string strLang = pChildSummElement->Attribute("lang");
-    if (pChildSummElement->FirstChild())
-    {
-      std::string strValue = EscapeLF(pChildSummElement->FirstChild()->Value());
-      mapAddonXMLData[strLang].strSummary = ToUTF8(addonXMLEncoding, strValue);
-    }
-    pChildSummElement = pChildSummElement->NextSiblingElement("summary");
-  }
-
-  const TiXmlElement *pChildDescElement = pChildElement->FirstChildElement("description");
-  while (pChildDescElement && pChildDescElement->FirstChild())
-  {
-    std::string strLang = pChildDescElement->Attribute("lang");
-    if (pChildDescElement->FirstChild())
-    {
-      std::string strValue = EscapeLF(pChildDescElement->FirstChild()->Value());
-      mapAddonXMLData[strLang].strDescription = ToUTF8(addonXMLEncoding, strValue);
-    }
-    pChildDescElement = pChildDescElement->NextSiblingElement("description");
-  }
-
-  const TiXmlElement *pChildDisclElement = pChildElement->FirstChildElement("disclaimer");
-  while (pChildDisclElement && pChildDisclElement->FirstChild())
-  {
-    std::string strLang = pChildDisclElement->Attribute("lang");
-    if (pChildDisclElement->FirstChild())
-    {
-      std::string strValue = EscapeLF(pChildDisclElement->FirstChild()->Value());
-      mapAddonXMLData[strLang].strDisclaimer = ToUTF8(addonXMLEncoding, strValue);
-    }
-    pChildDisclElement = pChildDisclElement->NextSiblingElement("disclaimer");
-  }
-
-  return true;
-}
-
 
 int main(int argc, char* argv[])
 {
@@ -306,57 +118,14 @@ int main(int argc, char* argv[])
 
   ProjRootDir = pSourceDirectory;
   ProjRootDir = AddSlash(ProjRootDir);
-  std::string strprojType;
 
-  if ((FileExist(ProjRootDir + "addon.xml")) && (FileExist(ProjRootDir + "resources" + DirSepChar + "language" +
-    DirSepChar + "English" + DirSepChar + "strings.po")))
-  {
-    projType = ADDON;
-    strprojType = "Addon with translatable strings";
-    WorkingDir = ProjRootDir + DirSepChar + "resources" + DirSepChar + "language"+ DirSepChar;
-  }
-  else if ((FileExist(ProjRootDir + "addon.xml")) && (FileExist(ProjRootDir + "language" + DirSepChar + "English" +
-    DirSepChar + "strings.po")))
-  {
-    projType = SKIN;
-    strprojType = "Skin addon";
-    WorkingDir = ProjRootDir + DirSepChar + "language"+ DirSepChar;
-  }
-  else if (FileExist(ProjRootDir + "addon.xml"))
-  {
-    projType = ADDON_NOSTRINGS;
-    strprojType = "Addon without any translatable strings";
-    WorkingDir = ProjRootDir + DirSepChar + "resources" + DirSepChar + "language"+ DirSepChar;
-  }
-  else if (FileExist(ProjRootDir + "xbmc" + DirSepChar + "GUIInfoManager.h"))
-  {
-    projType = CORE;
-    strprojType = "XBMC core";
-    WorkingDir = ProjRootDir + DirSepChar + "language" + DirSepChar;
-  }
-  else
-  {
-    projType = UNKNOWN;
-    strprojType = "Unknown";
-    WorkingDir = ProjRootDir;
-  }
-
-  if (projType == ADDON || projType == ADDON_NOSTRINGS || projType == SKIN)
-    loadAddonXMLFile(ProjRootDir + "addon.xml");
-  else if (projType == CORE)
-  {
-    ProjTextName = "XBMC Core";
-    ProjProvider = "Team XBMC";
-    ProjName = "xbmc.core";
-    LoadCoreVersion(ProjRootDir + "xbmc" + DirSepChar + "GUIInfoManager.h");
-  }
-
-  printf ("Project type detected:\t%s\n", strprojType.c_str());
-  printf ("\nProject name:\t\t%s\n", ProjTextName.c_str());
-  printf ("Project id:\t\t%s\n", ProjName.c_str());
-  printf ("Project version:\t%s\n", ProjVersion.c_str());
-  printf ("Project provider:\t%s\n", ProjProvider.c_str());
-
+  
+  
+  
+  
+  
+  
+  
   if (projType == ADDON_NOSTRINGS)
   {
     if (!DirExists(ProjRootDir + "resources") && (!MakeDir(ProjRootDir + "resources")))
