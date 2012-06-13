@@ -29,8 +29,8 @@ public:
   ~CPOHandler();
   bool LoadPOFile(std::string strDir, std::string strLang);
   bool SavePOFile(std::string strDir, std::string strLang);
-  bool WritePOFile(const std::string &strDir, const std::string &strLang, const int resType,
-                   std::map<std::string, CAddonXMLEntry> &mapAddonXMLData, const CResData &ResData);
+  bool WritePOFile(const std::string &strDir, const std::string &strLang, const int resType, std::map<std::string,
+                   CAddonXMLEntry> &mapAddonXMLData, const std::string &strResData);
 
 protected:
   void ClearCPOEntry (CPOEntry &entry);

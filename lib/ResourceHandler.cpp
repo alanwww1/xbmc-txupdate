@@ -27,8 +27,7 @@ bool CResourceHandler::loadAddonXMLFile (std::string AddonXMLFilename)
 {
   TiXmlDocument xmlAddonXML;
   std::string addonXMLEncoding;
-  m_vecResData.clear();
-  CResDataElem ResDataElem;
+  m_strResourceData.clear();
 
   if (!xmlAddonXML.LoadFile(AddonXMLFilename.c_str()))
   {
@@ -49,49 +48,44 @@ bool CResourceHandler::loadAddonXMLFile (std::string AddonXMLFilename)
   const char* pMainAttrId = NULL;
 
   pMainAttrId=pRootElement->Attribute("id");
-  ResDataElem.DataName = "# Addon Name";
+  m_strResourceData += "# Addon Name: ";
   if (!pMainAttrId)
   {
     printf ("warning: No addon name was available in addon.xml file: %s\n", AddonXMLFilename.c_str());
-    ResDataElem.Data = "xbmc-unnamed";
+    m_strResourceData += "\"xbmc-unnamed\"\n";
   }
   else
-    ResDataElem.Data = ToUTF8(addonXMLEncoding, EscapeLF(pMainAttrId));
-  m_vecResData.push_back(ResDataElem);
+    m_strResourceData += "\"" + ToUTF8(addonXMLEncoding, EscapeLF(pMainAttrId)) + "\"\n";
 
   pMainAttrId=pRootElement->Attribute("name");
-  ResDataElem.DataName = "# Addon id";
+  m_strResourceData = "# Addon id: ";
   if (!pMainAttrId)
   {
     printf ("warning: No addon name was available in addon.xml file: %s\n", AddonXMLFilename.c_str());
-    ResDataElem.Data = "unknown";
+    m_strResourceData +=  "\"unknown\"\n";
   }
   else
-    ResDataElem.Data = ToUTF8(addonXMLEncoding, EscapeLF(pMainAttrId));
-  m_vecResData.push_back(ResDataElem);
+    m_strResourceData += "\"" + ToUTF8(addonXMLEncoding, EscapeLF(pMainAttrId)) + "\"\n";
 
   pMainAttrId=pRootElement->Attribute("version");
-  ResDataElem.DataName = "# Addon version";
+  m_strResourceData += "# Addon version: ";
   if (!pMainAttrId)
   {
     printf ("warning: No version name was available in addon.xml file: %s\n", AddonXMLFilename.c_str());
-    ResDataElem.Data = "rev_unknown";
+    m_strResourceData += "\"rev_unknown\"\n";
   }
   else
-    ResDataElem.Data = ToUTF8(addonXMLEncoding, EscapeLF(pMainAttrId));
-  m_vecResData.push_back(ResDataElem);
+    m_strResourceData += "\"" + ToUTF8(addonXMLEncoding, EscapeLF(pMainAttrId)) + "\"\n";
 
   pMainAttrId=pRootElement->Attribute("provider-name");
-  ResDataElem.DataName = "# Addon Provider";
+  m_strResourceData += "# Addon Provider: ";
   if (!pMainAttrId)
   {
     printf ("warning: No addon provider was available in addon.xml file: %s\n", AddonXMLFilename.c_str());
-    ResDataElem.Data = "unknown";
+    m_strResourceData += "\"unknown\"\n";
   }
   else
-    ResDataElem.Data = ToUTF8(addonXMLEncoding, EscapeLF(pMainAttrId));
-  m_vecResData.push_back(ResDataElem);
-
+    m_strResourceData += "\"" + ToUTF8(addonXMLEncoding, EscapeLF(pMainAttrId)) + "\"\n";
 
   std::string strAttrToSearch = "xbmc.addon.metadata";
 
@@ -122,7 +116,7 @@ bool CResourceHandler::loadAddonXMLFile (std::string AddonXMLFilename)
     }
     pChildDescElement = pChildDescElement->NextSiblingElement("description");
   }
-  
+
   const TiXmlElement *pChildDisclElement = pChildElement->FirstChildElement("disclaimer");
   while (pChildDisclElement && pChildDisclElement->FirstChild())
   {
@@ -203,19 +197,20 @@ bool CResourceHandler::LoadCoreVersion(std::string filename)
     return false;
   }
 
-  CResDataElem ResDataElem;
+  m_strResourceData.clear();
   size_t startpos = strBuffer.find("#define VERSION_MAJOR ") + 22;
   size_t endpos = strBuffer.find_first_of(" \n\r", startpos);
-  ResDataElem.Data = strBuffer.substr(startpos, endpos-startpos);
-  ResDataElem.Data += ".";
+  m_strResourceData += strBuffer.substr(startpos, endpos-startpos);
+  m_strResourceData += ".";
 
   startpos = strBuffer.find("#define VERSION_MINOR ") + 22;
   endpos = strBuffer.find_first_of(" \n\r", startpos);
-  ResDataElem.Data += strBuffer.substr(startpos, endpos-startpos);
+  m_strResourceData += strBuffer.substr(startpos, endpos-startpos);
 
   startpos = strBuffer.find("#define VERSION_TAG \"") + 21;
   endpos = strBuffer.find_first_of(" \n\r\"", startpos);
-  ResDataElem.Data += strBuffer.substr(startpos, endpos-startpos);
+  m_strResourceData += strBuffer.substr(startpos, endpos-startpos);
+
   return true;
 }
 
@@ -252,7 +247,7 @@ CResourceHandler::CheckResType(std::string ResRootDir)
   }
 
   if (projType == ADDON || projType == ADDON_NOSTRINGS || projType == SKIN)
-    loadAddonXMLFile(ProjRootDir + "addon.xml");
+    loadAddonXMLFile(ResRootDir + "addon.xml");
   else if (projType == CORE)
   {
     LoadCoreVersion(ResRootDir + "xbmc" + DirSepChar + "GUIInfoManager.h");
@@ -263,6 +258,5 @@ CResourceHandler::CheckResType(std::string ResRootDir)
   printf ("Project id:\t\t%s\n", ProjName.c_str());
   printf ("Project version:\t%s\n", ProjVersion.c_str());
   printf ("Project provider:\t%s\n", ProjProvider.c_str());
-  
-}
 
+};

@@ -96,12 +96,12 @@ void CPOHandler::ClearCPOEntry (CPOEntry &entry)
 
 bool CPOHandler::WritePOFile(const std::string &strDir, const std::string &strLang, const int resType,
                              std::map<std::string, CAddonXMLEntry> &mapAddonXMLData,
-                             const std::vector<CResDataElem> &vecResData)
+                             const std::string &strResData)
 {
   std::string OutputPOFilename = strDir + DirSepChar + strLang + DirSepChar + "strings.po.temp";
 
   CPODocument PODoc;
-  PODoc.WriteHeader(vecResData, m_strHeader);
+  PODoc.WriteHeader(strResData, m_strHeader);
 
   std::string LCode = PODoc.GetLangCode();
   bool bIsSource = LCode == "en";

@@ -28,13 +28,14 @@ class CResourceHandler
 public:
   CResourceHandler();
   ~CResourceHandler();
+  CheckResType(std::string ResRootDir);
 
 protected:
   bool GetEncoding(const TiXmlDocument* pDoc, std::string& strEncoding);
   bool LoadCoreVersion(std::string filename);
   std::string EscapeLF(const char * StrToEscape);
-  std::vector<CResDataElem> m_vecResData;
+  bool loadAddonXMLFile (std::string AddonXMLFilename);
   std::map<std::string, CAddonXMLEntry> m_mapAddonXMLData;
   std::string m_langDir;
+  std::string m_strResourceData;
 };
-

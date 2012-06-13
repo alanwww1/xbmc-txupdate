@@ -55,12 +55,6 @@ struct CAddonXMLEntry
   std::string strDisclaimer;
 };
 
-struct CResDataElem
-{
-  std::string DataName;
-  std::string Data;
-};
-
 // Struct to collect all important data of the current processed entry.
 struct CPOEntry
 {
@@ -90,7 +84,7 @@ public:
   int GetEntryType() const {return m_Entry.Type;}
   void ParseEntry();
   CPOEntry GetEntryData() const {return m_Entry;}
-  void WriteHeader(const std::vector<CResDataElem> vecResData, std::string strHeader);
+  void WriteHeader(const std::string &strResData, std::string strHeader);
   void WritePOEntry(CPOEntry currEntry);
   std::string GetLangCode() {return m_lcode;}
 

@@ -415,7 +415,7 @@ bool CPODocument::SaveFile(const std::string &pofilename)
   return true;
 };
 
-void CPODocument::WriteHeader(const std::vector<CResDataElem> vecResData, std::string strHeader)
+void CPODocument::WriteHeader(const std::string &strResData, std::string strHeader)
 {
   size_t startpos = strHeader.find("Language: ")+10;
   size_t endpos = strHeader.find_first_of("\\ \n", startpos);
@@ -434,16 +434,7 @@ void CPODocument::WriteHeader(const std::vector<CResDataElem> vecResData, std::s
 
   m_strOutBuffer += "# XBMC Media Center language file\n";
 
-  for (std::vector<CResDataElem>::iterator vit = vecResData.begin(); vit != vecResData.end(); vit++)
-  {
-    if (!vit->DataName.empty() && !vit->Data.empty())
-    {
-      m_strOutBuffer += vit->DataName + ": ";
-      m_strOutBuffer += vit->Data + "\n";
-    }
-  }
-
-  m_strOutBuffer += strHeader;
+  m_strOutBuffer += strResData + strHeader;
 };
 
 void CPODocument::WritePOEntry(CPOEntry currEntry)
