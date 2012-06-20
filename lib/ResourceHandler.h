@@ -18,9 +18,9 @@
  *  http://www.gnu.org/copyleft/gpl.html
  *
  */
+#pragma once
 
 #include "POHandler.h"
-#include "POUtils/POUtils.h"
 #include "TinyXML/tinyxml.h"
 
 class CResourceHandler
@@ -28,14 +28,21 @@ class CResourceHandler
 public:
   CResourceHandler();
   ~CResourceHandler();
-  CheckResType(std::string ResRootDir);
+  bool LoadResource(std::string strResRootDir, std::string strPOsuffix);
 
 protected:
   bool GetEncoding(const TiXmlDocument* pDoc, std::string& strEncoding);
   bool LoadCoreVersion(std::string filename);
   std::string EscapeLF(const char * StrToEscape);
   bool loadAddonXMLFile (std::string AddonXMLFilename);
+  bool GetLangsFromDir(std::string strLangDir);
+  bool CreateMissingDirs (std::string strRootDir);
+  void CheckResType(std::string ResRootDir);
   std::map<std::string, CAddonXMLEntry> m_mapAddonXMLData;
+  std::map<std::string, CAddonXMLEntry>::iterator itAddonXMLData;
+  std::map<std::string, CPOHandler> m_mapPOFiles;
+  std::map<std::string, CPOHandler>::iterator itmapPOFiles;
   std::string m_langDir;
   std::string m_strResourceData;
+  int m_resType;
 };

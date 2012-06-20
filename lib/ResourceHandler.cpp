@@ -20,8 +20,89 @@
  */
 
 #include "ResourceHandler.h"
-#include "FileUtils/FileUtils.h"
-#include "CharsetUtils/CharsetUtils.h"
+#include <list>
+#include <algorithm>
+
+CResourceHandler::CResourceHandler()
+{};
+
+CResourceHandler::~CResourceHandler()
+{};
+
+bool CResourceHandler::LoadResource(std::string strResRootDir, std::string strPOsuffix)
+{
+  CheckResType(strResRootDir);
+  GetLangsFromDir(m_langDir);
+
+  if (m_resType == ADDON || m_resType == ADDON_NOSTRINGS || m_resType == SKIN)
+    loadAddonXMLFile(strResRootDir + "addon.xml");
+  else if (m_resType == CORE)
+  {
+    LoadCoreVersion(strResRootDir + "xbmc" + DirSepChar + "GUIInfoManager.h");
+  }
+
+  for (itmapPOFiles = m_mapPOFiles.begin(); itmapPOFiles != m_mapPOFiles.end(); itmapPOFiles++)
+  {
+    itmapPOFiles->second.LoadPOFile(m_langDir, itmapPOFiles->first, strPOsuffix);
+  };
+  return true;
+};
+
+bool CResourceHandler::GetLangsFromDir(std::string strLangDir)
+{
+  std::list<std::string> listDirs;
+  std::list<std::string>::iterator itlistDirs;
+  DIR* Dir;
+  struct dirent *DirEntry;
+  Dir = opendir(strLangDir.c_str());
+
+  while((DirEntry=readdir(Dir)))
+  {
+    if (DirEntry->d_type == DT_DIR && DirEntry->d_name[0] != '.')
+      listDirs.push_back(DirEntry->d_name);
+  }
+  listDirs.sort();
+
+  for (itlistDirs = listDirs.begin(); itlistDirs != listDirs.end(); itlistDirs++)
+  {
+    std::string strLcode;
+    CPOHandler POHandler;
+    if (FindLangCode((strLcode = *itlistDirs)) != "UNKNOWN")
+      m_mapPOFiles[strLcode] = POHandler;
+    else
+      CLog::Log(logERROR, "ResHandler: No langcode found for dirname: %s" , itlistDirs->c_str());
+  }
+  return true;
+};
+
+bool CResourceHandler::CreateMissingDirs (std::string strRootDir)
+{
+  if (!DirExists(strRootDir + "resources") && (!MakeDir(strRootDir + "resources")))
+  {
+    CLog::Log(logERROR, "ResHandler: Not able to create resources directory at dir: %s", strRootDir.c_str());
+    return 1;
+  }
+
+  if (!DirExists(strRootDir + "resources" + DirSepChar + "language") &&
+    (!MakeDir(strRootDir + "resources"+ DirSepChar + "language")))
+  {
+    CLog::Log(logERROR, "ResHandler: Not able to create language directory at dir: %s", (strRootDir + "resources").c_str());
+    return 1;
+  }
+
+  std::string WorkingDir = strRootDir + "resources"+ DirSepChar + "language" + DirSepChar;
+  for (itAddonXMLData = m_mapAddonXMLData.begin(); itAddonXMLData != m_mapAddonXMLData.end(); itAddonXMLData++)
+  {
+    if (!DirExists(WorkingDir + FindLang(itAddonXMLData->first)) && (!MakeDir(WorkingDir +
+      FindLang(itAddonXMLData->first))))
+    {
+      CLog::Log(logERROR, "ResHandler: Not able to create %s language directory at dir: %s", itAddonXMLData->first.c_str(),
+              WorkingDir.c_str());
+      return 1;
+    }
+  }
+  return true;
+};
 
 bool CResourceHandler::loadAddonXMLFile (std::string AddonXMLFilename)
 {
@@ -31,7 +112,7 @@ bool CResourceHandler::loadAddonXMLFile (std::string AddonXMLFilename)
 
   if (!xmlAddonXML.LoadFile(AddonXMLFilename.c_str()))
   {
-    printf ("%s %s\n", xmlAddonXML.ErrorDesc(), (AddonXMLFilename + "addon.xml").c_str());
+    CLog::Log(logERROR, "ResHandler: AddonXML file problem: %s %s\n", xmlAddonXML.ErrorDesc(), (AddonXMLFilename + "addon.xml").c_str());
     return false;
   }
 
@@ -41,7 +122,7 @@ bool CResourceHandler::loadAddonXMLFile (std::string AddonXMLFilename)
 
   if (!pRootElement || pRootElement->NoChildren() || pRootElement->ValueTStr()!="addon")
   {
-    printf ("error: No root element called: \"addon\" or no child found in AddonXML file: %s\n",
+    CLog::Log(logERROR, "ResHandler: No root element called: \"addon\" or no child found in AddonXML file: %s\n",
             AddonXMLFilename.c_str());
     return false;
   }
@@ -51,7 +132,7 @@ bool CResourceHandler::loadAddonXMLFile (std::string AddonXMLFilename)
   m_strResourceData += "# Addon Name: ";
   if (!pMainAttrId)
   {
-    printf ("warning: No addon name was available in addon.xml file: %s\n", AddonXMLFilename.c_str());
+    CLog::Log(logWARNING, "ResHandler: No addon name was available in addon.xml file: %s\n", AddonXMLFilename.c_str());
     m_strResourceData += "\"xbmc-unnamed\"\n";
   }
   else
@@ -61,7 +142,7 @@ bool CResourceHandler::loadAddonXMLFile (std::string AddonXMLFilename)
   m_strResourceData = "# Addon id: ";
   if (!pMainAttrId)
   {
-    printf ("warning: No addon name was available in addon.xml file: %s\n", AddonXMLFilename.c_str());
+    CLog::Log(logWARNING, "ResHandler: No addon name was available in addon.xml file: %s\n", AddonXMLFilename.c_str());
     m_strResourceData +=  "\"unknown\"\n";
   }
   else
@@ -71,7 +152,7 @@ bool CResourceHandler::loadAddonXMLFile (std::string AddonXMLFilename)
   m_strResourceData += "# Addon version: ";
   if (!pMainAttrId)
   {
-    printf ("warning: No version name was available in addon.xml file: %s\n", AddonXMLFilename.c_str());
+    CLog::Log(logWARNING, "ResHandler: No version name was available in addon.xml file: %s\n", AddonXMLFilename.c_str());
     m_strResourceData += "\"rev_unknown\"\n";
   }
   else
@@ -81,7 +162,7 @@ bool CResourceHandler::loadAddonXMLFile (std::string AddonXMLFilename)
   m_strResourceData += "# Addon Provider: ";
   if (!pMainAttrId)
   {
-    printf ("warning: No addon provider was available in addon.xml file: %s\n", AddonXMLFilename.c_str());
+    CLog::Log(logWARNING, "ResHandler: Warning: No addon provider was available in addon.xml file: %s\n", AddonXMLFilename.c_str());
     m_strResourceData += "\"unknown\"\n";
   }
   else
@@ -182,7 +263,7 @@ bool CResourceHandler::LoadCoreVersion(std::string filename)
   if (fileLength < 10)
   {
     fclose(file);
-    printf("non valid length found for GUIInfoManager file");
+    CLog::Log(logERROR, "ResHandler: Non valid length found for GUIInfoManager file");
     return false;
   }
 
@@ -193,7 +274,7 @@ bool CResourceHandler::LoadCoreVersion(std::string filename)
 
   if (readBytes != fileLength)
   {
-    printf("actual read data differs from file size, for GUIInfoManager file");
+    CLog::Log(logERROR, "ResHandler: Actual read data differs from file size, for GUIInfoManager file");
     return false;
   }
 
@@ -214,49 +295,33 @@ bool CResourceHandler::LoadCoreVersion(std::string filename)
   return true;
 }
 
-CResourceHandler::CheckResType(std::string ResRootDir)
+void CResourceHandler::CheckResType(std::string ResRootDir)
 {
-  int projType;
-
   if ((FileExist(ResRootDir + "addon.xml")) && (FileExist(ResRootDir + "resources" + DirSepChar + "language" +
     DirSepChar + "English" + DirSepChar + "strings.po")))
   {
-    projType = ADDON;
+    m_resType = ADDON;
     m_langDir = ResRootDir + DirSepChar + "resources" + DirSepChar + "language"+ DirSepChar;
   }
-  else if ((FileExist(ResRootDir + "addon.xml")) && (FileExist(ProjRootDir + "language" + DirSepChar + "English" +
+  else if ((FileExist(ResRootDir + "addon.xml")) && (FileExist(ResRootDir + "language" + DirSepChar + "English" +
     DirSepChar + "strings.po")))
   {
-    projType = SKIN;
+    m_resType = SKIN;
     m_langDir = ResRootDir + DirSepChar + "language"+ DirSepChar;
   }
-  else if (FileExist(ProjRootDir + "addon.xml"))
+  else if (FileExist(ResRootDir + "addon.xml"))
   {
-    projType = ADDON_NOSTRINGS;
+    m_resType = ADDON_NOSTRINGS;
     m_langDir = ResRootDir + DirSepChar + "resources" + DirSepChar + "language"+ DirSepChar;
   }
-  else if (FileExist(ProjRootDir + "xbmc" + DirSepChar + "GUIInfoManager.h"))
+  else if (FileExist(ResRootDir + "xbmc" + DirSepChar + "GUIInfoManager.h"))
   {
-    projType = CORE;
+    m_resType = CORE;
     m_langDir = ResRootDir + DirSepChar + "language" + DirSepChar;
   }
   else
   {
-    projType = UNKNOWN;
+    m_resType = UNKNOWN;
     m_langDir = ResRootDir;
   }
-
-  if (projType == ADDON || projType == ADDON_NOSTRINGS || projType == SKIN)
-    loadAddonXMLFile(ResRootDir + "addon.xml");
-  else if (projType == CORE)
-  {
-    LoadCoreVersion(ResRootDir + "xbmc" + DirSepChar + "GUIInfoManager.h");
-  }
-
-  printf ("Project type detected:\t%s\n", strprojType.c_str());
-  printf ("\nProject name:\t\t%s\n", ProjTextName.c_str());
-  printf ("Project id:\t\t%s\n", ProjName.c_str());
-  printf ("Project version:\t%s\n", ProjVersion.c_str());
-  printf ("Project provider:\t%s\n", ProjProvider.c_str());
-
 };

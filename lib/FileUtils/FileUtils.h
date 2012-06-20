@@ -19,6 +19,8 @@
  *
  */
 
+#pragma once
+
 #include <string>
 
 #ifdef WINDOWS
@@ -30,11 +32,11 @@
 #endif
 
 #ifdef _MSC_VER
-  const char DirSepChar = '\\';
-  #include "dirent.h"
+static const char DirSepChar = '\\';
+#include "dirent.h"
 #else
-  const char DirSepChar = '/';
-  #include <dirent.h>
+static const char DirSepChar = '/';
+#include <dirent.h>
 #endif
 
 bool MakeDir(std::string Path);
@@ -44,3 +46,5 @@ bool DirExists(std::string Path);
 bool FileExist(std::string filename);
 
 std::string AddSlash(std::string strIn);
+
+std::string GetCurrTime();

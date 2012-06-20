@@ -19,17 +19,21 @@
  *
  */
 
-#include "FileUtils/FileUtils.h"
 #include "POHandler.h"
-#include "CharsetUtils/CharsetUtils.h"
 
-bool CPOHandler::LoadPOFile(std::string strDir, std::string strLang)
+CPOHandler::CPOHandler()
+{};
+
+CPOHandler::~CPOHandler()
+{};
+
+bool CPOHandler::LoadPOFile(std::string strDir, std::string strLang, std::string strPOuffix)
 {
   CPODocument PODoc;
-  if (!PODoc.LoadFile(strDir + DirSepChar + strLang + DirSepChar + "strings.po"))
+  if (!PODoc.LoadFile(strDir + DirSepChar + strLang + DirSepChar + "strings.po" + strPOuffix))
     return false;
   if (PODoc.GetEntryType() != HEADER_FOUND)
-    printf ("POParser: No valid header found for this language");
+    CLog::Log(logERROR, "POHandler: No valid header found for this language");
 
   m_strHeader = PODoc.GetEntryData().Content.substr(1);
 
@@ -58,10 +62,10 @@ bool CPOHandler::LoadPOFile(std::string strDir, std::string strLang)
     if (currType == ID_FOUND || currType == MSGID_FOUND || currType == MSGID_PLURAL_FOUND)
     {
       if (bMultipleComment)
-        printf("POParser: multiple comment entries found. Using only the last one "
+        CLog::Log(logWARNING, "POHandler: multiple comment entries found. Using only the last one "
         "before the real entry. Entry after comments: %s", currEntry.Content.c_str());
       if (!currEntry.interlineComm.empty())
-        printf("POParser: interline comments (eg. #comment) is not alowed inside "
+        CLog::Log(logWARNING, "POParser: interline comments (eg. #comment) is not alowed inside "
         "a real po entry. Cleaned it. Problematic entry: %s", currEntry.Content.c_str());
       currEntry.interlineComm = vecILCommnts;
       bMultipleComment = false;
@@ -96,9 +100,9 @@ void CPOHandler::ClearCPOEntry (CPOEntry &entry)
 
 bool CPOHandler::WritePOFile(const std::string &strDir, const std::string &strLang, const int resType,
                              std::map<std::string, CAddonXMLEntry> &mapAddonXMLData,
-                             const std::string &strResData)
+                             const std::string &strResData, const std::string &strPOuffix)
 {
-  std::string OutputPOFilename = strDir + DirSepChar + strLang + DirSepChar + "strings.po.temp";
+  std::string OutputPOFilename = strDir + DirSepChar + strLang + DirSepChar + "strings.po" + strPOuffix;
 
   CPODocument PODoc;
   PODoc.WriteHeader(strResData, m_strHeader);
@@ -138,7 +142,7 @@ bool CPOHandler::WritePOFile(const std::string &strDir, const std::string &strLa
 
   for ( itStrings it = m_mapStrings.begin() ; it != m_mapStrings.end() ; it++)
   {
-    int id = it->first;
+//    int id = it->first;
     CPOEntry currEntry = it->second;
     PODoc.WritePOEntry(currEntry);
   }

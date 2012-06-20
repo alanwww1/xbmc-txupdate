@@ -1,6 +1,6 @@
 /*
- *      Copyright (C) 2005-2008 Team XBMC
- *      http://xbmc.org
+ *      Copyright (C) 2012 Team XBMC
+ *      http://www.xbmc.org
  *
  *  This Program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -20,17 +20,18 @@
  */
 #pragma once
 
-#include <string>
+#include "ResourceHandler.h"
 
-struct CLangcodes
+class CProjectHandler
 {
-  std::string Langname;
-  std::string Langcode;
-  int nplurals;
-  std::string Pluralform;
-};
+public:
+  CProjectHandler();
+  ~CProjectHandler();
+  bool LoadProject(std::string strProjRootDir);
 
-std::string FindLangCode(std::string LangToLook);
-std::string FindLang(std::string LangCode);
-int GetnPlurals(std::string LangToLook);
-std::string GetPlurForm(std::string LangToLook);
+protected:
+  bool GetResourcesFromDir(std::string strProjRootDir);
+  std::map<std::string, CResourceHandler> m_mapResources;;
+  std::map<std::string, CResourceHandler>::iterator itmapResources;
+  int m_resCount;
+};

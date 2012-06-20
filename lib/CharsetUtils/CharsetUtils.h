@@ -18,6 +18,7 @@
  *  http://www.gnu.org/copyleft/gpl.html
  *
  */
+#pragma once
 
 #include <string>
 #include <string.h>

@@ -29,26 +29,11 @@
   _CrtMemState endMemState;
 #endif
 
-#include "lib/FileUtils/FileUtils.h"
 #include <string>
-#include <map>
-#include <list>
-#include "ctime"
-#include <algorithm>
-#include "lib/xbmclangcodes.h"
-#include "lib/CharsetUtils/CharsetUtils.h"
 #include <stdio.h>
+#include "lib/ProjectHandler.h"
 
-const std::string VERSION = "0.7";
-
-char* pSourceDirectory = NULL;
-bool bCheckSourceLang;
-
-FILE * pLogFile;
-
-
-std::string WorkingDir;
-std::string ProjRootDir;
+using namespace std;
 
 void PrintUsage()
 {
@@ -72,6 +57,8 @@ return;
 
 int main(int argc, char* argv[])
 {
+  char* pSourceDirectory = NULL;
+
   // Basic syntax checking for "-x name" format
   while ((argc > 2) && (argv[1][0] == '-') && (argv[1][1] != '\x00') &&
     (argv[1][2] == '\x00'))
@@ -84,10 +71,10 @@ int main(int argc, char* argv[])
         --argc; ++argv;
         pSourceDirectory = argv[1];
         break;
-      case 'E':
-        --argc; ++argv;
-	bCheckSourceLang = true;
-        break;
+//      case 'E':
+//        --argc; ++argv;
+//	bCheckSourceLang = true;
+//        break;
     }
     ++argv; --argc;
   }
@@ -98,90 +85,21 @@ int main(int argc, char* argv[])
     return 1;
   }
 
-  printf("\nXBMC-CHECKPO v%s by Team XBMC\n", VERSION.c_str());
-  printf("\nResults:\n\n");
-  printf("Langcode\tString match\tAuto contexts\tOutput file\n");
-  printf("--------------------------------------------------------------\n");
+  printf("\nXBMC-TXUPDATE v%s by Team XBMC\n\n", VERSION.c_str());
+//  printf("\nResults:\n\n");
+//  printf("Langcode\tString match\tAuto contexts\tOutput file\n");
+//  printf("--------------------------------------------------------------\n");
 
-  WorkingDir = pSourceDirectory;
+  std::string WorkingDir = pSourceDirectory;
   if (WorkingDir[WorkingDir.length()-1] != DirSepChar)
     WorkingDir.append(&DirSepChar);
 
-  pLogFile = fopen ((WorkingDir + "xbmc-checkpo.log").c_str(),"wb");
-  if (pLogFile == NULL)
-  {
-    fclose(pLogFile);
-    printf("Error opening logfile: %s\n", (WorkingDir + "xbmc-checkpo.log").c_str());
-    return false;
-  }
-  fprintf(pLogFile, "XBMC.CHECKPO v%s started", VERSION.c_str());
+  CLog::Init(WorkingDir + "xbmc-txupdate.log");
+  CLog::Log(logINFO, "Root Directory: %s", WorkingDir.c_str());
+  CProjectHandler TXProject;
+  TXProject.LoadProject(WorkingDir);
 
-  ProjRootDir = pSourceDirectory;
-  ProjRootDir = AddSlash(ProjRootDir);
-
-  
-  
-  
-  
-  
-  
-  
-  if (projType == ADDON_NOSTRINGS)
-  {
-    if (!DirExists(ProjRootDir + "resources") && (!MakeDir(ProjRootDir + "resources")))
-    {
-      printf ("fatal error: not able to create resources directory at dir: %s", ProjRootDir.c_str());
-      return 1;
-    }
-    if (!DirExists(ProjRootDir + "resources" + DirSepChar + "language") &&
-      (!MakeDir(ProjRootDir + "resources"+ DirSepChar + "language")))
-    {
-      printf ("fatal error: not able to create language directory at dir: %s", (ProjRootDir + "resources").c_str());
-      return 1;
-    }
-    WorkingDir = ProjRootDir + "resources"+ DirSepChar + "language" + DirSepChar;
-    for (itAddonXMLData = mapAddonXMLData.begin(); itAddonXMLData != mapAddonXMLData.end(); itAddonXMLData++)
-    {
-      if (!DirExists(WorkingDir + FindLang(itAddonXMLData->first)) && (!MakeDir(WorkingDir +
-        FindLang(itAddonXMLData->first))))
-      {
-        printf ("fatal error: not able to create %s language directory at dir: %s", itAddonXMLData->first.c_str(),
-                WorkingDir.c_str());
-        return 1;
-      }
-    }
-  }
-
-  DIR* Dir;
-  struct dirent *DirEntry;
-  Dir = opendir(WorkingDir.c_str());
-  int langcounter =0;
-  std::list<std::string> listDirs;
-  std::list<std::string>::iterator itlistDirs;
-
-  while((DirEntry=readdir(Dir)))
-  {
-    if (DirEntry->d_type == DT_DIR && DirEntry->d_name[0] != '.')
-      listDirs.push_back(DirEntry->d_name);
-  }
-  listDirs.sort();
-
-  for (itlistDirs = listDirs.begin(); itlistDirs != listDirs.end(); itlistDirs++)
-  {
-    if (CheckPOFile(WorkingDir, *itlistDirs))
-    {
-      std::string pofilename = WorkingDir + DirSepChar + *itlistDirs + DirSepChar + "strings.po";
-      std::string bakpofilename = WorkingDir + DirSepChar + *itlistDirs + DirSepChar + "strings.po.bak";
-      std::string temppofilename = WorkingDir + DirSepChar + *itlistDirs + DirSepChar + "strings.po.temp";
-
-      rename(pofilename.c_str(), bakpofilename.c_str());
-      rename(temppofilename.c_str(),pofilename.c_str());
-      langcounter++;
-    }
-  }
-
-  printf("\nReady. Processed %i languages.\n", langcounter+1);
-
+  printf("Warnings: %i\n", CLog::GetWarnCount());
 //  if (bUnknownLangFound)
 //    printf("\nWarning: At least one language found with unpaired language code !\n"
 //      "Please edit the .po file manually and correct the language code, plurals !\n"

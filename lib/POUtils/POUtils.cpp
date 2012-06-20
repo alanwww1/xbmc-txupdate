@@ -25,6 +25,8 @@
 #include <stdio.h>
 #include <sstream>
 
+using namespace std;
+
 CPODocument::CPODocument()
 {
   m_CursorPos = 0;
@@ -64,7 +66,7 @@ bool CPODocument::LoadFile(const std::string &pofilename)
   if (fileLength < 18) // at least a size of a minimalistic header
   {
     fclose(file);
-    printf("POParser: non valid length found for string file: %s", pofilename.c_str());
+    CLog::Log(logERROR, "POParser: non valid length found for string file: %s", pofilename.c_str());
     return false;
   }
 
@@ -77,7 +79,7 @@ bool CPODocument::LoadFile(const std::string &pofilename)
 
   if (readBytes != m_POfilelength)
   {
-    printf("POParser: actual read data differs from file size, for string file: %s",
+    CLog::Log(logERROR, "POParser: actual read data differs from file size, for string file: %s",
            pofilename.c_str());
     return false;
   }
@@ -102,7 +104,7 @@ bool CPODocument::LoadFile(const std::string &pofilename)
     return true;
   }
 
-  printf("POParser: unable to read PO file header from file: %s", pofilename.c_str());
+  CLog::Log(logERROR, "POParser: unable to read PO file header from file: %s", pofilename.c_str());
   return false;
 };
 
@@ -152,7 +154,7 @@ bool CPODocument::GetNextEntry()
       }
     }
     if (m_nextEntryPos != m_POfilelength-1)
-      printf("POParser: unknown entry found, Failed entry: %s", m_Entry.Content.c_str());
+      CLog::Log(logWARNING, "POParser: unknown entry found, Failed entry: %s", m_Entry.Content.c_str());
   }
   while (m_nextEntryPos != m_POfilelength-1);
   // we reached the end of buffer AND we have not found a valid entry
@@ -201,7 +203,7 @@ void CPODocument::ParseEntry()
         pPlaceToParse = &m_Entry.msgCtxt;
         if (!ReadStringLine(strLine, pPlaceToParse,8))
         {
-          printf("POParser: wrong msgctxt format. Failed entry: %s", m_Entry.Content.c_str());
+          CLog::Log(logWARNING, "POParser: wrong msgctxt format. Failed entry: %s", m_Entry.Content.c_str());
           pPlaceToParse = NULL;
         }
       }
@@ -211,7 +213,7 @@ void CPODocument::ParseEntry()
         pPlaceToParse = &m_Entry.msgID;
         if (!ReadStringLine(strLine, pPlaceToParse,6))
         {
-          printf("POParser: wrong msgid format. Failed entry: %s", m_Entry.Content.c_str());
+          CLog::Log(logWARNING, "POParser: wrong msgid format. Failed entry: %s", m_Entry.Content.c_str());
           pPlaceToParse = NULL;
         }
       }
@@ -221,7 +223,7 @@ void CPODocument::ParseEntry()
         pPlaceToParse = &m_Entry.msgIDPlur;
         if (!ReadStringLine(strLine, pPlaceToParse,13))
         {
-          printf("POParser: wrong msgid_plural format. Failed entry: %s", m_Entry.Content.c_str());
+          CLog::Log(logWARNING, "POParser: wrong msgid_plural format. Failed entry: %s", m_Entry.Content.c_str());
           pPlaceToParse = NULL;
         }
       }
@@ -231,7 +233,7 @@ void CPODocument::ParseEntry()
         pPlaceToParse = &m_Entry.msgStr;
         if (!ReadStringLine(strLine, pPlaceToParse,7))
         {
-          printf("POParser: wrong msgstr format. Failed entry: %s", m_Entry.Content.c_str());
+          CLog::Log(logWARNING, "POParser: wrong msgstr format. Failed entry: %s", m_Entry.Content.c_str());
           pPlaceToParse = NULL;
         }
       }
@@ -242,7 +244,7 @@ void CPODocument::ParseEntry()
         pPlaceToParse = &m_Entry.msgStrPlural[m_Entry.msgStrPlural.size()-1];
         if (!ReadStringLine(strLine, pPlaceToParse,10))
         {
-          printf("POParser: wrong msgstr[] format. Failed entry: %s", m_Entry.Content.c_str());
+          CLog::Log(logWARNING, "POParser: wrong msgstr[] format. Failed entry: %s", m_Entry.Content.c_str());
           pPlaceToParse = NULL;
         }
       }
@@ -275,7 +277,7 @@ void CPODocument::ParseEntry()
         m_Entry.translatorComm.push_back(strCommnt);
       }
       else
-        printf("POParser: unknown line type found. Failed entry: %s", m_Entry.Content.c_str());
+        CLog::Log(logWARNING, "POParser: unknown line type found. Failed entry: %s", m_Entry.Content.c_str());
   }
   return;
 };
@@ -312,7 +314,7 @@ std::string CPODocument::UnescapeString(const std::string &strInput)
     {
       if (it == strInput.end())
       {
-        printf("POParser: warning, unhandled escape character "
+        CLog::Log(logWARNING, "POParser: Unhandled escape character "
                "at line-end. Problematic entry: %s", m_Entry.Content.c_str());
         continue;
       }
@@ -333,7 +335,7 @@ std::string CPODocument::UnescapeString(const std::string &strInput)
 
         default: 
         {
-          printf("POParser: warning, unhandled escape character. Problematic entry: %s",
+          CLog::Log(logWARNING, "POParser: Unhandled escape character. Problematic entry: %s",
                  m_Entry.Content.c_str());
           continue;
         }
@@ -362,9 +364,9 @@ bool CPODocument::ParseNumID(const std::string &strLineToCheck, size_t xIDPos)
     return true;
   }
 
-  printf("POParser: found numeric id descriptor, but no valid id can be read, "
+  CLog::Log(logWARNING, "POParser: Found numeric id descriptor, but no valid id can be read, "
          "entry was handled as normal msgid entry");
-  printf("POParser: The problematic entry: %s", m_Entry.Content.c_str());
+  CLog::Log(logWARNING, "POParser: The problematic entry: %s", m_Entry.Content.c_str());
   return false;
 };
 
@@ -375,10 +377,10 @@ void CPODocument::ConvertLineEnds(const std::string &filename)
     return; // We have only Linux style line endings in the file, nothing to do
 
   if (foundPos+1 >= m_strBuffer.size() || m_strBuffer[foundPos+1] != '\n')
-    printf("POParser: PO file has Mac Style Line Endings. "
+    CLog::Log(logWARNING, "POParser: PO file has Mac Style Line Endings. "
            "Converted in memory to Linux LF for file: %s", filename.c_str());
   else
-    printf("POParser: PO file has Win Style Line Endings. "
+    CLog::Log(logWARNING, "POParser: PO file has Win Style Line Endings. "
            "Converted in memory to Linux LF for file: %s", filename.c_str());
 
   std::string strTemp;
@@ -406,7 +408,7 @@ bool CPODocument::SaveFile(const std::string &pofilename)
   FILE * pPOTFile = fopen (pofilename.c_str(),"wb");
   if (pPOTFile == NULL)
   {
-    printf("Error opening output file: %s\n", pofilename.c_str());
+    CLog::Log(logERROR, "POParser: Error opening output file: %s\n", pofilename.c_str());
     return false;
   }
   fprintf(pPOTFile, "%s", m_strOutBuffer.c_str());

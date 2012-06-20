@@ -18,6 +18,7 @@
  *  http://www.gnu.org/copyleft/gpl.html
  *
  */
+#pragma once
 
 #include "POUtils/POUtils.h"
 #include <map>
@@ -27,10 +28,10 @@ class CPOHandler
 public:
   CPOHandler();
   ~CPOHandler();
-  bool LoadPOFile(std::string strDir, std::string strLang);
-  bool SavePOFile(std::string strDir, std::string strLang);
+  bool LoadPOFile(std::string strDir, std::string strLang, std::string strPOuffix);
+//  bool SavePOFile(std::string strDir, std::string strLang);
   bool WritePOFile(const std::string &strDir, const std::string &strLang, const int resType, std::map<std::string,
-                   CAddonXMLEntry> &mapAddonXMLData, const std::string &strResData);
+                   CAddonXMLEntry> &mapAddonXMLData, const std::string &strResData, const std::string &strPOuffix);
 
 protected:
   void ClearCPOEntry (CPOEntry &entry);

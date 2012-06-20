@@ -18,11 +18,16 @@
  *  http://www.gnu.org/copyleft/gpl.html
  *
  */
+#pragma once
 
 #include <string>
 #include <vector>
 #include <stdint.h>
 #include <stdio.h>
+#include "../Log.h"
+#include "../xbmclangcodes.h"
+#include "../FileUtils/FileUtils.h"
+#include "../CharsetUtils/CharsetUtils.h"
 
 enum
 {

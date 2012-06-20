@@ -1,6 +1,6 @@
 /*
- *      Copyright (C) 2005-2008 Team XBMC
- *      http://xbmc.org
+ *      Copyright (C) 2012 Team XBMC
+ *      http://www.xbmc.org
  *
  *  This Program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -20,17 +20,22 @@
  */
 #pragma once
 
+#include <stdarg.h>
+#include <stdio.h>
 #include <string>
 
-struct CLangcodes
-{
-  std::string Langname;
-  std::string Langcode;
-  int nplurals;
-  std::string Pluralform;
-};
+enum TLogLevel { logERROR, logWARNING, logINFO, logDEBUG };
+const char* const listLogTypes[] = {"ERROR", "WARNING", "INFO", "DEBUG"};
+const std::string VERSION = "0.8";
 
-std::string FindLangCode(std::string LangToLook);
-std::string FindLang(std::string LangCode);
-int GetnPlurals(std::string LangToLook);
-std::string GetPlurForm(std::string LangToLook);
+class CLog
+{
+public:
+  CLog();
+  ~CLog();
+  static void Close();
+  static void Log(TLogLevel loglevel, const char *format, ... );
+  static bool Init(std::string logfile);
+  static void ResetWarnCounter();
+  static int GetWarnCount();
+};

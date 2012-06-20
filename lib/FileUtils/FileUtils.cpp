@@ -22,6 +22,9 @@
 #include "FileUtils.h"
 #include <stdio.h>
 #include <sys/stat.h>
+#include <ctime>
+
+using namespace std;
 
 bool MakeDir(std::string Path)
 {
@@ -56,4 +59,18 @@ std::string AddSlash(std::string strIn)
   if (strIn[strIn.size()-1] == DirSepChar)
     return strIn;
   return strIn + DirSepChar;
+};
+
+std::string GetCurrTime()
+{
+  std::string strTime(64, '\0');
+  time_t now = std::time(0);
+  struct std::tm* gmtm = std::gmtime(&now);
+
+  if (gmtm != NULL)
+  {
+    sprintf(&strTime[0], "%04i-%02i-%02i %02i:%02i+0000", gmtm->tm_year + 1900, gmtm->tm_mon + 1,
+            gmtm->tm_mday, gmtm->tm_hour, gmtm->tm_min);
+  }
+  return strTime;
 };
