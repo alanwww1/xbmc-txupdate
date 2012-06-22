@@ -24,7 +24,7 @@
 #include <stdio.h>
 #include <string>
 
-enum TLogLevel { logERROR, logWARNING, logINFO, logDEBUG };
+enum TLogLevel { logERROR, logWARNING, logINFO, logDEBUG, logLINEFEED };
 const char* const listLogTypes[] = {"ERROR", "WARNING", "INFO", "DEBUG"};
 const std::string VERSION = "0.8";
 

@@ -23,6 +23,8 @@
 #include <list>
 #include <algorithm>
 
+using namespace std;
+
 CResourceHandler::CResourceHandler()
 {};
 
@@ -31,20 +33,30 @@ CResourceHandler::~CResourceHandler()
 
 bool CResourceHandler::LoadResource(std::string strResRootDir, std::string strPOsuffix)
 {
+  CLog::Log(logINFO, "ResHandler: Starting to load resource from dir: %s, with PO suffix: %s",
+            strResRootDir.c_str(), strPOsuffix.c_str());
+
   CheckResType(strResRootDir);
   GetLangsFromDir(m_langDir);
 
   if (m_resType == ADDON || m_resType == ADDON_NOSTRINGS || m_resType == SKIN)
+  {
+    CLog::Log(logINFO, "ResHandler: Addon or skin resource detected.");
     loadAddonXMLFile(strResRootDir + "addon.xml");
+  }
   else if (m_resType == CORE)
   {
+    CLog::Log(logINFO, "ResHandler: XBMC core detected.");
     LoadCoreVersion(strResRootDir + "xbmc" + DirSepChar + "GUIInfoManager.h");
   }
 
   for (itmapPOFiles = m_mapPOFiles.begin(); itmapPOFiles != m_mapPOFiles.end(); itmapPOFiles++)
   {
     itmapPOFiles->second.LoadPOFile(m_langDir, itmapPOFiles->first, strPOsuffix);
+    CLog::Log(logDEBUG, "ResHandler: Loaaded language file for: %s", itmapPOFiles->first.c_str());
   };
+
+  CLog::Log(logINFO, "ResHandler: Found and loaded %i languages.", m_mapPOFiles.size());
   return true;
 };
 
@@ -77,17 +89,26 @@ bool CResourceHandler::GetLangsFromDir(std::string strLangDir)
 
 bool CResourceHandler::CreateMissingDirs (std::string strRootDir)
 {
-  if (!DirExists(strRootDir + "resources") && (!MakeDir(strRootDir + "resources")))
+  if (!DirExists(strRootDir + "resources"))
   {
-    CLog::Log(logERROR, "ResHandler: Not able to create resources directory at dir: %s", strRootDir.c_str());
-    return 1;
+    if ((!MakeDir(strRootDir + "resources")))
+      CLog::Log(logINFO, "ResHandler: Created missing resources directory at dir: %s", strRootDir.c_str());
+    else
+    {
+      CLog::Log(logERROR, "ResHandler: Not able to create resources directory at dir: %s", strRootDir.c_str());
+      return 1;
+    }
   }
 
-  if (!DirExists(strRootDir + "resources" + DirSepChar + "language") &&
-    (!MakeDir(strRootDir + "resources"+ DirSepChar + "language")))
+  if (!DirExists(strRootDir + "resources" + DirSepChar + "language"))
   {
-    CLog::Log(logERROR, "ResHandler: Not able to create language directory at dir: %s", (strRootDir + "resources").c_str());
-    return 1;
+    if (!MakeDir(strRootDir + "resources"+ DirSepChar + "language"))
+      CLog::Log(logINFO, "ResHandler: Created missing language directory in dir: %s", (strRootDir + "resources").c_str());
+    else
+    {
+      CLog::Log(logERROR, "ResHandler: Not able to create language directory in dir: %s", (strRootDir + "resources").c_str());
+      return 1;
+    }
   }
 
   std::string WorkingDir = strRootDir + "resources"+ DirSepChar + "language" + DirSepChar;

@@ -53,6 +53,12 @@ void CLog::Log(TLogLevel loglevel, const char *format, ... )
   if (!m_pLogFile)
     return;
 
+  if (loglevel == logLINEFEED)
+  {
+    fprintf(m_pLogFile, "\n");
+    return;
+  }
+
 //  SYSTEMTIME time;
 //  GetLocalTime(&time);
   if (loglevel == logWARNING)

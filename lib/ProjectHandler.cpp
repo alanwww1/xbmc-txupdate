@@ -31,6 +31,19 @@ CProjectHandler::~CProjectHandler()
 bool CProjectHandler::LoadProject(std::string strProjRootDir)
 {
   GetResourcesFromDir(strProjRootDir);
+  int loadCounter = 0;
+
+  for (itmapResources = m_mapResources.begin(); itmapResources != m_mapResources.end(); itmapResources++)
+  {
+    CLog::Log(logLINEFEED, "");
+    CLog::Log(logINFO, "ProjHandler: *** Resource: %s ***", itmapResources->first.c_str());
+    if (itmapResources->second.LoadResource(strProjRootDir + itmapResources->first + DirSepChar, ""))
+      loadCounter++;
+  };
+
+  CLog::Log(logLINEFEED, "");
+  CLog::Log(logINFO, "ProjHandler: Loaded %i resources from root dir: %s", loadCounter, strProjRootDir.c_str());
+
   return true;
 };
 
@@ -49,7 +62,7 @@ bool CProjectHandler::GetResourcesFromDir(std::string strProjRootDir)
   }
   listDirs.sort();
 
-  int resCounter;
+  int resCounter = 0;
   for (itlistDirs = listDirs.begin(); itlistDirs != listDirs.end(); itlistDirs++)
   {
     resCounter++;
