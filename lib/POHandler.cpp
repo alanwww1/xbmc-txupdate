@@ -39,6 +39,7 @@ bool CPOHandler::LoadPOFile(std::string strDir, std::string strLang, std::string
 
   m_mapStrings.clear();
   m_vecClassicEntries.clear();
+  int ilCommsCntr = 0;
 
   bool bMultipleComment = false;
   std::vector<std::string> vecILCommnts;
@@ -56,6 +57,7 @@ bool CPOHandler::LoadPOFile(std::string strDir, std::string strLang, std::string
       if (!vecILCommnts.empty())
         bMultipleComment = true;
       vecILCommnts = currEntry.interlineComm;
+      ilCommsCntr++;
       continue;
     }
 
@@ -78,6 +80,10 @@ bool CPOHandler::LoadPOFile(std::string strDir, std::string strLang, std::string
       ClearCPOEntry(currEntry);
     }
   }
+
+  strLang.resize(20, ' ');
+  CLog::Log(logINFO, "POHandler: %s\t\t%i\t\t%i\t\t%i", strLang.c_str(), m_mapStrings.size(), m_vecClassicEntries.size(),
+            ilCommsCntr);
 
   return true;
 };

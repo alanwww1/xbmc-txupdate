@@ -32,6 +32,7 @@
 #include <string>
 #include <stdio.h>
 #include "lib/ProjectHandler.h"
+#include "lib/UpdateXMLHandler.h"
 
 using namespace std;
 
@@ -96,6 +97,9 @@ int main(int argc, char* argv[])
 
   CLog::Init(WorkingDir + "xbmc-txupdate.log");
   CLog::Log(logINFO, "Root Directory: %s", WorkingDir.c_str());
+  CUpdateXMLHandler UpdateXMLHandler;
+  UpdateXMLHandler.Load(WorkingDir + DirSepChar + "txupdate.xml");
+
   CProjectHandler TXProject;
   TXProject.LoadProject(WorkingDir);
 

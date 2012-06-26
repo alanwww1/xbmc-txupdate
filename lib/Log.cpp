@@ -24,8 +24,11 @@
 
 static FILE * m_pLogFile;
 static int m_numWarnings;
+static std::map <std::string, std::string> m_mapIdents;
 
 using namespace std;
+
+//CLogIdent LogIdents [4] =
 
 CLog::CLog()
 {
@@ -45,6 +48,13 @@ bool CLog::Init(std::string logfile)
     return false;
   }
   fprintf(m_pLogFile, "XBMC-TXUPDATE v%s Logfile\n\n", VERSION.c_str());
+
+  m_mapIdents.clear();
+  m_mapIdents["ProjHandler"] = "";
+  m_mapIdents["ResHandler"] = "  ";
+  m_mapIdents["POHandler"] = "    ";
+  m_mapIdents["POUtils"] = "      ";
+
   return true;
 };
 
@@ -70,6 +80,14 @@ void CLog::Log(TLogLevel loglevel, const char *format, ... )
 
   va_list va;
   va_start(va, format);
+
+  std::string strFormat = format;
+  for (std::map<std::string, std::string>::iterator it = m_mapIdents.begin(); it != m_mapIdents.end(); it++)
+  {
+    if (it->first == strFormat.substr(0, it->first.length()))
+      fprintf(m_pLogFile, it->second.c_str());
+  };
+
   vfprintf(m_pLogFile, format, va);
   fprintf(m_pLogFile, "\n");
   va_end(va);

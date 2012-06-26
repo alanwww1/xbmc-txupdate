@@ -20,30 +20,25 @@
  */
 #pragma once
 
-#include <stdarg.h>
-#include <stdio.h>
+#include "TinyXML/tinyxml.h"
+#include "POUtils/POUtils.h"
 #include <string>
-#include <map>
 
-enum TLogLevel { logERROR, logWARNING, logINFO, logDEBUG, logLINEFEED };
-
-const char* const listLogTypes[] = {"ERROR", "WARNING", "INFO", "DEBUG"};
-const std::string VERSION = "0.8";
-
-struct CLogIdent
+struct CXMLResdata
 {
-  std::string logPrefix;
-  int ident;
+  std::string strResType;
+  std::string strUptreamURL;
+  std::string strLangsFromUpstream;
 };
 
-class CLog
+class CUpdateXMLHandler
 {
 public:
-  CLog();
-  ~CLog();
-  static void Close();
-  static void Log(TLogLevel loglevel, const char *format, ... );
-  static bool Init(std::string logfile);
-  static void ResetWarnCounter();
-  static int GetWarnCount();
+  CUpdateXMLHandler();
+  ~CUpdateXMLHandler();
+  bool Load(std::string updateXMLFilename);
+private:
+  std::string m_ProjDir;
+  std::map<std::string, CXMLResdata> m_mapXMLResdata;
+  std::map<std::string, CXMLResdata>::iterator itXMLResdata;
 };

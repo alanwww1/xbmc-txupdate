@@ -50,10 +50,12 @@ bool CResourceHandler::LoadResource(std::string strResRootDir, std::string strPO
     LoadCoreVersion(strResRootDir + "xbmc" + DirSepChar + "GUIInfoManager.h");
   }
 
+  CLog::Log(logINFO, "POHandler: Language\t\t\tID entries\tnon-ID entries\tInterline-comments");
+
   for (itmapPOFiles = m_mapPOFiles.begin(); itmapPOFiles != m_mapPOFiles.end(); itmapPOFiles++)
   {
     itmapPOFiles->second.LoadPOFile(m_langDir, itmapPOFiles->first, strPOsuffix);
-    CLog::Log(logDEBUG, "ResHandler: Loaaded language file for: %s", itmapPOFiles->first.c_str());
+//    CLog::Log(logDEBUG, "ResHandler: Loaaded language file for: %s", itmapPOFiles->first.c_str());
   };
 
   CLog::Log(logINFO, "ResHandler: Found and loaded %i languages.", m_mapPOFiles.size());
