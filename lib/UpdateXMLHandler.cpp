@@ -28,15 +28,17 @@ CUpdateXMLHandler::CUpdateXMLHandler()
 CUpdateXMLHandler::~CUpdateXMLHandler()
 {};
 
-bool CUpdateXMLHandler::Load (std::string UpdateXMLFilename)
+bool CUpdateXMLHandler::LoadXMLToMem (std::string UpdateXMLFilename)
 {
   TiXmlDocument xmlUpdateXML;
 
   if (!xmlUpdateXML.LoadFile(UpdateXMLFilename.c_str()))
   {
-    CLog::Log(logINFO, "UpdXMLHandler: No update.xml file exists, we will create one later\n");
+    CLog::Log(logINFO, "UpdXMLHandler: No update.xml file exists, we will create one later");
     return false;
   }
+
+  CLog::Log(logINFO, "UpdXMLHandler: Succesfuly found the update.xml file");
 
   CXMLResdata currResData;
 
@@ -44,7 +46,7 @@ bool CUpdateXMLHandler::Load (std::string UpdateXMLFilename)
 
   if (!pRootElement || pRootElement->NoChildren() || pRootElement->ValueTStr()!="resources")
   {
-    CLog::Log(logINFO, "UpdXMLHandler: No root element called \"resources\" in xml file. We will create it\n");
+    CLog::Log(logINFO, "UpdXMLHandler: No root element called \"resources\" in xml file. We will create it");
     return false;
   }
 
@@ -54,16 +56,81 @@ bool CUpdateXMLHandler::Load (std::string UpdateXMLFilename)
     std::string strResName = pChildResElement->Attribute("name");
     if (pChildResElement->FirstChild())
     {
-      const TiXmlElement *pChildTypeElement = pChildResElement->FirstChildElement("type");
-      currResData.strResType = pChildTypeElement->FirstChild()->Value();
       const TiXmlElement *pChildURLElement = pChildResElement->FirstChildElement("upstreamURL");
-      currResData.strUptreamURL = pChildURLElement->FirstChild()->Value();
+      if (pChildURLElement && pChildURLElement->FirstChild())
+        currResData.strUptreamURL = pChildURLElement->FirstChild()->Value();
       const TiXmlElement *pChildUpstrLElement = pChildResElement->FirstChildElement("upstreamLangs");
-      currResData.strLangsFromUpstream = pChildUpstrLElement->FirstChild()->Value();
+      if (pChildUpstrLElement && pChildUpstrLElement->FirstChild())
+        currResData.strLangsFromUpstream = pChildUpstrLElement->FirstChild()->Value();
       m_mapXMLResdata[strResName] = currResData;
+      CLog::Log(logINFO, "UpdXMLHandler: found resource in update.xml file: %s", strResName.c_str());
     }
     pChildResElement = pChildResElement->NextSiblingElement("resource");
   }
 
   return true;
 };
+
+int CUpdateXMLHandler::GetResType(std::string ResRootDir)
+{
+  if ((FileExist(ResRootDir + "addon.xml")) && (FileExist(ResRootDir + "resources" + DirSepChar + "language" +
+      DirSepChar + "English" + DirSepChar + "strings.po")))
+    return ADDON;
+  else if ((FileExist(ResRootDir + "addon.xml")) && (FileExist(ResRootDir + "language" + DirSepChar + "English" +
+           DirSepChar + "strings.po")))
+    return SKIN;
+  else if (FileExist(ResRootDir + "addon.xml"))
+    return ADDON_NOSTRINGS;
+  else if (FileExist(ResRootDir + "xbmc" + DirSepChar + "GUIInfoManager.h"))
+    return CORE;
+  else
+    return UNKNOWN;
+};
+
+void CUpdateXMLHandler::GetResourcesFromDir(std::string strProjRootDir)
+{
+  CXMLResdata emptyResData;
+  DIR* Dir;
+  struct dirent *DirEntry;
+  Dir = opendir(strProjRootDir.c_str());
+
+  while((DirEntry=readdir(Dir)))
+  {
+    if (DirEntry->d_type != DT_DIR || DirEntry->d_name[0] == '.')
+      continue;
+    if (m_mapXMLResdata.find(DirEntry->d_name) == m_mapXMLResdata.end())
+    {
+      CLog::Log(logINFO, "UpdXMLHandler: New resource detected: %s", DirEntry->d_name);
+      m_mapXMLResdata[DirEntry->d_name] = emptyResData;
+    }
+  }
+};
+
+void CUpdateXMLHandler::SaveMemToXML(std::string UpdateXMLFilename)
+{
+  TiXmlDocument doc;
+  TiXmlDeclaration * decl = new TiXmlDeclaration( "1.0", "", "" );
+  TiXmlElement * pRootElement = new TiXmlElement( "resources" );
+
+  for (itXMLResdata = m_mapXMLResdata.begin(); itXMLResdata != m_mapXMLResdata.end(); itXMLResdata++)
+  {
+    TiXmlElement * pChildResElement = new TiXmlElement( "resource" );
+    pChildResElement->SetAttribute("name", itXMLResdata->first.c_str());
+
+    TiXmlElement * pChildURLElement = new TiXmlElement( "upstreamURL" );
+    TiXmlText * textURL = new TiXmlText( itXMLResdata->second.strUptreamURL.c_str() );
+    pChildURLElement->LinkEndChild(textURL);
+    pChildResElement->LinkEndChild(pChildURLElement);
+
+    TiXmlElement * pChildUpstrLElement = new TiXmlElement( "upstreamLangs" );
+    TiXmlText * textUpsLang = new TiXmlText( itXMLResdata->second.strLangsFromUpstream.c_str());
+    pChildUpstrLElement->LinkEndChild(textUpsLang);
+    pChildResElement->LinkEndChild(pChildUpstrLElement);
+
+    pRootElement->LinkEndChild(pChildResElement);
+  }
+
+  doc.LinkEndChild( decl );
+  doc.LinkEndChild( pRootElement );
+  doc.SaveFile(UpdateXMLFilename.c_str());
+}

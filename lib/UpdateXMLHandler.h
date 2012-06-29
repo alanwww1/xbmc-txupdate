@@ -26,7 +26,6 @@
 
 struct CXMLResdata
 {
-  std::string strResType;
   std::string strUptreamURL;
   std::string strLangsFromUpstream;
 };
@@ -36,8 +35,11 @@ class CUpdateXMLHandler
 public:
   CUpdateXMLHandler();
   ~CUpdateXMLHandler();
-  bool Load(std::string updateXMLFilename);
+  bool LoadXMLToMem(std::string updateXMLFilename);
+  void GetResourcesFromDir(std::string strProjRootDir);
+  void SaveMemToXML(std::string UpdateXMLFilename);
 private:
+  int GetResType(std::string ResRootDir);
   std::string m_ProjDir;
   std::map<std::string, CXMLResdata> m_mapXMLResdata;
   std::map<std::string, CXMLResdata>::iterator itXMLResdata;
