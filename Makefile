@@ -9,10 +9,10 @@ RANLIB := ranlib
 DEBUG_CXXFLAGS   := -Wall -Wno-format -g -DDEBUG
 RELEASE_CXXFLAGS := -Wall -Wno-unknown-pragmas -Wno-format -O3
 
-LIBS		 := 
+LIBS		 :=
 
-DEBUG_LDFLAGS    := -g
-RELEASE_LDFLAGS  :=
+DEBUG_LDFLAGS    := -g -lcurl
+RELEASE_LDFLAGS  := -lcurl
 
 ifeq (YES, ${DEBUG})
    CXXFLAGS     := ${DEBUG_CXXFLAGS}
@@ -22,7 +22,7 @@ else
    LDFLAGS      := ${RELEASE_LDFLAGS}
 endif
 
-INCS := -I./Libs
+INCS :=
 
 OUTPUT := xbmc-txupdate
 
@@ -39,12 +39,13 @@ lib/xbmclangcodes.cpp \
 lib/ResourceHandler.cpp \
 lib/ProjectHandler.cpp \
 lib/UpdateXMLHandler.cpp \
+lib/HTTPUtils.cpp \
 $(OUTPUT)
 
 OBJS := $(addsuffix .o,$(basename ${SRCS}))
 
 ${OUTPUT}: ${OBJS}
-	${LD} -o $@ ${LDFLAGS} ${OBJS} ${LIBS}
+	${LD} -o $@ ${OBJS} ${LIBS} ${LDFLAGS}
 
 %.o : %.cpp
 	${CXX} -c ${CXXFLAGS} ${INCS} $< -o $@
@@ -68,4 +69,4 @@ POHandler.o: POHandler.h POHandler.cpp POUtils.h POUtils.cpp Log.cpp Log.h
 ResourceHandler.o: ResourceHandler.h ResourceHandler.cpp POHandler.h POHandler.cpp Log.cpp Log.h
 ProjectHandler.o: ProjectHandler.h ProjectHandler.cpp ResourceHandler.h ResourceHandler.cpp Log.cpp Log.h
 UpdateXMLHandler.o: UpdateXMLHandler.h Log.cpp Log.h tinyxml.o
-
+HTTPUtils.o: HTTPUtils.h Log.h Log.cpp

@@ -18,29 +18,35 @@
  *  http://www.gnu.org/copyleft/gpl.html
  *
  */
-#pragma once
 
-#include "TinyXML/tinyxml.h"
-#include "POUtils/POUtils.h"
-#include <string>
+#include "Log.h"
+#include "HTTPUtils.h"
+#include <curl/curl.h>
+// #include <curl/types.h>
+#include <curl/easy.h>
 
-struct CXMLResdata
+
+void httpGet(std::string strFilename, std::string strURL)
 {
-  std::string strUptreamURL;
-  std::string strLangsFromUpstream;
+  CURL *curl;
+  CURLcode res;
+  FILE *dloadfile;
+
+  curl = curl_easy_init();
+  if(curl) 
+  {
+    dloadfile = fopen(strFilename.c_str(),"wb");
+    curl_easy_setopt(curl, CURLOPT_URL, "https://raw.github.com/xbmc/xbmc/master/language/English/strings.po");
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, Write_CURLdata);
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, dloadfile);
+    res = curl_easy_perform(curl);
+    curl_easy_cleanup(curl);
+    fclose(dloadfile);
+  }
 };
 
-class CUpdateXMLHandler
+size_t Write_CURLdata(void *ptr, size_t size, size_t nmemb, FILE *stream)
 {
-public:
-  CUpdateXMLHandler();
-  ~CUpdateXMLHandler();
-  bool LoadXMLToMem(std::string rootDir);
-  void GetResourcesFromDir(std::string strProjRootDir);
-  void SaveMemToXML(std::string rootDir);
-private:
-  int GetResType(std::string ResRootDir);
-  std::string m_ProjDir;
-  std::map<std::string, CXMLResdata> m_mapXMLResdata;
-  std::map<std::string, CXMLResdata>::iterator itXMLResdata;
+  size_t written = fwrite(ptr, size, nmemb, stream);
+  return written;
 };

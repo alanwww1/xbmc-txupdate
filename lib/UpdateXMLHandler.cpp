@@ -21,6 +21,7 @@
 
 #include "UpdateXMLHandler.h"
 #include "Log.h"
+#include "HTTPUtils.h"
 
 CUpdateXMLHandler::CUpdateXMLHandler()
 {};
@@ -28,9 +29,12 @@ CUpdateXMLHandler::CUpdateXMLHandler()
 CUpdateXMLHandler::~CUpdateXMLHandler()
 {};
 
-bool CUpdateXMLHandler::LoadXMLToMem (std::string UpdateXMLFilename)
+bool CUpdateXMLHandler::LoadXMLToMem (std::string rootDir)
 {
+  std::string UpdateXMLFilename = rootDir  + DirSepChar + "xbmc-txupdate.xml";
   TiXmlDocument xmlUpdateXML;
+
+  httpGet(rootDir + DirSepChar + "test.po","");
 
   if (!xmlUpdateXML.LoadFile(UpdateXMLFilename.c_str()))
   {
@@ -106,8 +110,9 @@ void CUpdateXMLHandler::GetResourcesFromDir(std::string strProjRootDir)
   }
 };
 
-void CUpdateXMLHandler::SaveMemToXML(std::string UpdateXMLFilename)
+void CUpdateXMLHandler::SaveMemToXML(std::string rootDir)
 {
+  std::string UpdateXMLFilename = rootDir  + DirSepChar + "xbmc-txupdate.xml";
   TiXmlDocument doc;
   TiXmlDeclaration * decl = new TiXmlDeclaration( "1.0", "", "" );
   TiXmlElement * pRootElement = new TiXmlElement( "resources" );
@@ -133,4 +138,4 @@ void CUpdateXMLHandler::SaveMemToXML(std::string UpdateXMLFilename)
   doc.LinkEndChild( decl );
   doc.LinkEndChild( pRootElement );
   doc.SaveFile(UpdateXMLFilename.c_str());
-}
+};

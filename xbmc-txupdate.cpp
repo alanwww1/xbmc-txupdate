@@ -98,9 +98,9 @@ int main(int argc, char* argv[])
   CLog::Init(WorkingDir + "xbmc-txupdate.log");
   CLog::Log(logINFO, "Root Directory: %s", WorkingDir.c_str());
   CUpdateXMLHandler UpdateXMLHandler;
-  UpdateXMLHandler.LoadXMLToMem(WorkingDir + DirSepChar + "txupdate.xml");
+  UpdateXMLHandler.LoadXMLToMem(WorkingDir);
   UpdateXMLHandler.GetResourcesFromDir(WorkingDir);
-  UpdateXMLHandler.SaveMemToXML(WorkingDir+ DirSepChar + "txupdate.xml");
+  UpdateXMLHandler.SaveMemToXML(WorkingDir);
 
   CProjectHandler TXProject;
   TXProject.LoadProject(WorkingDir);

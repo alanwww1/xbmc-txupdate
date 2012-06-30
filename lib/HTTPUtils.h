@@ -20,27 +20,10 @@
  */
 #pragma once
 
-#include "TinyXML/tinyxml.h"
-#include "POUtils/POUtils.h"
 #include <string>
+#include <stdio.h>
 
-struct CXMLResdata
-{
-  std::string strUptreamURL;
-  std::string strLangsFromUpstream;
-};
+void httpGet(std::string strFilename, std::string strURL);
 
-class CUpdateXMLHandler
-{
-public:
-  CUpdateXMLHandler();
-  ~CUpdateXMLHandler();
-  bool LoadXMLToMem(std::string rootDir);
-  void GetResourcesFromDir(std::string strProjRootDir);
-  void SaveMemToXML(std::string rootDir);
-private:
-  int GetResType(std::string ResRootDir);
-  std::string m_ProjDir;
-  std::map<std::string, CXMLResdata> m_mapXMLResdata;
-  std::map<std::string, CXMLResdata>::iterator itXMLResdata;
-};
+
+size_t Write_CURLdata(void *ptr, size_t size, size_t nmemb, FILE *stream);
