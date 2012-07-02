@@ -22,8 +22,18 @@
 
 #include <string>
 #include <stdio.h>
+#include <curl/curl.h>
 
-void httpGet(std::string strFilename, std::string strURL);
-
+class CHTTPHandler
+{
+public:
+  CHTTPHandler();
+  ~CHTTPHandler();
+  void ReInit();
+  void GetFile(std::string strFilename, std::string strURL, std::string strLogin = "", std::string strPasswd = "");
+  void Cleanup();
+private:
+  CURL *m_curlHandle;
+};
 
 size_t Write_CURLdata(void *ptr, size_t size, size_t nmemb, FILE *stream);

@@ -21,27 +21,66 @@
 
 #include "Log.h"
 #include "HTTPUtils.h"
-#include <curl/curl.h>
 // #include <curl/types.h>
 #include <curl/easy.h>
 
+using namespace std;
 
-void httpGet(std::string strFilename, std::string strURL)
+CHTTPHandler::CHTTPHandler()
 {
-  CURL *curl;
-  CURLcode res;
+  m_curlHandle//  HTTPHandler.GetFile(rootDir + "test.po","https://raw.github.com/xbmc/xbmc/master/language/English/strings.po");
+  = curl_easy_init();
+};
+
+CHTTPHandler::~CHTTPHandler()
+{
+  Cleanup();
+};
+
+void CHTTPHandler::GetFile(std::string strFilename, std::string strURL, std::string strLogin, std::string strPasswd)
+{
+  CURLcode curlResult;
   FILE *dloadfile;
 
-  curl = curl_easy_init();
-  if(curl) 
+  if(m_curlHandle) 
   {
     dloadfile = fopen(strFilename.c_str(),"wb");
-    curl_easy_setopt(curl, CURLOPT_URL, "https://raw.github.com/xbmc/xbmc/master/language/English/strings.po");
-    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, Write_CURLdata);
-    curl_easy_setopt(curl, CURLOPT_WRITEDATA, dloadfile);
-    res = curl_easy_perform(curl);
-    curl_easy_cleanup(curl);
+    curl_easy_setopt(m_curlHandle, CURLOPT_URL, strURL.c_str());
+    curl_easy_setopt(m_curlHandle, CURLOPT_WRITEFUNCTION, Write_CURLdata);
+    curl_easy_setopt(m_curlHandle, CURLOPT_USERNAME, strLogin.c_str());
+    curl_easy_setopt(m_curlHandle, CURLOPT_PASSWORD, strPasswd.c_str());
+    curl_easy_setopt(m_curlHandle, CURLOPT_WRITEDATA, dloadfile);
+    curl_easy_setopt(m_curlHandle, CURLOPT_SSL_VERIFYPEER, 0);
+
+    curlResult = curl_easy_perform(m_curlHandle);
+
+    if (curlResult == 0)
+      CLog::Log(logINFO, "HTTPUtils: GetFile finished with success from URL %s to localdir %s", strURL.c_str(),
+                strFilename.c_str());
+    else
+      CLog::Log(logERROR, "HTTPUtils: GetFile finished with error: %s from URL %s to localdir %s",
+                curl_easy_strerror(curlResult), strURL.c_str(), strFilename.c_str());
+
     fclose(dloadfile);
+  }
+  else
+    CLog::Log(logERROR, "HTTPUtils: GetFile failed because Curl was not initalized");
+};
+
+void CHTTPHandler::ReInit()
+{
+  if (!m_curlHandle)
+    m_curlHandle = curl_easy_init();
+  else
+    CLog::Log(logWARNING, "HTTPUtils: Trying to reinitalize an already existing Curl handle");
+};
+
+void CHTTPHandler::Cleanup()
+{
+  if (m_curlHandle)
+  {
+    curl_easy_cleanup(m_curlHandle);
+    m_curlHandle = NULL;
   }
 };
 
