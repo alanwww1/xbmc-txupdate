@@ -30,10 +30,12 @@ public:
   CHTTPHandler();
   ~CHTTPHandler();
   void ReInit();
-  void GetFile(std::string strFilename, std::string strURL, std::string strLogin = "", std::string strPasswd = "");
+  void GetURLToFILE(std::string strFilename, std::string strURL, std::string strLogin = "", std::string strPasswd = "");
+  std::string GetURLToSTR(std::string strURL, std::string strLogin = "", std::string strPasswd = "");
   void Cleanup();
 private:
   CURL *m_curlHandle;
 };
 
-size_t Write_CURLdata(void *ptr, size_t size, size_t nmemb, FILE *stream);
+size_t Write_CurlData_File(void *ptr, size_t size, size_t nmemb, FILE *stream);
+size_t Write_CurlData_String(char *data, size_t size, size_t nmemb, std::string *buffer);

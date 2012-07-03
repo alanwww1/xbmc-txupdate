@@ -35,10 +35,15 @@ bool CUpdateXMLHandler::LoadXMLToMem (std::string rootDir)
   TiXmlDocument xmlUpdateXML;
 
   CHTTPHandler HTTPHandler;
-  HTTPHandler.GetFile(rootDir + "test.po","https://raw.github.com/xbmc/xbmc/master/language/English/strings.po");
+  std::string strtemp;
+//  strtemp = HTTPHandler.GetURLToSTR("https://raw.github.com/xbmc/xbmc/master/language/English/strings.po");
+//  strtemp = HTTPHandler.GetURLToSTR("https://www.transifex.com/api/2/project/update-test/resource/visualization-projectm/translation/hu/?file", "un", "pw");
+  strtemp = HTTPHandler.GetURLToSTR("https://www.transifex.com/api/2/project/update-test/resources/", "un", "pw");
+  printf("%s, strlength: %i", strtemp.c_str(), strtemp.size());
   HTTPHandler.Cleanup();
   HTTPHandler.ReInit();
-  HTTPHandler.GetFile(rootDir + "test1.po","https://www.transifex.com/api/2/project/update-test/resource/visualization-projectm/translation/hu/?file", "login", "passw");
+  HTTPHandler.GetURLToFILE(rootDir + "test2.po", "https://raw.github.com/xbmc/xbmc/master/language/English/strings.po");
+//  HTTPHandler.GetURLToFILE(rootDir + "test1.po","https://www.transifex.com/api/2/project/update-test/resource/visualization-projectm/translation/hu/?file", "login", "passw");
 
   if (!xmlUpdateXML.LoadFile(UpdateXMLFilename.c_str()))
   {
