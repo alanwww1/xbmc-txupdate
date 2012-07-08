@@ -11,8 +11,8 @@ RELEASE_CXXFLAGS := -Wall -Wno-unknown-pragmas -Wno-format -O3
 
 LIBS		 :=
 
-DEBUG_LDFLAGS    := -g -lcurl
-RELEASE_LDFLAGS  := -lcurl
+DEBUG_LDFLAGS    := -g -lcurl -ljsoncpp
+RELEASE_LDFLAGS  := -lcurl -ljsoncpp
 
 ifeq (YES, ${DEBUG})
    CXXFLAGS     := ${DEBUG_CXXFLAGS}
@@ -40,6 +40,7 @@ lib/ResourceHandler.cpp \
 lib/ProjectHandler.cpp \
 lib/UpdateXMLHandler.cpp \
 lib/HTTPUtils.cpp \
+lib/JSONHandler.cpp \
 $(OUTPUT)
 
 OBJS := $(addsuffix .o,$(basename ${SRCS}))
@@ -70,3 +71,4 @@ ResourceHandler.o: ResourceHandler.h ResourceHandler.cpp POHandler.h POHandler.c
 ProjectHandler.o: ProjectHandler.h ProjectHandler.cpp ResourceHandler.h ResourceHandler.cpp Log.cpp Log.h
 UpdateXMLHandler.o: UpdateXMLHandler.h Log.cpp Log.h tinyxml.o
 HTTPUtils.o: HTTPUtils.h Log.h Log.cpp
+JSONHandler.o: JSONHandler.h JSONHandler.cpp

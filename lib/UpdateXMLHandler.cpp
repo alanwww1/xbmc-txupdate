@@ -22,7 +22,7 @@
 #include "UpdateXMLHandler.h"
 #include "Log.h"
 #include "HTTPUtils.h"
-#include "vJSON/json.h"
+#include "JSONHandler.h"
 
 using namespace std;
 
@@ -41,56 +41,18 @@ bool CUpdateXMLHandler::LoadXMLToMem (std::string rootDir)
   std::string strtemp;
 //  strtemp = HTTPHandler.GetURLToSTR("https://raw.github.com/xbmc/xbmc/master/language/English/strings.po");
 //  strtemp = HTTPHandler.GetURLToSTR("https://www.transifex.com/api/2/project/update-test/resource/visualization-projectm/translation/hu/?file", "un", "pw");
-  strtemp = HTTPHandler.GetURLToSTR("https://www.transifex.com/api/2/project/update-test/resources/", "alanwww1", "pdance10");
+  strtemp = HTTPHandler.GetURLToSTR("https://www.transifex.com/api/2/project/XBMC-Main-Frodo/resources/", "alanwww1", "pdance10");
   printf("%s, strlength: %i", strtemp.c_str(), strtemp.size());
 
-  char *errorPos = 0;
-  char *errorDesc = 0;
-  int errorLine = 0;
-  block_allocator allocator(1 << 10); // 1 KB per block
+//  char cstrtemp[300];
+//  strcpy(cstrtemp, strtemp.c_str());
 
-  char cstrtemp[300];
-  strcpy(cstrtemp, strtemp.c_str());
+  CJSONHandler JSONHandler;
+  JSONHandler.ParseResources(strtemp);
 
-  json_value *root = json_parse(cstrtemp, &errorPos, &errorDesc, &errorLine, &allocator);
-
-  for (json_value *it = root->first_child; it; it = it->next_sibling)
-  {
-    if (it->name)
-    {
-      printf("%s = ", it->name);
-    }
-    
-    switch(it->type)
-    {
-      case JSON_NULL:
-        printf("null\n");
-        break;
-      case JSON_STRING:
-        printf("\"%s\"\n", it->string_value);
-        break;
-      case JSON_INT:
-        printf("%d\n", it->int_value);
-        break;
-      case JSON_FLOAT:
-        printf("%f\n", it->float_value);
-        break;
-      case JSON_BOOL:
-        printf(it->int_value ? "true\n" : "false\n");
-        break;
-    }
-  }
-  
-  
-  
-  
-  
-  
-  
-  
-  HTTPHandler.Cleanup();
-  HTTPHandler.ReInit();
-  HTTPHandler.GetURLToFILE(rootDir + "test2.po", "https://raw.github.com/xbmc/xbmc/master/language/English/strings.po");
+//  HTTPHandler.Cleanup();
+//  HTTPHandler.ReInit();
+//  HTTPHandler.GetURLToFILE(rootDir + "test2.po", "https://raw.github.com/xbmc/xbmc/master/language/English/strings.po");
 //  HTTPHandler.GetURLToFILE(rootDir + "test1.po","https://www.transifex.com/api/2/project/update-test/resource/visualization-projectm/translation/hu/?file", "login", "passw");
 
   if (!xmlUpdateXML.LoadFile(UpdateXMLFilename.c_str()))

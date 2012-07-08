@@ -28,8 +28,7 @@ using namespace std;
 
 CHTTPHandler::CHTTPHandler()
 {
-  m_curlHandle//  HTTPHandler.GetFile(rootDir + "test.po","https://raw.github.com/xbmc/xbmc/master/language/English/strings.po");
-  = curl_easy_init();
+  m_curlHandle = curl_easy_init();
 };
 
 CHTTPHandler::~CHTTPHandler()
