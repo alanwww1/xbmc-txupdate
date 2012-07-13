@@ -40,11 +40,11 @@ static const char DirSepChar = '/';
 #endif
 
 bool MakeDir(std::string Path);
-
 bool DirExists(std::string Path);
-
 bool FileExist(std::string filename);
-
+void DeleteFile(std::string filename);
+void CopyFile(std::string strSourceFileName, std::string strDestFileName);
+size_t GetFileAge(std::string strFileName);
+std::string ReadFileToStr(std::string strFileName);
 std::string AddSlash(std::string strIn);
-
 std::string GetCurrTime();

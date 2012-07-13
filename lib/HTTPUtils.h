@@ -24,6 +24,8 @@
 #include <stdio.h>
 #include <curl/curl.h>
 
+const size_t CACHEEXPIRE = 21600; // 6 hours
+
 class CHTTPHandler
 {
 public:
@@ -33,8 +35,12 @@ public:
   void GetURLToFILE(std::string strFilename, std::string strURL, std::string strLogin = "", std::string strPasswd = "");
   std::string GetURLToSTR(std::string strURL, std::string strLogin = "", std::string strPasswd = "");
   void Cleanup();
+  void SetCacheDir(std::string strCacheDir);
 private:
   CURL *m_curlHandle;
+  std::string m_strCacheDir;
+  std::string CacheFileNameFromURL(std::string strURL);
+  void curlURLToCache(std::string strCacheFile, std::string strURL, std::string strLogin, std::string strPasswd);
 };
 
 size_t Write_CurlData_File(void *ptr, size_t size, size_t nmemb, FILE *stream);

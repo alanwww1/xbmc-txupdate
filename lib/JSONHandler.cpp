@@ -50,7 +50,29 @@ std::map<std::string, std::string> CJSONHandler::ParseResources(std::string strJ
     Json::Value valu = *itr;
     resName = valu.get("slug", "unknown").asString();
     resType = valu.get("category", "unknown").asString();
-    if (resName.size() == 0 || resName == "unknown" || resType.size() == 0 ||
+    if (resType == "")
+    {
+      if (resName.substr(0,4) == "skin")
+      {
+        CLog::Log(logINFO, "JSONHandler: no category was filled for resource %s on Transifex server, but from resourcename"
+                  " this resource was declared as skin", resName.c_str());
+        resType = "skin";
+      }
+      else if (resName == "xbmc-core")
+      {
+        CLog::Log(logINFO, "JSONHandler: no category was filled for resource %s on Transifex server, but from resourcename"
+                  " this resource was declared as xbmc-core", resName.c_str());
+        resType = "xbmc-core";
+      }
+      else
+      {
+        CLog::Log(logINFO, "JSONHandler: no category was filled for resource %s on Transifex server, but from resourcename"
+        " this resource was declared as normal addon", resName.c_str());
+        resType = "addon";
+      }
+    }
+
+    if (resName.size() == 0 || resName == "unknown" ||
         resType == "unknown")
       CLog::Log(logERROR, "JSONHandler: Parse resource: no valid JSON data while iterating");
     mapResources[resName] = resType;

@@ -23,6 +23,11 @@
 #include <stdio.h>
 #include <sys/stat.h>
 #include <ctime>
+#include <iostream>
+#include <fstream>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include "../Log.h"
 
 using namespace std;
 
@@ -54,6 +59,12 @@ bool FileExist(std::string filename)
   return true;
 };
 
+void DeleteFile(std::string filename)
+{
+  if (remove(filename.c_str()) != 0)
+    CLog::Log(logERROR, "FileUtils: DeleteFile: unable to delete file: %s", filename.c_str());
+};
+
 std::string AddSlash(std::string strIn)
 {
   if (strIn[strIn.size()-1] == DirSepChar)
@@ -73,4 +84,54 @@ std::string GetCurrTime()
             gmtm->tm_mday, gmtm->tm_hour, gmtm->tm_min);
   }
   return strTime;
+};
+
+void CopyFile(std::string strSourceFileName, std::string strDestFileName)
+{
+  ifstream source(strSourceFileName.c_str(), std::ios::binary);
+  ofstream dest(strDestFileName.c_str(), std::ios::binary);
+
+  dest << source.rdbuf();
+
+  source.close();
+  dest.close();
+};
+
+size_t GetFileAge(std::string strFileName)
+{
+  struct stat b;
+  if (!stat(strFileName.c_str(), &b)) 
+  {
+    time_t now = std::time(0);
+    return now-b.st_mtime;
+  }
+  else
+  {
+    CLog::Log(logWARNING, "FileUtils: Unable to determine the last modify date for file: %s", strFileName.c_str());
+    return 0;
+  }
+};
+
+std::string ReadFileToStr(std::string strFileName)
+{
+  FILE * file;
+  std::string strRead;
+  file = fopen(strFileName.c_str(), "rb");
+  if (!file)
+    CLog::Log(logERROR, "FileUtils: ReadFileToStr: unable to read file: %s", strFileName.c_str());
+
+  fseek(file, 0, SEEK_END);
+  int64_t fileLength = ftell(file);
+  fseek(file, 0, SEEK_SET);
+
+  strRead.resize(static_cast<size_t> (fileLength));
+
+  unsigned int readBytes =  fread(&strRead[0], 1, fileLength, file);
+  fclose(file);
+
+  if (readBytes != fileLength)
+  {
+    CLog::Log(logERROR, "POParser: actual read data differs from file size, for string file: %s",strFileName.c_str());
+  }
+  return strRead;
 };

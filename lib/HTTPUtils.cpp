@@ -23,6 +23,8 @@
 #include "HTTPUtils.h"
 // #include <curl/types.h>
 #include <curl/easy.h>
+#include "FileUtils/FileUtils.h"
+#include <cctype>
 
 using namespace std;
 
@@ -38,66 +40,77 @@ CHTTPHandler::~CHTTPHandler()
 
 void CHTTPHandler::GetURLToFILE(std::string strFilename, std::string strURL, std::string strLogin, std::string strPasswd)
 {
-  CURLcode curlResult;
-  FILE *dloadfile;
+  std::string strCacheFile = CacheFileNameFromURL(strURL);
+  bool bIsTooLongUrl = strCacheFile == "cache_for_long_URL_download";
+  strCacheFile = m_strCacheDir + strCacheFile;
 
-  if(m_curlHandle) 
+  if (!FileExist(strCacheFile) || GetFileAge(strCacheFile) > CACHEEXPIRE)
   {
-    dloadfile = fopen(strFilename.c_str(),"wb");
-    curl_easy_setopt(m_curlHandle, CURLOPT_URL, strURL.c_str());
-    curl_easy_setopt(m_curlHandle, CURLOPT_WRITEFUNCTION, Write_CurlData_File);
-    curl_easy_setopt(m_curlHandle, CURLOPT_USERNAME, strLogin.c_str());
-    curl_easy_setopt(m_curlHandle, CURLOPT_PASSWORD, strPasswd.c_str());
-    curl_easy_setopt(m_curlHandle, CURLOPT_WRITEDATA, dloadfile);
-    curl_easy_setopt(m_curlHandle, CURLOPT_USERAGENT, "libcurl-agent/1.0");
-    curl_easy_setopt(m_curlHandle, CURLOPT_SSL_VERIFYPEER, 0);
-
-    curlResult = curl_easy_perform(m_curlHandle);
-
-    fseek (dloadfile, 0, SEEK_END);
-    size_t filesize=ftell (dloadfile);
-
-    if (curlResult == 0)
-      CLog::Log(logINFO, "HTTPUtils: GetURLToFILE finished with success from URL %s to localdir %s, read filesize: %ibytes",
-                strURL.c_str(), strFilename.c_str(), filesize);
-    else
-      CLog::Log(logERROR, "HTTPUtils: GetURLToFILE finished with error: %s from URL %s to localdir %s",
-                curl_easy_strerror(curlResult), strURL.c_str(), strFilename.c_str());
-
-    fclose(dloadfile);
+    curlURLToCache(strCacheFile, strURL, strLogin, strPasswd);
   }
   else
-    CLog::Log(logERROR, "HTTPUtils: GetURLToFILE failed because Curl was not initalized");
+    CLog::Log(logINFO, "HTTPUtils: GetURLToFILE used a cached local file for URL %s to localdir %s, file was cached %d minutes ago",
+              strURL.c_str(), strFilename.c_str(), GetFileAge(strCacheFile)/60);
+
+  CopyFile(strCacheFile, strFilename);
+  if (bIsTooLongUrl)
+    DeleteFile(strCacheFile);
 };
 
 std::string CHTTPHandler::GetURLToSTR(std::string strURL, std::string strLogin, std::string strPasswd)
 {
-  CURLcode curlResult;
   std::string strBuffer;
+  std::string strCacheFile = CacheFileNameFromURL(strURL);
+  bool bIsTooLongUrl = strCacheFile == "cache_for_long_URL_download";
+  strCacheFile = m_strCacheDir + strCacheFile;
 
-  if(m_curlHandle) 
+  if (!FileExist(strCacheFile) || GetFileAge(strCacheFile) > CACHEEXPIRE)
   {
-    curl_easy_setopt(m_curlHandle, CURLOPT_URL, strURL.c_str());
-    curl_easy_setopt(m_curlHandle, CURLOPT_WRITEFUNCTION, Write_CurlData_String);
-    curl_easy_setopt(m_curlHandle, CURLOPT_USERNAME, strLogin.c_str());
-    curl_easy_setopt(m_curlHandle, CURLOPT_PASSWORD, strPasswd.c_str());
-    curl_easy_setopt(m_curlHandle, CURLOPT_WRITEDATA, &strBuffer);
-    curl_easy_setopt(m_curlHandle, CURLOPT_USERAGENT, "libcurl-agent/1.0");
-    curl_easy_setopt(m_curlHandle, CURLOPT_SSL_VERIFYPEER, 0);
-
-    curlResult = curl_easy_perform(m_curlHandle);
-
-    if (curlResult == 0)
-      CLog::Log(logINFO, "HTTPUtils: GetURLToMem finished with success from URL %s, read size: %ibytes", strURL.c_str(),
-                strBuffer.size());
-      else
-        CLog::Log(logERROR, "HTTPUtils: GetURLToMem finished with error: %s from URL %s",
-                  curl_easy_strerror(curlResult), strURL.c_str());
+    curlURLToCache(strCacheFile, strURL, strLogin, strPasswd);
   }
   else
-    CLog::Log(logERROR, "HTTPUtils: GetURLToMem failed because Curl was not initalized");
+  {
+    CLog::Log(logINFO, "HTTPUtils: GetURLToNem used a cached local file for URL %s, file was cached %d minutes ago",
+              strURL.c_str(), GetFileAge(strCacheFile)/60);
+  }
+  strBuffer = ReadFileToStr(strCacheFile);
 
+  if (bIsTooLongUrl)
+    DeleteFile(strCacheFile);
   return strBuffer;
+};
+
+void CHTTPHandler::curlURLToCache(std::string strCacheFile, std::string strURL, std::string strLogin, std::string strPasswd)
+{
+  CURLcode curlResult;
+  FILE *dloadfile;
+
+    if(m_curlHandle) 
+    {
+      dloadfile = fopen(strCacheFile.c_str(),"wb");
+      curl_easy_setopt(m_curlHandle, CURLOPT_URL, strURL.c_str());
+      curl_easy_setopt(m_curlHandle, CURLOPT_WRITEFUNCTION, Write_CurlData_File);
+      curl_easy_setopt(m_curlHandle, CURLOPT_USERNAME, strLogin.c_str());
+      curl_easy_setopt(m_curlHandle, CURLOPT_PASSWORD, strPasswd.c_str());
+      curl_easy_setopt(m_curlHandle, CURLOPT_WRITEDATA, dloadfile);
+      curl_easy_setopt(m_curlHandle, CURLOPT_USERAGENT, "libcurl-agent/1.0");
+      curl_easy_setopt(m_curlHandle, CURLOPT_SSL_VERIFYPEER, 0);
+
+      curlResult = curl_easy_perform(m_curlHandle);
+
+      fseek (dloadfile, 0, SEEK_END);
+      size_t filesize=ftell (dloadfile);
+      fclose(dloadfile);
+
+      if (curlResult == 0)
+        CLog::Log(logINFO, "HTTPUtils: curlURLToCache finished with success from URL %s to cachefile %s, read filesize: %ibytes",
+                  strURL.c_str(), strCacheFile.c_str(), filesize);
+      else
+        CLog::Log(logERROR, "HTTPUtils: curlURLToCache finished with error: %s from URL %s to localdir %s",
+                  curl_easy_strerror(curlResult), strURL.c_str(), strCacheFile.c_str());
+    }
+    else
+      CLog::Log(logERROR, "HTTPUtils: curlURLToCache failed because Curl was not initalized");
 };
 
 void CHTTPHandler::ReInit()
@@ -132,4 +145,46 @@ size_t Write_CurlData_String(char *data, size_t size, size_t nmemb, string *buff
     written = size * nmemb;
   }
   return written;
-} 
+}
+
+void CHTTPHandler::SetCacheDir(std::string strCacheDir)
+{
+  if (!DirExists(strCacheDir))
+    MakeDir(strCacheDir);
+  m_strCacheDir = strCacheDir + DirSepChar;
+  CLog::Log(logINFO, "HTTPUtils: Cache directory set to: %s", strCacheDir.c_str());
+};
+
+std::string CHTTPHandler::CacheFileNameFromURL(std::string strURL)
+{
+  if (strURL.size() > 200)
+  {
+    CLog::Log(logWARNING, "HTTPUtils: Can't make HTTP cache for too long URL: %s", strURL.c_str());
+    return "cache_for_long_URL_download";
+  }
+  std::string strResult;
+  std::string strCharsToKeep = "/.=?";
+  std::string strReplaceChars = "_-=?";
+
+  std::string hexChars = "01234567890abcdef"; 
+
+  for (std::string::iterator it = strURL.begin(); it != strURL.end(); it++)
+  {
+    if (isalnum(*it))
+      strResult += *it;
+    else
+    {
+      if (size_t pos = strCharsToKeep.find(*it) != std::string::npos)
+        strResult += strReplaceChars[pos];
+      else
+      {
+        strResult += "%";
+        strResult += hexChars[(*it >> 4) & 0x0F];
+        strResult += hexChars[*it & 0x0F];
+      }
+    }
+  }
+
+  return strResult;
+};
+
