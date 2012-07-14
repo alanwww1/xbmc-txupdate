@@ -26,6 +26,8 @@
 #include "FileUtils/FileUtils.h"
 #include <cctype>
 
+CHTTPHandler g_HTTPHandler;
+
 using namespace std;
 
 CHTTPHandler::CHTTPHandler()
@@ -38,7 +40,7 @@ CHTTPHandler::~CHTTPHandler()
   Cleanup();
 };
 
-void CHTTPHandler::GetURLToFILE(std::string strFilename, std::string strURL, std::string strLogin, std::string strPasswd)
+void CHTTPHandler::GetURLToFILE(std::string strFilename, std::string strURL)
 {
   std::string strCacheFile = CacheFileNameFromURL(strURL);
   bool bIsTooLongUrl = strCacheFile == "cache_for_long_URL_download";
@@ -46,10 +48,10 @@ void CHTTPHandler::GetURLToFILE(std::string strFilename, std::string strURL, std
 
   if (!FileExist(strCacheFile) || GetFileAge(strCacheFile) > CACHEEXPIRE)
   {
-    curlURLToCache(strCacheFile, strURL, strLogin, strPasswd);
+    curlURLToCache(strCacheFile, strURL);
   }
   else
-    CLog::Log(logINFO, "HTTPUtils: GetURLToFILE used a cached local file for URL %s to localdir %s, file was cached %d minutes ago",
+    CLog::Log(logINFO, "HTTPHandler: GetURLToFILE used a cached local file for URL %s to localdir %s, file was cached %d minutes ago",
               strURL.c_str(), strFilename.c_str(), GetFileAge(strCacheFile)/60);
 
   CopyFile(strCacheFile, strFilename);
@@ -57,7 +59,7 @@ void CHTTPHandler::GetURLToFILE(std::string strFilename, std::string strURL, std
     DeleteFile(strCacheFile);
 };
 
-std::string CHTTPHandler::GetURLToSTR(std::string strURL, std::string strLogin, std::string strPasswd)
+std::string CHTTPHandler::GetURLToSTR(std::string strURL)
 {
   std::string strBuffer;
   std::string strCacheFile = CacheFileNameFromURL(strURL);
@@ -66,11 +68,11 @@ std::string CHTTPHandler::GetURLToSTR(std::string strURL, std::string strLogin, 
 
   if (!FileExist(strCacheFile) || GetFileAge(strCacheFile) > CACHEEXPIRE)
   {
-    curlURLToCache(strCacheFile, strURL, strLogin, strPasswd);
+    curlURLToCache(strCacheFile, strURL);
   }
   else
   {
-    CLog::Log(logINFO, "HTTPUtils: GetURLToNem used a cached local file for URL %s, file was cached %d minutes ago",
+    CLog::Log(logINFO, "HTTPHandler: GetURLToNem used a cached local file for URL %s, file was cached %d minutes ago",
               strURL.c_str(), GetFileAge(strCacheFile)/60);
   }
   strBuffer = ReadFileToStr(strCacheFile);
@@ -80,18 +82,20 @@ std::string CHTTPHandler::GetURLToSTR(std::string strURL, std::string strLogin, 
   return strBuffer;
 };
 
-void CHTTPHandler::curlURLToCache(std::string strCacheFile, std::string strURL, std::string strLogin, std::string strPasswd)
+void CHTTPHandler::curlURLToCache(std::string strCacheFile, std::string strURL)
 {
   CURLcode curlResult;
   FILE *dloadfile;
+
+  CLoginData LoginData = GetCredentials(strURL);
 
     if(m_curlHandle) 
     {
       dloadfile = fopen(strCacheFile.c_str(),"wb");
       curl_easy_setopt(m_curlHandle, CURLOPT_URL, strURL.c_str());
       curl_easy_setopt(m_curlHandle, CURLOPT_WRITEFUNCTION, Write_CurlData_File);
-      curl_easy_setopt(m_curlHandle, CURLOPT_USERNAME, strLogin.c_str());
-      curl_easy_setopt(m_curlHandle, CURLOPT_PASSWORD, strPasswd.c_str());
+      curl_easy_setopt(m_curlHandle, CURLOPT_USERNAME, LoginData.strLogin.c_str());
+      curl_easy_setopt(m_curlHandle, CURLOPT_PASSWORD, LoginData.strPassword.c_str());
       curl_easy_setopt(m_curlHandle, CURLOPT_WRITEDATA, dloadfile);
       curl_easy_setopt(m_curlHandle, CURLOPT_USERAGENT, "libcurl-agent/1.0");
       curl_easy_setopt(m_curlHandle, CURLOPT_SSL_VERIFYPEER, 0);
@@ -103,14 +107,14 @@ void CHTTPHandler::curlURLToCache(std::string strCacheFile, std::string strURL, 
       fclose(dloadfile);
 
       if (curlResult == 0)
-        CLog::Log(logINFO, "HTTPUtils: curlURLToCache finished with success from URL %s to cachefile %s, read filesize: %ibytes",
+        CLog::Log(logINFO, "HTTPHandler: curlURLToCache finished with success from URL %s to cachefile %s, read filesize: %ibytes",
                   strURL.c_str(), strCacheFile.c_str(), filesize);
       else
-        CLog::Log(logERROR, "HTTPUtils: curlURLToCache finished with error: %s from URL %s to localdir %s",
+        CLog::Log(logERROR, "HTTPHandler: curlURLToCache finished with error: %s from URL %s to localdir %s",
                   curl_easy_strerror(curlResult), strURL.c_str(), strCacheFile.c_str());
     }
     else
-      CLog::Log(logERROR, "HTTPUtils: curlURLToCache failed because Curl was not initalized");
+      CLog::Log(logERROR, "HTTPHandler: curlURLToCache failed because Curl was not initalized");
 };
 
 void CHTTPHandler::ReInit()
@@ -118,7 +122,7 @@ void CHTTPHandler::ReInit()
   if (!m_curlHandle)
     m_curlHandle = curl_easy_init();
   else
-    CLog::Log(logWARNING, "HTTPUtils: Trying to reinitalize an already existing Curl handle");
+    CLog::Log(logWARNING, "HTTPHandler: Trying to reinitalize an already existing Curl handle");
 };
 
 void CHTTPHandler::Cleanup()
@@ -152,14 +156,14 @@ void CHTTPHandler::SetCacheDir(std::string strCacheDir)
   if (!DirExists(strCacheDir))
     MakeDir(strCacheDir);
   m_strCacheDir = strCacheDir + DirSepChar;
-  CLog::Log(logINFO, "HTTPUtils: Cache directory set to: %s", strCacheDir.c_str());
+  CLog::Log(logINFO, "HTTPHandler: Cache directory set to: %s", strCacheDir.c_str());
 };
 
 std::string CHTTPHandler::CacheFileNameFromURL(std::string strURL)
 {
   if (strURL.size() > 200)
   {
-    CLog::Log(logWARNING, "HTTPUtils: Can't make HTTP cache for too long URL: %s", strURL.c_str());
+    CLog::Log(logWARNING, "HTTPHandler: Can't make HTTP cache for too long URL: %s", strURL.c_str());
     return "cache_for_long_URL_download";
   }
   std::string strResult;
@@ -188,3 +192,61 @@ std::string CHTTPHandler::CacheFileNameFromURL(std::string strURL)
   return strResult;
 };
 
+bool CHTTPHandler::LoadCredentials (std::string CredentialsFilename)
+{
+  TiXmlDocument xmlPasswords;
+
+  if (!xmlPasswords.LoadFile(CredentialsFilename.c_str()))
+  {
+    CLog::Log(logINFO, "HTTPHandler: No \".passwords.xml\" file exists in project dir. No password protected web download will be available.");
+    return false;
+  }
+
+  CLog::Log(logINFO, "HTTPHandler: Succesfuly found the .passwsords.xml file: %s", CredentialsFilename.c_str());
+
+  TiXmlElement* pRootElement = xmlPasswords.RootElement();
+
+  if (!pRootElement || pRootElement->NoChildren() || pRootElement->ValueTStr()!="websites")
+  {
+    CLog::Log(logWARNING, "HTTPHandler: No root element called \"websites\" in xml file.");
+    return false;
+  }
+
+  CLoginData LoginData;
+
+  const TiXmlElement *pChildElement = pRootElement->FirstChildElement("website");
+  while (pChildElement && pChildElement->FirstChild())
+  {
+    std::string strWebSitePrefix = pChildElement->Attribute("prefix");
+    if (pChildElement->FirstChild())
+    {
+      const TiXmlElement *pChildLOGINElement = pChildElement->FirstChildElement("login");
+      if (pChildLOGINElement && pChildLOGINElement->FirstChild())
+        LoginData.strLogin = pChildLOGINElement->FirstChild()->Value();
+      const TiXmlElement *pChildPASSElement = pChildElement->FirstChildElement("password");
+      if (pChildPASSElement && pChildPASSElement->FirstChild())
+        LoginData.strPassword = pChildPASSElement->FirstChild()->Value();
+
+      m_mapLoginData [strWebSitePrefix] = LoginData;
+      CLog::Log(logINFO, "HTTPHandler: found login credentials for website prefix: %s", strWebSitePrefix.c_str());
+    }
+    pChildElement = pChildElement->NextSiblingElement("resource");
+  }
+
+  return true;
+};
+
+CLoginData CHTTPHandler::GetCredentials (std::string strURL)
+{
+  CLoginData LoginData;
+  for (itMapLoginData = m_mapLoginData.begin(); itMapLoginData != m_mapLoginData.end(); itMapLoginData++)
+  {
+    if (strURL.find(itMapLoginData->first) != std::string::npos)
+    {
+      LoginData = itMapLoginData->second;
+      return LoginData;
+    }
+  }
+
+  return LoginData;
+};

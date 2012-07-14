@@ -29,6 +29,7 @@ OUTPUT := xbmc-txupdate
 all: ${OUTPUT}
 
 SRCS := lib/TinyXML/tinyxml.cpp lib/TinyXML/tinyxmlparser.cpp lib/TinyXML/tinystr.cpp lib/TinyXML/tinyxmlerror.cpp \
+lib/HTTPUtils.cpp \
 lib/CharsetUtils/CharsetUtils.cpp \
 lib/POUtils/POUtils.cpp \
 lib/vJSON/json.cpp lib/vJSON/block_allocator.cpp \
@@ -39,7 +40,6 @@ lib/xbmclangcodes.cpp \
 lib/ResourceHandler.cpp \
 lib/ProjectHandler.cpp \
 lib/UpdateXMLHandler.cpp \
-lib/HTTPUtils.cpp \
 lib/JSONHandler.cpp \
 $(OUTPUT)
 

@@ -33,6 +33,7 @@
 #include <stdio.h>
 #include "lib/ProjectHandler.h"
 #include "lib/UpdateXMLHandler.h"
+#include "lib/HTTPUtils.h"
 
 using namespace std;
 
@@ -97,6 +98,10 @@ int main(int argc, char* argv[])
 
   CLog::Init(WorkingDir + "xbmc-txupdate.log");
   CLog::Log(logINFO, "Root Directory: %s", WorkingDir.c_str());
+
+  g_HTTPHandler.LoadCredentials(WorkingDir + ".passwords.xml");
+  g_HTTPHandler.SetCacheDir(WorkingDir + ".httpcache");
+
   CUpdateXMLHandler UpdateXMLHandler;
   UpdateXMLHandler.LoadXMLToMem(WorkingDir);
   UpdateXMLHandler.GetResourcesFromDir(WorkingDir);

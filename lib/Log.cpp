@@ -69,8 +69,6 @@ void CLog::Log(TLogLevel loglevel, const char *format, ... )
     return;
   }
 
-//  SYSTEMTIME time;
-//  GetLocalTime(&time);
   if (loglevel == logWARNING)
     m_numWarnings++;
 
@@ -91,6 +89,9 @@ void CLog::Log(TLogLevel loglevel, const char *format, ... )
   vfprintf(m_pLogFile, format, va);
   fprintf(m_pLogFile, "\n");
   va_end(va);
+
+  if (loglevel == logERROR)
+    throw 1;
   return;
 };
 

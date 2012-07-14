@@ -18,13 +18,24 @@
  *  http://www.gnu.org/copyleft/gpl.html
  *
  */
+
+#ifndef HTTPUTILS_H
+#define HTTPUTILS_H
+
 #pragma once
 
 #include <string>
 #include <stdio.h>
 #include <curl/curl.h>
+#include "TinyXML/tinyxml.h"
 
 const size_t CACHEEXPIRE = 21600; // 6 hours
+
+struct CLoginData
+{
+  std::string strLogin;
+  std::string strPassword;
+};
 
 class CHTTPHandler
 {
@@ -32,16 +43,23 @@ public:
   CHTTPHandler();
   ~CHTTPHandler();
   void ReInit();
-  void GetURLToFILE(std::string strFilename, std::string strURL, std::string strLogin = "", std::string strPasswd = "");
-  std::string GetURLToSTR(std::string strURL, std::string strLogin = "", std::string strPasswd = "");
+  void GetURLToFILE(std::string strFilename, std::string strURL);
+  std::string GetURLToSTR(std::string strURL);
   void Cleanup();
   void SetCacheDir(std::string strCacheDir);
+  bool LoadCredentials (std::string CredentialsFilename);
 private:
   CURL *m_curlHandle;
   std::string m_strCacheDir;
   std::string CacheFileNameFromURL(std::string strURL);
-  void curlURLToCache(std::string strCacheFile, std::string strURL, std::string strLogin, std::string strPasswd);
+  void curlURLToCache(std::string strCacheFile, std::string strURL);
+  CLoginData GetCredentials (std::string strURL);
+  std::map<std::string, CLoginData> m_mapLoginData;
+  std::map<std::string, CLoginData>::iterator itMapLoginData;
 };
 
 size_t Write_CurlData_File(void *ptr, size_t size, size_t nmemb, FILE *stream);
 size_t Write_CurlData_String(char *data, size_t size, size_t nmemb, std::string *buffer);
+
+extern CHTTPHandler g_HTTPHandler;
+#endif

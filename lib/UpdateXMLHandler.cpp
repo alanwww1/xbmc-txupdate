@@ -37,12 +37,11 @@ bool CUpdateXMLHandler::LoadXMLToMem (std::string rootDir)
   std::string UpdateXMLFilename = rootDir  + DirSepChar + "xbmc-txupdate.xml";
   TiXmlDocument xmlUpdateXML;
 
-  CHTTPHandler HTTPHandler;
-  HTTPHandler.SetCacheDir(rootDir + ".httpcache");
+
   std::string strtemp;
 //  strtemp = HTTPHandler.GetURLToSTR("https://raw.github.com/xbmc/xbmc/master/language/English/strings.po");
 //  strtemp = HTTPHandler.GetURLToSTR("https://www.transifex.com/api/2/project/update-test/resource/visualization-projectm/translation/hu/?file", "un", "pw");
-  strtemp = HTTPHandler.GetURLToSTR("https://www.transifex.com/api/2/project/update-test/resources/", "un", "pw");
+  strtemp = g_HTTPHandler.GetURLToSTR("https://www.transifex.com/api/2/project/update-test/resources/");
 //  strtemp = HTTPHandler.GetURLToSTR("https://www.transifex.com/api/2/project/XBMC-Main-Frodo/resources/", "un", "pw");
   printf("%s, strlength: %i", strtemp.c_str(), strtemp.size());
 
