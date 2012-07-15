@@ -32,7 +32,6 @@
 #include <string>
 #include <stdio.h>
 #include "lib/ProjectHandler.h"
-#include "lib/UpdateXMLHandler.h"
 #include "lib/HTTPUtils.h"
 
 using namespace std;
@@ -102,13 +101,9 @@ int main(int argc, char* argv[])
   g_HTTPHandler.LoadCredentials(WorkingDir + ".passwords.xml");
   g_HTTPHandler.SetCacheDir(WorkingDir + ".httpcache");
 
-  CUpdateXMLHandler UpdateXMLHandler;
-  UpdateXMLHandler.LoadXMLToMem(WorkingDir);
-  UpdateXMLHandler.GetResourcesFromDir(WorkingDir);
-  UpdateXMLHandler.SaveMemToXML(WorkingDir);
 
   CProjectHandler TXProject;
-  TXProject.LoadProject(WorkingDir);
+  TXProject.FetchResourcesFromTransifex(WorkingDir);
 
   printf("Warnings: %i\n", CLog::GetWarnCount());
 //  if (bUnknownLangFound)

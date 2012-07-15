@@ -36,11 +36,13 @@ public:
   CUpdateXMLHandler();
   ~CUpdateXMLHandler();
   bool LoadXMLToMem(std::string rootDir);
-  void GetResourcesFromDir(std::string strProjRootDir);
+  std::string GetProjectName();
+  void AddResourceToXMLFile(std::string strResName);
   void SaveMemToXML(std::string rootDir);
 private:
   int GetResType(std::string ResRootDir);
   std::string m_ProjDir;
   std::map<std::string, CXMLResdata> m_mapXMLResdata;
   std::map<std::string, CXMLResdata>::iterator itXMLResdata;
+  std::string m_ProjName;
 };

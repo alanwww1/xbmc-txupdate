@@ -28,6 +28,7 @@ public:
   CProjectHandler();
   ~CProjectHandler();
   bool LoadProject(std::string strProjRootDir);
+  bool FetchResourcesFromTransifex(std::string strProjRootDir);
 
 protected:
   bool GetResourcesFromDir(std::string strProjRootDir);

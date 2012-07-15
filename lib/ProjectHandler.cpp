@@ -21,6 +21,9 @@
 
 #include "ProjectHandler.h"
 #include <list>
+#include "UpdateXMLHandler.h"
+#include "HTTPUtils.h"
+#include "JSONHandler.h"
 
 CProjectHandler::CProjectHandler()
 {};
@@ -30,6 +33,9 @@ CProjectHandler::~CProjectHandler()
 
 bool CProjectHandler::LoadProject(std::string strProjRootDir)
 {
+//  CUpdateXMLHandler UpdateXMLHandler;
+//  UpdateXMLHandler.LoadXMLToMem(strProjRootDir);
+
   GetResourcesFromDir(strProjRootDir);
   int loadCounter = 0;
 
@@ -43,6 +49,8 @@ bool CProjectHandler::LoadProject(std::string strProjRootDir)
 
   CLog::Log(logLINEFEED, "");
   CLog::Log(logINFO, "ProjHandler: Loaded %i resources from root dir: %s", loadCounter, strProjRootDir.c_str());
+
+//  UpdateXMLHandler.SaveMemToXML(strProjRootDir);
 
   return true;
 };
@@ -75,4 +83,52 @@ bool CProjectHandler::GetResourcesFromDir(std::string strProjRootDir)
   return true;
 };
 
+bool CProjectHandler::FetchResourcesFromTransifex(std::string strProjRootDir)
+{
+  CUpdateXMLHandler UpdateXMLHandler;
+  UpdateXMLHandler.LoadXMLToMem(strProjRootDir);
+  std::string strProjName = UpdateXMLHandler.GetProjectName();
+  if (strProjName == "")
+    CLog::Log(logERROR, "ProjHandler: No projectname found in xbmc-txupdate.xml file. Please specify th Transifex "
+              "projectname in the xml file");
+  CLog::Log(logINFO, "ProjHandler: Found projectname in xbmc-txupdate.xml file: %s", strProjName.c_str());
 
+  std::string strtemp = g_HTTPHandler.GetURLToSTR("https://www.transifex.com/api/2/project/" + strProjName + "/resources/");
+  printf("%s, strlength: %i", strtemp.c_str(), strtemp.size());
+
+  char cstrtemp[strtemp.size()];
+  strcpy(cstrtemp, strtemp.c_str());
+
+  CJSONHandler JSONHandler;
+  std::map<std::string, std::string> mapResourcesTX;
+  mapResourcesTX = JSONHandler.ParseResources(strtemp);
+
+  CResourceHandler ResourceHandler;
+
+  for (std::map<std::string, std::string>::iterator it = mapResourcesTX.begin(); it != mapResourcesTX.end(); it++)
+  {
+    if (!DirExists(strProjRootDir + it->first))
+    {
+      CLog::Log(logERROR, "ProjHandler: Creating local directory for new resource on Transifex: %s", it->first);
+      MakeDir(strProjRootDir + it->first);
+    } 
+    m_mapResources[it->first] = ResourceHandler;
+    m_mapResources[it->first].FetchPOFilesTX("https://www.transifex.com/api/2/project/" + strProjName + "/resource/"
+                                              + it->first + "/", strProjRootDir + it->first + DirSepChar , ".tx", it->second);
+  }
+  return true;
+
+};
+
+/*
+if (!DirExists(strProjRootDir + it->first))
+  MakeDir(strProjRootDir + it->first);
+if (it->second == "skin" && !DirExists(strProjRootDir + it->first + DirSepChar + "language"))
+  MakeDir(strProjRootDir + it->first + DirSepChar + "language");
+if (it->second == "xbmc-core" && !DirExists(strProjRootDir + it->first + DirSepChar + "language"))
+  MakeDir(strProjRootDir + it->first + DirSepChar + "language");
+if (it->second == "addon" && !DirExists(strProjRootDir + it->first + DirSepChar + "resources"))
+  MakeDir(strProjRootDir + it->first + DirSepChar + "resources");
+if (it->second == "addon" && !DirExists(strProjRootDir + it->first + DirSepChar + "resources" + DirSepChar + "language"))
+  MakeDir(strProjRootDir + it->first + DirSepChar + "resources" + DirSepChar + "language");
+*/

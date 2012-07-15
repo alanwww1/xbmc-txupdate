@@ -21,6 +21,7 @@
 
 #include "JSONHandler.h"
 #include "Log.h"
+#include <list>
 
 using namespace std;
 
@@ -81,6 +82,42 @@ std::map<std::string, std::string> CJSONHandler::ParseResources(std::string strJ
   CLog::Log(logINFO, "JSONHandler: Found %i resources at Transifex server", mapResources.size());
   return mapResources;
 };
+
+
+
+
+std::list<std::string> CJSONHandler::ParseAvailLanguages(std::string strJSON)
+{
+  Json::Value root;   // will contains the root value after parsing.
+  Json::Reader reader;
+  std::string lang;
+  std::list<std::string> listLangs;
+
+  bool parsingSuccessful = reader.parse(strJSON, root );
+  if ( !parsingSuccessful )
+  {
+    CLog::Log(logERROR, "JSONHandler: ParseAvailLanguages: no valid JSON data");
+    return listLangs;
+  }
+
+  const Json::Value langs = root["available_languages"];
+
+  for(Json::ValueIterator itr = langs.begin() ; itr != langs.end() ; itr++)
+  {
+    Json::Value valu = *itr;
+    lang = valu.get("code", "unknown").asString();
+    if (lang == "unknown")
+        CLog::Log(logERROR, "JSONHandler: ParseLangs: no language code in json data. json string:\n %s", strJSON.c_str());
+    listLangs.push_back(lang);
+    printf("lang:%s\n", lang.c_str());
+  };
+  return listLangs;
+};
+
+
+
+
+
 
 void CJSONHandler::PrintJSONValue( Json::Value val )
 {

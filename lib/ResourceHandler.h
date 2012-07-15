@@ -29,6 +29,7 @@ public:
   CResourceHandler();
   ~CResourceHandler();
   bool LoadResource(std::string strResRootDir, std::string strPOsuffix);
+  bool FetchPOFilesTX(std::string strURL, std::string strResRootDir, std::string strPOsuffix, std::string category);
 
 protected:
   bool GetEncoding(const TiXmlDocument* pDoc, std::string& strEncoding);
@@ -37,7 +38,8 @@ protected:
   bool loadAddonXMLFile (std::string AddonXMLFilename);
   bool GetLangsFromDir(std::string strLangDir);
   bool CreateMissingDirs (std::string strRootDir);
-  void CheckResType(std::string ResRootDir);
+  void GetResTypeFromDir(std::string ResRootDir);
+  std::string GetResTypeFromTX(std::string strResRootDir, std::string category);
   std::map<std::string, CAddonXMLEntry> m_mapAddonXMLData;
   std::map<std::string, CAddonXMLEntry>::iterator itAddonXMLData;
   std::map<std::string, CPOHandler> m_mapPOFiles;

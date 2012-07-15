@@ -21,8 +21,6 @@
 
 #include "UpdateXMLHandler.h"
 #include "Log.h"
-#include "HTTPUtils.h"
-#include "JSONHandler.h"
 
 using namespace std;
 
@@ -37,7 +35,7 @@ bool CUpdateXMLHandler::LoadXMLToMem (std::string rootDir)
   std::string UpdateXMLFilename = rootDir  + DirSepChar + "xbmc-txupdate.xml";
   TiXmlDocument xmlUpdateXML;
 
-
+/*
   std::string strtemp;
 //  strtemp = HTTPHandler.GetURLToSTR("https://raw.github.com/xbmc/xbmc/master/language/English/strings.po");
 //  strtemp = HTTPHandler.GetURLToSTR("https://www.transifex.com/api/2/project/update-test/resource/visualization-projectm/translation/hu/?file", "un", "pw");
@@ -51,10 +49,11 @@ bool CUpdateXMLHandler::LoadXMLToMem (std::string rootDir)
   CJSONHandler JSONHandler;
   JSONHandler.ParseResources(strtemp);
 
-//  HTTPHandler.Cleanup();
-//  HTTPHandler.ReInit();
-//  HTTPHandler.GetURLToFILE(rootDir + "test2.po", "https://raw.github.com/xbmc/xbmc/master/language/English/strings.po");
+  g_HTTPHandler.Cleanup();
+  g_HTTPHandler.ReInit();
+  g_HTTPHandler.GetURLToFILE(rootDir + "test2.po", "https://raw.github.com/xbmc/xbmc/master/language/English/strings.po");
 //  HTTPHandler.GetURLToFILE(rootDir + "test1.po","https://www.transifex.com/api/2/project/update-test/resource/visualization-projectm/translation/hu/?file", "login", "passw");
+  */
 
   if (!xmlUpdateXML.LoadFile(UpdateXMLFilename.c_str()))
   {
@@ -74,6 +73,8 @@ bool CUpdateXMLHandler::LoadXMLToMem (std::string rootDir)
     return false;
   }
 
+  m_ProjName = pRootElement->Attribute("projectname");
+
   const TiXmlElement *pChildResElement = pRootElement->FirstChildElement("resource");
   while (pChildResElement && pChildResElement->FirstChild())
   {
@@ -87,7 +88,7 @@ bool CUpdateXMLHandler::LoadXMLToMem (std::string rootDir)
       if (pChildUpstrLElement && pChildUpstrLElement->FirstChild())
         currResData.strLangsFromUpstream = pChildUpstrLElement->FirstChild()->Value();
       m_mapXMLResdata[strResName] = currResData;
-      CLog::Log(logINFO, "UpdXMLHandler: found resource in update.xml file: %s", strResName.c_str());
+//      CLog::Log(logINFO, "UpdXMLHandler: found resource in update.xml file: %s", strResName.c_str());
     }
     pChildResElement = pChildResElement->NextSiblingElement("resource");
   }
@@ -95,7 +96,7 @@ bool CUpdateXMLHandler::LoadXMLToMem (std::string rootDir)
   return true;
 };
 
-int CUpdateXMLHandler::GetResType(std::string ResRootDir)
+/*int CUpdateXMLHandler::GetResType(std::string ResRootDir)
 {
   if ((FileExist(ResRootDir + "addon.xml")) && (FileExist(ResRootDir + "resources" + DirSepChar + "language" +
       DirSepChar + "English" + DirSepChar + "strings.po")))
@@ -110,8 +111,9 @@ int CUpdateXMLHandler::GetResType(std::string ResRootDir)
   else
     return UNKNOWN;
 };
+*/
 
-void CUpdateXMLHandler::GetResourcesFromDir(std::string strProjRootDir)
+/*void CUpdateXMLHandler::GetResourcesFromDir(std::string strProjRootDir)
 {
   CXMLResdata emptyResData;
   DIR* Dir;
@@ -130,12 +132,27 @@ void CUpdateXMLHandler::GetResourcesFromDir(std::string strProjRootDir)
   }
 };
 
+*/
+
+void CUpdateXMLHandler::AddResourceToXMLFile(std::string strResName)
+{
+  CXMLResdata emptyResData;
+  if (m_mapXMLResdata.find(strResName) == m_mapXMLResdata.end())
+    m_mapXMLResdata[strResName] = emptyResData;
+};
+
+std::string CUpdateXMLHandler::GetProjectName()
+{
+  return m_ProjName;
+};
+
 void CUpdateXMLHandler::SaveMemToXML(std::string rootDir)
 {
   std::string UpdateXMLFilename = rootDir  + DirSepChar + "xbmc-txupdate.xml";
   TiXmlDocument doc;
   TiXmlDeclaration * decl = new TiXmlDeclaration( "1.0", "", "" );
   TiXmlElement * pRootElement = new TiXmlElement( "resources" );
+  pRootElement->SetAttribute("projectname", m_ProjName.c_str());
 
   for (itXMLResdata = m_mapXMLResdata.begin(); itXMLResdata != m_mapXMLResdata.end(); itXMLResdata++)
   {

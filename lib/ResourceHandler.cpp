@@ -22,6 +22,8 @@
 #include "ResourceHandler.h"
 #include <list>
 #include <algorithm>
+#include "JSONHandler.h"
+#include "HTTPUtils.h"
 
 using namespace std;
 
@@ -36,7 +38,7 @@ bool CResourceHandler::LoadResource(std::string strResRootDir, std::string strPO
   CLog::Log(logINFO, "ResHandler: Starting to load resource from dir: %s, with PO suffix: %s",
             strResRootDir.c_str(), strPOsuffix.c_str());
 
-  CheckResType(strResRootDir);
+  GetResTypeFromDir(strResRootDir);
   GetLangsFromDir(m_langDir);
 
   if (m_resType == ADDON || m_resType == ADDON_NOSTRINGS || m_resType == SKIN)
@@ -88,7 +90,7 @@ bool CResourceHandler::GetLangsFromDir(std::string strLangDir)
   }
   return true;
 };
-
+ /*
 bool CResourceHandler::CreateMissingDirs (std::string strRootDir)
 {
   if (!DirExists(strRootDir + "resources"))
@@ -127,6 +129,8 @@ bool CResourceHandler::CreateMissingDirs (std::string strRootDir)
   return true;
 };
 
+*/
+ 
 bool CResourceHandler::loadAddonXMLFile (std::string AddonXMLFilename)
 {
   TiXmlDocument xmlAddonXML;
@@ -318,7 +322,7 @@ bool CResourceHandler::LoadCoreVersion(std::string filename)
   return true;
 }
 
-void CResourceHandler::CheckResType(std::string ResRootDir)
+void CResourceHandler::GetResTypeFromDir(std::string ResRootDir)
 {
   if ((FileExist(ResRootDir + "addon.xml")) && (FileExist(ResRootDir + "resources" + DirSepChar + "language" +
     DirSepChar + "English" + DirSepChar + "strings.po")))
@@ -347,4 +351,71 @@ void CResourceHandler::CheckResType(std::string ResRootDir)
     m_resType = UNKNOWN;
     m_langDir = ResRootDir;
   }
+};
+
+
+// Download from Transifex related functions
+
+std::string CResourceHandler::GetResTypeFromTX(std::string strResRootDir, std::string category)
+{
+  std::string strLangdir;
+  m_resType = UNKNOWN;
+  if (category == "skin" || category == "xbmc-core")
+  {
+    if (!DirExists(strResRootDir + "language"))
+    {
+      CLog::Log(logERROR, "ProjHandler: Creating language directory for new %s resource on Transifex", category.c_str());
+      MakeDir(strResRootDir + "language");
+    }
+    if (category == "xbmc-core")
+      m_resType = CORE;
+    else
+      m_resType = SKIN;
+    strLangdir = strResRootDir + "language" + DirSepChar;
+  }
+  if (category == "addon")
+  {
+    if (!DirExists(strResRootDir + "resources"))
+    {
+      CLog::Log(logERROR, "ProjHandler: Creating \"resources\" directory for new addon resource on Transifex");
+      MakeDir(strResRootDir + "resources");
+    }
+    if (!DirExists(strResRootDir + "resources" + DirSepChar + "language"))
+    {
+      CLog::Log(logERROR, "ProjHandler: Creating \"resources\" directory for new addon resource on Transifex");
+      MakeDir(strResRootDir + "resources" + DirSepChar + "language");
+    }
+    m_resType = ADDON;
+    strLangdir = strResRootDir + "resources" + "language" + DirSepChar;
+  }
+  if (m_resType == UNKNOWN)
+    CLog::Log(logERROR, "ProjHandler: Impossible to determine resource type on Transifex (addon, akin, xbmc-core)");
+
+  m_langDir = strLangdir;
+  return strLangdir;
+};
+
+bool CResourceHandler::FetchPOFilesTX(std::string strURL, std::string strResRootDir,
+                                      std::string strPOsuffix, std::string category)
+{
+  std::string strtemp = g_HTTPHandler.GetURLToSTR(strURL + "?details");
+  printf("%s, strlength: %i", strtemp.c_str(), strtemp.size());
+
+  char cstrtemp[strtemp.size()];
+  strcpy(cstrtemp, strtemp.c_str());
+
+  CJSONHandler JSONHandler;
+  std::list<std::string> listLangsTX = JSONHandler.ParseAvailLanguages(strtemp);
+
+  CPOHandler POHandler;
+
+  for (std::list<std::string>::iterator it = listLangsTX.begin(); it != listLangsTX.end(); it++)
+  {
+    std::string strLangdir = GetResTypeFromTX(strResRootDir, category);
+
+
+    m_mapPOFiles[*it] = POHandler;
+//    m_mapPOFiles[*it].FetchPOFileTX(strURL + "translation/" + *it + "/?file", strLangdir, strPOsuffix);
+  }
+
 };
