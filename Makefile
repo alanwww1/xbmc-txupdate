@@ -30,6 +30,7 @@ all: ${OUTPUT}
 
 SRCS := lib/TinyXML/tinyxml.cpp lib/TinyXML/tinyxmlparser.cpp lib/TinyXML/tinystr.cpp lib/TinyXML/tinyxmlerror.cpp \
 lib/HTTPUtils.cpp \
+lib/Settings.h \
 lib/CharsetUtils/CharsetUtils.cpp \
 lib/POUtils/POUtils.cpp \
 lib/vJSON/json.cpp lib/vJSON/block_allocator.cpp \
@@ -72,3 +73,4 @@ ProjectHandler.o: ProjectHandler.h ProjectHandler.cpp ResourceHandler.h Resource
 UpdateXMLHandler.o: UpdateXMLHandler.h Log.cpp Log.h tinyxml.o
 HTTPUtils.o: HTTPUtils.h Log.h Log.cpp
 JSONHandler.o: JSONHandler.h JSONHandler.cpp
+Settings.o: Settings.h Settings.cpp

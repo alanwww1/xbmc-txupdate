@@ -389,7 +389,7 @@ std::string CResourceHandler::GetResTypeFromTX(std::string strResRootDir, std::s
     strLangdir = strResRootDir + "resources" + "language" + DirSepChar;
   }
   if (m_resType == UNKNOWN)
-    CLog::Log(logERROR, "ProjHandler: Impossible to determine resource type on Transifex (addon, akin, xbmc-core)");
+    CLog::Log(logERROR, "ProjHandler: Impossible to determine resource type on Transifex (addon, skin, xbmc-core)");
 
   m_langDir = strLangdir;
   return strLangdir;
@@ -398,7 +398,7 @@ std::string CResourceHandler::GetResTypeFromTX(std::string strResRootDir, std::s
 bool CResourceHandler::FetchPOFilesTX(std::string strURL, std::string strResRootDir,
                                       std::string strPOsuffix, std::string category)
 {
-  std::string strtemp = g_HTTPHandler.GetURLToSTR(strURL + "?details");
+  std::string strtemp = g_HTTPHandler.GetURLToSTR(strURL + "stats/");
   printf("%s, strlength: %i", strtemp.c_str(), strtemp.size());
 
   char cstrtemp[strtemp.size()];
@@ -408,7 +408,7 @@ bool CResourceHandler::FetchPOFilesTX(std::string strURL, std::string strResRoot
   std::list<std::string> listLangsTX = JSONHandler.ParseAvailLanguages(strtemp);
 
   CPOHandler POHandler;
-
+/*
   for (std::list<std::string>::iterator it = listLangsTX.begin(); it != listLangsTX.end(); it++)
   {
     std::string strLangdir = GetResTypeFromTX(strResRootDir, category);
@@ -417,5 +417,5 @@ bool CResourceHandler::FetchPOFilesTX(std::string strURL, std::string strResRoot
     m_mapPOFiles[*it] = POHandler;
 //    m_mapPOFiles[*it].FetchPOFileTX(strURL + "translation/" + *it + "/?file", strLangdir, strPOsuffix);
   }
-
+*/
 };

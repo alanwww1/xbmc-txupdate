@@ -24,6 +24,7 @@
 #include "UpdateXMLHandler.h"
 #include "HTTPUtils.h"
 #include "JSONHandler.h"
+#include "Settings.h"
 
 CProjectHandler::CProjectHandler()
 {};
@@ -87,13 +88,9 @@ bool CProjectHandler::FetchResourcesFromTransifex(std::string strProjRootDir)
 {
   CUpdateXMLHandler UpdateXMLHandler;
   UpdateXMLHandler.LoadXMLToMem(strProjRootDir);
-  std::string strProjName = UpdateXMLHandler.GetProjectName();
-  if (strProjName == "")
-    CLog::Log(logERROR, "ProjHandler: No projectname found in xbmc-txupdate.xml file. Please specify th Transifex "
-              "projectname in the xml file");
-  CLog::Log(logINFO, "ProjHandler: Found projectname in xbmc-txupdate.xml file: %s", strProjName.c_str());
 
-  std::string strtemp = g_HTTPHandler.GetURLToSTR("https://www.transifex.com/api/2/project/" + strProjName + "/resources/");
+  std::string strtemp = g_HTTPHandler.GetURLToSTR("https://www.transifex.com/api/2/project/" + g_Settings.GetProjectname()
+                                                  + "/resources/");
   printf("%s, strlength: %i", strtemp.c_str(), strtemp.size());
 
   char cstrtemp[strtemp.size()];
@@ -109,12 +106,13 @@ bool CProjectHandler::FetchResourcesFromTransifex(std::string strProjRootDir)
   {
     if (!DirExists(strProjRootDir + it->first))
     {
-      CLog::Log(logERROR, "ProjHandler: Creating local directory for new resource on Transifex: %s", it->first);
+      CLog::Log(logERROR, "ProjHandler: Creating local directory for new resource on Transifex: %s", it->first.c_str());
       MakeDir(strProjRootDir + it->first);
     } 
     m_mapResources[it->first] = ResourceHandler;
-    m_mapResources[it->first].FetchPOFilesTX("https://www.transifex.com/api/2/project/" + strProjName + "/resource/"
-                                              + it->first + "/", strProjRootDir + it->first + DirSepChar , ".tx", it->second);
+    m_mapResources[it->first].FetchPOFilesTX("https://www.transifex.com/api/2/project/" + g_Settings.GetProjectname()
+                                              + "/resource/" + it->first + "/", strProjRootDir + it->first + DirSepChar
+                                              , ".tx", it->second);
   }
   return true;
 

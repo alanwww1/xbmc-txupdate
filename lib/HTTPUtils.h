@@ -29,8 +29,6 @@
 #include <curl/curl.h>
 #include "TinyXML/tinyxml.h"
 
-const size_t CACHEEXPIRE = 21600; // 6 hours
-
 struct CLoginData
 {
   std::string strLogin;

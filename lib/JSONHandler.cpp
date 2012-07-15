@@ -22,6 +22,8 @@
 #include "JSONHandler.h"
 #include "Log.h"
 #include <list>
+#include <stdlib.h>
+#include "Settings.h"
 
 using namespace std;
 
@@ -100,17 +102,30 @@ std::list<std::string> CJSONHandler::ParseAvailLanguages(std::string strJSON)
     return listLangs;
   }
 
-  const Json::Value langs = root["available_languages"];
+  const Json::Value langs = root;
+  std::string strLangsToFetch;
+  std::string strLangsToDrop;
 
   for(Json::ValueIterator itr = langs.begin() ; itr != langs.end() ; itr++)
   {
-    Json::Value valu = *itr;
-    lang = valu.get("code", "unknown").asString();
+    lang = itr.key().asString();
     if (lang == "unknown")
-        CLog::Log(logERROR, "JSONHandler: ParseLangs: no language code in json data. json string:\n %s", strJSON.c_str());
-    listLangs.push_back(lang);
-    printf("lang:%s\n", lang.c_str());
+      CLog::Log(logERROR, "JSONHandler: ParseLangs: no language code in json data. json string:\n %s", strJSON.c_str());
+
+    Json::Value valu = *itr;
+    std::string strCompletedPerc = valu.get("completed", "unknown").asString();
+
+    if (strtol(&strCompletedPerc[0], NULL, 10) > g_Settings.GetMinCompletion()-1)
+    {
+      strLangsToFetch += lang + ": " + strCompletedPerc + ", ";
+      listLangs.push_back(lang);
+    }
+    else
+      strLangsToDrop += lang + ": " + strCompletedPerc + ", ";
   };
+  CLog::Log(logINFO, "JSONHandler: ParseAvailLangs: Languages to be Fetcehed: %s", strLangsToFetch.c_str());
+  CLog::Log(logINFO, "JSONHandler: ParseAvailLangs: Languages to be Dropped (not enough completion): %s",
+            strLangsToDrop.c_str());
   return listLangs;
 };
 

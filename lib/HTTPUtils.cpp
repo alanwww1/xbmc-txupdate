@@ -25,6 +25,7 @@
 #include <curl/easy.h>
 #include "FileUtils/FileUtils.h"
 #include <cctype>
+#include "Settings.h"
 
 CHTTPHandler g_HTTPHandler;
 
@@ -46,7 +47,7 @@ void CHTTPHandler::GetURLToFILE(std::string strFilename, std::string strURL)
   bool bIsTooLongUrl = strCacheFile == "cache_for_long_URL_download";
   strCacheFile = m_strCacheDir + strCacheFile;
 
-  if (!FileExist(strCacheFile) || GetFileAge(strCacheFile) > CACHEEXPIRE)
+  if (!FileExist(strCacheFile) || GetFileAge(strCacheFile) > g_Settings.GetHTTPCacheExpire() * 60)
   {
     curlURLToCache(strCacheFile, strURL);
   }
@@ -66,13 +67,13 @@ std::string CHTTPHandler::GetURLToSTR(std::string strURL)
   bool bIsTooLongUrl = strCacheFile == "cache_for_long_URL_download";
   strCacheFile = m_strCacheDir + strCacheFile;
 
-  if (!FileExist(strCacheFile) || GetFileAge(strCacheFile) > CACHEEXPIRE)
+  if (!FileExist(strCacheFile) || GetFileAge(strCacheFile) > g_Settings.GetHTTPCacheExpire() * 60)
   {
     curlURLToCache(strCacheFile, strURL);
   }
   else
   {
-    CLog::Log(logINFO, "HTTPHandler: GetURLToNem used a cached local file for URL %s, file was cached %d minutes ago",
+    CLog::Log(logINFO, "HTTPHandler: GetURLToMem used a cached local file for URL %s, file was cached %d minutes ago",
               strURL.c_str(), GetFileAge(strCacheFile)/60);
   }
   strBuffer = ReadFileToStr(strCacheFile);

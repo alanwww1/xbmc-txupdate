@@ -21,6 +21,9 @@
 
 #include "UpdateXMLHandler.h"
 #include "Log.h"
+#include "Settings.h"
+#include <stdlib.h>
+
 
 using namespace std;
 
@@ -73,7 +76,33 @@ bool CUpdateXMLHandler::LoadXMLToMem (std::string rootDir)
     return false;
   }
 
-  m_ProjName = pRootElement->Attribute("projectname");
+  std::string strProjName = pRootElement->Attribute("projectname");
+  if (strProjName == "" || strProjName == DEFAULTPRPJNAME)
+    CLog::Log(logERROR, "UpdXMLHandler: No projectname found in xbmc-txupdate.xml file. Please specify the Transifex "
+    "projectname in the xml file");
+  else
+  {
+    CLog::Log(logINFO, "UpdXMLHandler: Found projectname in xbmc-txupdate.xml file: %s",strProjName.c_str());
+    g_Settings.SetProjectname(strProjName);
+  }
+
+  std::string strHTTPCacheExp = pRootElement->Attribute("http_cache_expire");
+  if (strHTTPCacheExp == "")
+    CLog::Log(logINFO, "UpdXMLHandler: No http cache expire time found in xbmc-txupdate.xml file. Please specify it!");
+  else
+  {
+    CLog::Log(logINFO, "UpdXMLHandler: Found http cache expire time in xbmc-txupdate.xml file: %s", strHTTPCacheExp.c_str());
+    g_Settings.SetHTTPCacheExpire(strtol(&strHTTPCacheExp[0], NULL, 10));
+  }
+
+  std::string strMinCompletion = pRootElement->Attribute("min_completion");
+  if (strMinCompletion == "")
+    CLog::Log(logINFO, "UpdXMLHandler: No min completion percentage found in xbmc-txupdate.xml file. Please specify it!");
+  else
+  {
+    CLog::Log(logINFO, "UpdXMLHandler: Found min completion percentage in xbmc-txupdate.xml file: %s", strMinCompletion.c_str());
+    g_Settings.SetMinCompletion(strtol(&strMinCompletion[0], NULL, 10));
+  }
 
   const TiXmlElement *pChildResElement = pRootElement->FirstChildElement("resource");
   while (pChildResElement && pChildResElement->FirstChild())
