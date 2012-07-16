@@ -92,6 +92,7 @@ public:
   void WriteHeader(const std::string &strResData, std::string strHeader);
   void WritePOEntry(CPOEntry currEntry);
   std::string GetLangCode() {return m_lcode;}
+  bool FetchTXToMem(const std::string &strURL);
 
 protected:
   std::string IntToStr(int number);

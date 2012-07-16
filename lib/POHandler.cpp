@@ -32,6 +32,19 @@ bool CPOHandler::LoadPOFile(std::string strDir, std::string strLang, std::string
   CPODocument PODoc;
   if (!PODoc.LoadFile(strDir + DirSepChar + strLang + DirSepChar + "strings.po" + strPOuffix))
     return false;
+  return ProcessPOFile(PODoc, strLang);
+};
+
+bool CPOHandler::FetchPOTXToMem (std::string strURL, std::string strLang)
+{
+  CPODocument PODoc;
+  if (!PODoc.FetchTXToMem(strURL))
+    return false;
+  return ProcessPOFile(PODoc, strLang);
+};
+
+bool CPOHandler::ProcessPOFile(CPODocument &PODoc, std::string strLang)
+{
   if (PODoc.GetEntryType() != HEADER_FOUND)
     CLog::Log(logERROR, "POHandler: No valid header found for this language");
 

@@ -30,11 +30,13 @@ public:
   ~CPOHandler();
   bool LoadPOFile(std::string strDir, std::string strLang, std::string strPOuffix);
 //  bool SavePOFile(std::string strDir, std::string strLang);
+  bool FetchPOTXToMem(std::string strURL, std::string strLang);
   bool WritePOFile(const std::string &strDir, const std::string &strLang, const int resType, std::map<std::string,
                    CAddonXMLEntry> &mapAddonXMLData, const std::string &strResData, const std::string &strPOuffix);
 
 protected:
   void ClearCPOEntry (CPOEntry &entry);
+  bool ProcessPOFile(CPODocument &PODoc, std::string strLang);
 
   std::string m_strHeader;
 

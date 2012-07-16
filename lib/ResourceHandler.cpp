@@ -395,11 +395,10 @@ std::string CResourceHandler::GetResTypeFromTX(std::string strResRootDir, std::s
   return strLangdir;
 };
 
-bool CResourceHandler::FetchPOFilesTX(std::string strURL, std::string strResRootDir,
-                                      std::string strPOsuffix, std::string category)
+bool CResourceHandler::FetchPOFilesTXToMem(std::string strURL)
 {
   std::string strtemp = g_HTTPHandler.GetURLToSTR(strURL + "stats/");
-  printf("%s, strlength: %i", strtemp.c_str(), strtemp.size());
+//  printf("%s, strlength: %i", strtemp.c_str(), strtemp.size());
 
   char cstrtemp[strtemp.size()];
   strcpy(cstrtemp, strtemp.c_str());
@@ -408,14 +407,13 @@ bool CResourceHandler::FetchPOFilesTX(std::string strURL, std::string strResRoot
   std::list<std::string> listLangsTX = JSONHandler.ParseAvailLanguages(strtemp);
 
   CPOHandler POHandler;
-/*
+
   for (std::list<std::string>::iterator it = listLangsTX.begin(); it != listLangsTX.end(); it++)
   {
-    std::string strLangdir = GetResTypeFromTX(strResRootDir, category);
-
+//    std::string strLangdir = GetResTypeFromTX(strResRootDir, category);
 
     m_mapPOFiles[*it] = POHandler;
-//    m_mapPOFiles[*it].FetchPOFileTX(strURL + "translation/" + *it + "/?file", strLangdir, strPOsuffix);
+    m_mapPOFiles[*it].FetchPOTXToMem(strURL + "translation/" + *it + "/?file", *it);
   }
-*/
+
 };

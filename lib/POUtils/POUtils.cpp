@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <sstream>
+#include "../HTTPUtils.h"
 
 using namespace std;
 
@@ -105,6 +106,33 @@ bool CPODocument::LoadFile(const std::string &pofilename)
   }
 
   CLog::Log(logERROR, "POParser: unable to read PO file header from file: %s", pofilename.c_str());
+  return false;
+};
+
+bool CPODocument::FetchTXToMem(const std::string &strURL)
+{
+  m_strBuffer.clear();
+  m_strBuffer = "\n" + g_HTTPHandler.GetURLToSTR(strURL);
+
+  ConvertLineEnds(strURL);
+
+  // we make sure, to have an LF at beginning and at end of buffer
+  m_strBuffer[0] = '\n';
+  if (*m_strBuffer.rbegin() != '\n')
+  {
+    m_strBuffer += "\n";
+  }
+  m_POfilelength = m_strBuffer.size();
+
+  if (GetNextEntry() && m_Entry.Type == MSGID_FOUND &&
+    m_Entry.Content.find("msgid \"\"")  != std::string::npos &&
+    m_Entry.Content.find("msgstr \"\"") != std::string::npos)
+  {
+    m_Entry.Type = HEADER_FOUND;
+    return true;
+  }
+
+  CLog::Log(logERROR, "POParser: unable to read PO file header from URL: %s", strURL.c_str());
   return false;
 };
 

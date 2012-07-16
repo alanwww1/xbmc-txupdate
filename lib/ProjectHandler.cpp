@@ -110,9 +110,8 @@ bool CProjectHandler::FetchResourcesFromTransifex(std::string strProjRootDir)
       MakeDir(strProjRootDir + it->first);
     } 
     m_mapResources[it->first] = ResourceHandler;
-    m_mapResources[it->first].FetchPOFilesTX("https://www.transifex.com/api/2/project/" + g_Settings.GetProjectname()
-                                              + "/resource/" + it->first + "/", strProjRootDir + it->first + DirSepChar
-                                              , ".tx", it->second);
+    m_mapResources[it->first].FetchPOFilesTXToMem("https://www.transifex.com/api/2/project/" + g_Settings.GetProjectname()
+                                              + "/resource/" + it->first + "/");
   }
   return true;
 
