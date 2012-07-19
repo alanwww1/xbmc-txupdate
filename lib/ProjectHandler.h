@@ -34,5 +34,6 @@ protected:
   bool GetResourcesFromDir(std::string strProjRootDir);
   std::map<std::string, CResourceHandler> m_mapResources;;
   std::map<std::string, CResourceHandler>::iterator itmapResources;
+  std::map<std::string, std::string> m_mapResourcesTX;
   int m_resCount;
 };

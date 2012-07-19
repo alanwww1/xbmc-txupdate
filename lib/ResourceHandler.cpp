@@ -395,8 +395,10 @@ std::string CResourceHandler::GetResTypeFromTX(std::string strResRootDir, std::s
   return strLangdir;
 };
 
-bool CResourceHandler::FetchPOFilesTXToMem(std::string strURL)
+bool CResourceHandler::FetchPOFilesTXToMem(std::string strURL, std::string strCategory)
 {
+  CLog::Log(logINFO, "ResHandler: Starting to load resource from URL: %s into memory",strURL.c_str());
+
   std::string strtemp = g_HTTPHandler.GetURLToSTR(strURL + "stats/");
 //  printf("%s, strlength: %i", strtemp.c_str(), strtemp.size());
 
@@ -415,5 +417,21 @@ bool CResourceHandler::FetchPOFilesTXToMem(std::string strURL)
     m_mapPOFiles[*it] = POHandler;
     m_mapPOFiles[*it].FetchPOTXToMem(strURL + "translation/" + *it + "/?file", *it);
   }
-
+  m_strTXCategory = strCategory;
 };
+
+bool CResourceHandler::WritePOToFiles(std::string strResourceDir, std::string strPOsuffix)
+{
+  CLog::Log(logINFO, "ResHandler: Starting to write resource from memory to directory: %s",strResourceDir.c_str());
+
+  std::string strLangdir = GetResTypeFromTX(strResourceDir, m_strTXCategory);
+
+
+  for (itmapPOFiles = m_mapPOFiles.begin(); itmapPOFiles != m_mapPOFiles.end(); itmapPOFiles++)
+  {
+
+    m_mapPOFiles[*itmapPOFiles] (strLangdir, *it, strPOsuffix);
+  }
+  
+};
+

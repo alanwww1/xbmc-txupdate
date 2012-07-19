@@ -29,7 +29,8 @@ public:
   CResourceHandler();
   ~CResourceHandler();
   bool LoadResource(std::string strResRootDir, std::string strPOsuffix);
-  bool FetchPOFilesTXToMem(std::string strURL);
+  bool FetchPOFilesTXToMem(std::string strURL, std::string strCategory);
+  bool WritePOToFiles(std::string strResourceDir, std::string strPOsuffix);
 
 protected:
   bool GetEncoding(const TiXmlDocument* pDoc, std::string& strEncoding);
@@ -47,4 +48,5 @@ protected:
   std::string m_langDir;
   std::string m_strResourceData;
   int m_resType;
+  std::string m_strTXCategory;
 };

@@ -91,19 +91,20 @@ bool CProjectHandler::FetchResourcesFromTransifex(std::string strProjRootDir)
 
   std::string strtemp = g_HTTPHandler.GetURLToSTR("https://www.transifex.com/api/2/project/" + g_Settings.GetProjectname()
                                                   + "/resources/");
-  printf("%s, strlength: %i", strtemp.c_str(), strtemp.size());
 
   char cstrtemp[strtemp.size()];
   strcpy(cstrtemp, strtemp.c_str());
 
   CJSONHandler JSONHandler;
-  std::map<std::string, std::string> mapResourcesTX;
-  mapResourcesTX = JSONHandler.ParseResources(strtemp);
+  m_mapResourcesTX.clear();
+  m_mapResourcesTX = JSONHandler.ParseResources(strtemp);
 
   CResourceHandler ResourceHandler;
 
-  for (std::map<std::string, std::string>::iterator it = mapResourcesTX.begin(); it != mapResourcesTX.end(); it++)
+  for (std::map<std::string, std::string>::iterator it = m_mapResourcesTX.begin(); it != m_mapResourcesTX.end(); it++)
   {
+    CLog::Log(logLINEFEED, "");
+    CLog::Log(logINFO, "ProjHandler: *** Fetch Resource: %s ***", it->first.c_str());
     if (!DirExists(strProjRootDir + it->first))
     {
       CLog::Log(logERROR, "ProjHandler: Creating local directory for new resource on Transifex: %s", it->first.c_str());
@@ -111,10 +112,25 @@ bool CProjectHandler::FetchResourcesFromTransifex(std::string strProjRootDir)
     } 
     m_mapResources[it->first] = ResourceHandler;
     m_mapResources[it->first].FetchPOFilesTXToMem("https://www.transifex.com/api/2/project/" + g_Settings.GetProjectname()
-                                              + "/resource/" + it->first + "/");
+                                              + "/resource/" + it->first + "/", it->second);
   }
   return true;
 
+};
+
+bool CProjectHandler::WriteResourcesToFile(std::string strProjRootDir, std::string strPOSuffix)
+{
+  for (itmapResources = m_mapResources.begin(); itmapResources != m_mapResources.end(); itmapResources++)
+  {
+    CLog::Log(logLINEFEED, "");
+    CLog::Log(logINFO, "ProjHandler: *** Write Resource: %s ***", itmapResources->first.c_str());
+    if (!DirExists(strProjRootDir + itmapResources->first))
+    {
+      CLog::Log(logERROR, "ProjHandler: Creating local directory for new resource on Transifex: %s", itmapResources->first.c_str());
+      MakeDir(strProjRootDir + itmapResources->first + DirSepChar);
+    } 
+    m_mapResources[itmapResources->first].WritePOToFiles (strProjRootDir + itmapResources->first + DirSepChar, strPOSuffix);
+  }  
 };
 
 /*

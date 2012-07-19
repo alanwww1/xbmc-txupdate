@@ -54,6 +54,7 @@ bool CLog::Init(std::string logfile)
   m_mapIdents["ResHandler"] = "  ";
   m_mapIdents["POHandler"] = "    ";
   m_mapIdents["POUtils"] = "      ";
+  m_mapIdents["JSONHandler"] = "  ";
 
   return true;
 };

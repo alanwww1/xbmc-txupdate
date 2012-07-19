@@ -51,9 +51,9 @@ void CHTTPHandler::GetURLToFILE(std::string strFilename, std::string strURL)
   {
     curlURLToCache(strCacheFile, strURL);
   }
-  else
-    CLog::Log(logINFO, "HTTPHandler: GetURLToFILE used a cached local file for URL %s to localdir %s, file was cached %d minutes ago",
-              strURL.c_str(), strFilename.c_str(), GetFileAge(strCacheFile)/60);
+//  else
+//    CLog::Log(logDEBUG, "HTTPHandler: GetURLToFILE used a cached local file for URL %s to localdir %s, file was cached %d minutes ago",
+//              strURL.c_str(), strFilename.c_str(), GetFileAge(strCacheFile)/60);
 
   CopyFile(strCacheFile, strFilename);
   if (bIsTooLongUrl)
@@ -71,11 +71,11 @@ std::string CHTTPHandler::GetURLToSTR(std::string strURL)
   {
     curlURLToCache(strCacheFile, strURL);
   }
-  else
-  {
-    CLog::Log(logINFO, "HTTPHandler: GetURLToMem used a cached local file for URL %s, file was cached %d minutes ago",
-              strURL.c_str(), GetFileAge(strCacheFile)/60);
-  }
+//  else
+//  {
+//    CLog::Log(logDEBUG, "HTTPHandler: GetURLToMem used a cached local file for URL %s, file was cached %d minutes ago",
+//              strURL.c_str(), GetFileAge(strCacheFile)/60);
+//  }
   strBuffer = ReadFileToStr(strCacheFile);
 
   if (bIsTooLongUrl)
