@@ -31,7 +31,7 @@ public:
   bool LoadPOFile(std::string strDir, std::string strLang, std::string strPOuffix);
 //  bool SavePOFile(std::string strDir, std::string strLang);
   bool FetchPOTXToMem(std::string strURL, std::string strLang);
-  bool WritePOFile(const std::string &strDir, const std::string &strLang, const int resType, std::map<std::string,
+  bool WritePOFile(const std::string &strDir, const std::string &strLang, std::map<std::string,
                    CAddonXMLEntry> &mapAddonXMLData, const std::string &strResData, const std::string &strPOuffix);
 
 protected:
@@ -42,6 +42,9 @@ protected:
 
   std::map<uint32_t, CPOEntry> m_mapStrings;
   typedef std::map<uint32_t, CPOEntry>::iterator itStrings;
+
+  std::map<std::string, CAddonXMLEntry> m_mapAddoXMLEntries;
+  typedef std::map<std::string, CAddonXMLEntry>::iterator itAddonXMLEntry;
 
   std::vector<CPOEntry> m_vecClassicEntries;
   typedef std::vector<CPOEntry>::iterator itClassicEntries;

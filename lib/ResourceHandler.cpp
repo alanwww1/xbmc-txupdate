@@ -386,7 +386,7 @@ std::string CResourceHandler::GetResTypeFromTX(std::string strResRootDir, std::s
       MakeDir(strResRootDir + "resources" + DirSepChar + "language");
     }
     m_resType = ADDON;
-    strLangdir = strResRootDir + "resources" + "language" + DirSepChar;
+    strLangdir = strResRootDir + "resources" + DirSepChar + "language" + DirSepChar;
   }
   if (m_resType == UNKNOWN)
     CLog::Log(logERROR, "ProjHandler: Impossible to determine resource type on Transifex (addon, skin, xbmc-core)");
@@ -426,12 +426,10 @@ bool CResourceHandler::WritePOToFiles(std::string strResourceDir, std::string st
 
   std::string strLangdir = GetResTypeFromTX(strResourceDir, m_strTXCategory);
 
+  std::map<std::string, CAddonXMLEntry> emptyEntry;
 
   for (itmapPOFiles = m_mapPOFiles.begin(); itmapPOFiles != m_mapPOFiles.end(); itmapPOFiles++)
   {
-
-    m_mapPOFiles[*itmapPOFiles] (strLangdir, *it, strPOsuffix);
-  }
-  
+    m_mapPOFiles[itmapPOFiles->first].WritePOFile (strLangdir, FindLang(itmapPOFiles->first), emptyEntry, "", strPOsuffix);
+  };
 };
-

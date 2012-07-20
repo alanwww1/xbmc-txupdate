@@ -104,6 +104,7 @@ int main(int argc, char* argv[])
 
   CProjectHandler TXProject;
   TXProject.FetchResourcesFromTransifex(WorkingDir);
+  TXProject.WriteResourcesToFile(WorkingDir, ".dtx");
 
   printf("Warnings: %i\n", CLog::GetWarnCount());
 //  if (bUnknownLangFound)

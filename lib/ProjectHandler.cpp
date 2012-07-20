@@ -130,7 +130,7 @@ bool CProjectHandler::WriteResourcesToFile(std::string strProjRootDir, std::stri
       MakeDir(strProjRootDir + itmapResources->first + DirSepChar);
     } 
     m_mapResources[itmapResources->first].WritePOToFiles (strProjRootDir + itmapResources->first + DirSepChar, strPOSuffix);
-  }  
+  }
 };
 
 /*

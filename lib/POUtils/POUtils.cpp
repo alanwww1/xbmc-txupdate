@@ -447,6 +447,11 @@ bool CPODocument::SaveFile(const std::string &pofilename)
 
 void CPODocument::WriteHeader(const std::string &strResData, std::string strHeader)
 {
+  if (strResData.empty())
+  {
+    m_strOutBuffer = strHeader;
+    return;
+  }
   size_t startpos = strHeader.find("Language: ")+10;
   size_t endpos = strHeader.find_first_of("\\ \n", startpos);
   std::string LCode = strHeader.substr(startpos, endpos-startpos);

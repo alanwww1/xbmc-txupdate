@@ -85,11 +85,20 @@ bool CPOHandler::ProcessPOFile(CPODocument &PODoc, std::string strLang)
       currEntry.interlineComm = vecILCommnts;
       bMultipleComment = false;
       vecILCommnts.clear();
+
       if (currType == ID_FOUND)
         m_mapStrings[currEntry.numID] = currEntry;
       else
+      {
+        if (currEntry.msgCtxt == "Addon Summary")
+          m_mapAddoXMLEntries[strLang].strSummary = strLang == "en" ? currEntry.msgID: currEntry.msgStr;
+        else if (currEntry.msgCtxt == "Addon Description")
+          m_mapAddoXMLEntries[strLang].strDescription = strLang == "en" ? currEntry.msgID: currEntry.msgStr;
+        else if (currEntry.msgCtxt == "Addon Disclaimer")
+          m_mapAddoXMLEntries[strLang].strDisclaimer = strLang == "en" ? currEntry.msgID: currEntry.msgStr;
+        else
         m_vecClassicEntries.push_back(currEntry);
-
+      }
       ClearCPOEntry(currEntry);
     }
   }
@@ -117,16 +126,20 @@ void CPOHandler::ClearCPOEntry (CPOEntry &entry)
 };
 
 
-bool CPOHandler::WritePOFile(const std::string &strDir, const std::string &strLang, const int resType,
+bool CPOHandler::WritePOFile(const std::string &strDir, const std::string &strLang,
                              std::map<std::string, CAddonXMLEntry> &mapAddonXMLData,
-                             const std::string &strResData, const std::string &strPOuffix)
+                             const std::string &strResData, const std::string &strPOsuffix)
 {
-  std::string OutputPOFilename = strDir + DirSepChar + strLang + DirSepChar + "strings.po" + strPOuffix;
+  std::string OutputPOFilename = strDir + strLang + DirSepChar + "strings.po" + strPOsuffix;
+  if (!DirExists(strDir + strLang))
+    MakeDir(strDir + strLang);
+  if (mapAddonXMLData.empty())
+    mapAddonXMLData = m_mapAddoXMLEntries;
 
   CPODocument PODoc;
   PODoc.WriteHeader(strResData, m_strHeader);
 
-  std::string LCode = PODoc.GetLangCode();
+  std::string LCode = FindLangCode(strLang);
   bool bIsSource = LCode == "en";
 
   if (!(mapAddonXMLData["en"].strSummary).empty())
