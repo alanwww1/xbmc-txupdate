@@ -33,6 +33,10 @@ public:
   bool FetchPOTXToMem(std::string strURL, std::string strLang);
   bool WritePOFile(const std::string &strDir, const std::string &strLang, std::map<std::string,
                    CAddonXMLEntry> &mapAddonXMLData, const std::string &strResData, const std::string &strPOuffix);
+  bool LookforClassicEntry (CPOEntry &EntryToFind);
+  void AddClassicEntry (CPOEntry &EntryToAdd);
+  bool ModifyClassicEntry (CPOEntry &EntryToFind, CPOEntry EntryNewValue);
+  bool DeleteClassicEntry (CPOEntry &EntryToFind);
 
 protected:
   void ClearCPOEntry (CPOEntry &entry);

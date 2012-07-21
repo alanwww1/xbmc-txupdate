@@ -183,3 +183,49 @@ bool CPOHandler::WritePOFile(const std::string &strDir, const std::string &strLa
 
   return true;
 };
+
+// Data manipulation functions
+
+bool CPOHandler::LookforClassicEntry (CPOEntry &EntryToFind)
+{
+  for (itClassicEntries it = m_vecClassicEntries.begin(); it != m_vecClassicEntries.end(); it++)
+  {
+    if (*it == EntryToFind)
+    {
+      EntryToFind = *it;
+      return true;
+    }
+  }
+  return false;
+}
+
+void CPOHandler::AddClassicEntry (CPOEntry &EntryToAdd)
+{
+  m_vecClassicEntries.push_back(EntryToAdd);
+};
+
+bool CPOHandler::ModifyClassicEntry (CPOEntry &EntryToFind, CPOEntry EntryNewValue)
+{
+  for (itClassicEntries it = m_vecClassicEntries.begin(); it != m_vecClassicEntries.end(); it++)
+  {
+    if (*it == EntryToFind)
+    {
+      *it = EntryNewValue;
+      return true;
+    }
+  }
+  return false;
+}
+
+bool CPOHandler::DeleteClassicEntry (CPOEntry &EntryToFind)
+{
+  for (itClassicEntries it = m_vecClassicEntries.begin(); it != m_vecClassicEntries.end(); it++)
+  {
+    if (*it == EntryToFind)
+    {
+      m_vecClassicEntries.erase(it);
+      return true;
+    }
+  }
+  return false;
+}

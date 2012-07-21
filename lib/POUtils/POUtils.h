@@ -61,8 +61,9 @@ struct CAddonXMLEntry
 };
 
 // Struct to collect all important data of the current processed entry.
-struct CPOEntry
+class CPOEntry
 {
+public:
   int Type;
   uint32_t numID;
   std::string msgCtxt;
@@ -75,6 +76,7 @@ struct CPOEntry
   std::vector<std::string> translatorComm;  // # translator comment
   std::vector<std::string> interlineComm;   // #comment between lines
   std::string Content;
+  bool operator == (const CPOEntry &poentry) const;
 };
 
 class CPODocument

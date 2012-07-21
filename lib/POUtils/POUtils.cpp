@@ -28,6 +28,26 @@
 
 using namespace std;
 
+bool CPOEntry::operator==(const CPOEntry& poentry) const
+{
+  bool bhasMatch = true;
+  if (!poentry.Content.empty())
+    bhasMatch = bhasMatch && (poentry.Content == Content);
+  if (!poentry.msgCtxt.empty())
+    bhasMatch = bhasMatch && (poentry.msgCtxt == msgCtxt);
+  if (!poentry.msgID.empty())
+    bhasMatch = bhasMatch && (poentry.msgID == msgID);
+  if (!poentry.msgIDPlur.empty())
+    bhasMatch = bhasMatch && (poentry.msgIDPlur == msgIDPlur);
+  if (!poentry.msgStr.empty())
+    bhasMatch = bhasMatch && (poentry.msgStr == msgStr);
+  if (!poentry.Type == ID_FOUND)
+    bhasMatch = bhasMatch && (poentry.numID == numID);
+  if (!poentry.Type != UNKNOWN_FOUND)
+    bhasMatch = bhasMatch && (poentry.Type == Type);  
+  return bhasMatch;
+};
+
 CPODocument::CPODocument()
 {
   m_CursorPos = 0;
