@@ -33,6 +33,7 @@
 #include <stdio.h>
 #include "lib/ProjectHandler.h"
 #include "lib/HTTPUtils.h"
+#include "lib/xbmclangcodes.h"
 
 using namespace std;
 
@@ -72,9 +73,9 @@ int main(int argc, char* argv[])
         --argc; ++argv;
         pSourceDirectory = argv[1];
         break;
-//      case 'E':
+//      case 't':
 //        --argc; ++argv;
-//	bCheckSourceLang = true;
+//        bFetchMissingLanguagesFromTX = true;
 //        break;
     }
     ++argv; --argc;
@@ -101,6 +102,7 @@ int main(int argc, char* argv[])
   g_HTTPHandler.LoadCredentials(WorkingDir + ".passwords.xml");
   g_HTTPHandler.SetCacheDir(WorkingDir + ".httpcache");
 
+  g_LCodeHandler.Init("https://raw.github.com/transifex/transifex/master/transifex/languages/fixtures/all_languages.json");
 
   CProjectHandler TXProject;
   TXProject.FetchResourcesFromTransifex(WorkingDir);

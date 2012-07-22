@@ -31,8 +31,8 @@ using namespace std;
 bool CPOEntry::operator==(const CPOEntry& poentry) const
 {
   bool bhasMatch = true;
-  if (!poentry.Content.empty())
-    bhasMatch = bhasMatch && (poentry.Content == Content);
+//  if (!poentry.Content.empty())
+//    bhasMatch = bhasMatch && (poentry.Content == Content);
   if (!poentry.msgCtxt.empty())
     bhasMatch = bhasMatch && (poentry.msgCtxt == msgCtxt);
   if (!poentry.msgID.empty())
@@ -43,8 +43,8 @@ bool CPOEntry::operator==(const CPOEntry& poentry) const
     bhasMatch = bhasMatch && (poentry.msgStr == msgStr);
   if (!poentry.Type == ID_FOUND)
     bhasMatch = bhasMatch && (poentry.numID == numID);
-  if (!poentry.Type != UNKNOWN_FOUND)
-    bhasMatch = bhasMatch && (poentry.Type == Type);  
+  if (poentry.Type != UNKNOWN_FOUND && poentry.Type != 0)
+    bhasMatch = bhasMatch && (poentry.Type == Type);
   return bhasMatch;
 };
 
@@ -465,34 +465,15 @@ bool CPODocument::SaveFile(const std::string &pofilename)
   return true;
 };
 
-void CPODocument::WriteHeader(const std::string &strResData, std::string strHeader)
+void CPODocument::WriteHeader(const std::string &strHeader)
 {
-  if (strResData.empty())
-  {
-    m_strOutBuffer = strHeader;
-    return;
-  }
-  size_t startpos = strHeader.find("Language: ")+10;
-  size_t endpos = strHeader.find_first_of("\\ \n", startpos);
-  std::string LCode = strHeader.substr(startpos, endpos-startpos);
-  m_bIsForeignLang = LCode != "en";
   m_bhasLFWritten = false;
 
   m_strOutBuffer.clear();
-  size_t startPos;
-  startPos = strHeader.find("msgid \"\"");
-
-  if ((startPos = strHeader.find("# Translators")) != std::string::npos)
-    strHeader = strHeader.substr(startPos);
-  else if ((startPos = strHeader.find("msgid \"\"")) != std::string::npos)
-    strHeader = strHeader.substr(startPos);
-
-  m_strOutBuffer += "# XBMC Media Center language file\n";
-
-  m_strOutBuffer += strResData + strHeader;
+  m_strOutBuffer += strHeader;
 };
 
-void CPODocument::WritePOEntry(CPOEntry currEntry)
+void CPODocument::WritePOEntry(const CPOEntry &currEntry)
 {
   int id = currEntry.numID;
   if (!m_bIsForeignLang)
@@ -517,11 +498,17 @@ void CPODocument::WritePOEntry(CPOEntry currEntry)
   }
 
   WriteLF();
-  m_strOutBuffer += "msgctxt \"#" + IntToStr(id) + "\"\n";
+  if (currEntry.Type == ID_FOUND)
+    m_strOutBuffer += "msgctxt \"#" + IntToStr(id) + "\"\n";
+  else if (!currEntry.msgCtxt.empty())
+    m_strOutBuffer += "msgctxt \"" + currEntry.msgCtxt + "\"\n";
 
   WriteLF();
   m_strOutBuffer += "msgid \""  + currEntry.msgID +  "\"\n";
-  m_strOutBuffer += "msgstr \"" + currEntry.msgStr + "\"\n";
+  if (m_bIsForeignLang)
+    m_strOutBuffer += "msgstr \"" + currEntry.msgStr + "\"\n";
+  else
+    m_strOutBuffer += "msgstr \"\"\n";
 
   m_writtenEntry++;
   m_previd =id;
@@ -556,3 +543,13 @@ void CPODocument::WriteMultilineComment(std::vector<std::string> vecCommnts, std
   }
   return;
 };
+
+/*
+std::string CPODocument::GetLCodeFromHeader(std::string strHeader)
+{
+  size_t startpos = strHeader.find("Language: ")+10;
+  size_t endpos = strHeader.find_first_of("\\ \n", startpos);
+  std::string LCode = strHeader.substr(startpos, endpos-startpos);
+  return LCode;
+}
+*/

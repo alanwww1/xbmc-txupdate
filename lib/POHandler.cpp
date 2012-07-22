@@ -27,23 +27,23 @@ CPOHandler::CPOHandler()
 CPOHandler::~CPOHandler()
 {};
 
-bool CPOHandler::LoadPOFile(std::string strDir, std::string strLang, std::string strPOuffix)
+bool CPOHandler::LoadPOFile(std::string strPOFileName)
 {
   CPODocument PODoc;
-  if (!PODoc.LoadFile(strDir + DirSepChar + strLang + DirSepChar + "strings.po" + strPOuffix))
+  if (!PODoc.LoadFile(strPOFileName))
     return false;
-  return ProcessPOFile(PODoc, strLang);
+  return ProcessPOFile(PODoc);
 };
 
-bool CPOHandler::FetchPOTXToMem (std::string strURL, std::string strLang)
+bool CPOHandler::FetchPOTXToMem (std::string strURL)
 {
   CPODocument PODoc;
   if (!PODoc.FetchTXToMem(strURL))
     return false;
-  return ProcessPOFile(PODoc, strLang);
+  return ProcessPOFile(PODoc);
 };
 
-bool CPOHandler::ProcessPOFile(CPODocument &PODoc, std::string strLang)
+bool CPOHandler::ProcessPOFile(CPODocument &PODoc)
 {
   if (PODoc.GetEntryType() != HEADER_FOUND)
     CLog::Log(logERROR, "POHandler: No valid header found for this language");
@@ -90,22 +90,12 @@ bool CPOHandler::ProcessPOFile(CPODocument &PODoc, std::string strLang)
         m_mapStrings[currEntry.numID] = currEntry;
       else
       {
-        if (currEntry.msgCtxt == "Addon Summary")
-          m_mapAddoXMLEntries[strLang].strSummary = strLang == "en" ? currEntry.msgID: currEntry.msgStr;
-        else if (currEntry.msgCtxt == "Addon Description")
-          m_mapAddoXMLEntries[strLang].strDescription = strLang == "en" ? currEntry.msgID: currEntry.msgStr;
-        else if (currEntry.msgCtxt == "Addon Disclaimer")
-          m_mapAddoXMLEntries[strLang].strDisclaimer = strLang == "en" ? currEntry.msgID: currEntry.msgStr;
-        else
         m_vecClassicEntries.push_back(currEntry);
       }
       ClearCPOEntry(currEntry);
     }
   }
-
-  strLang.resize(20, ' ');
-  CLog::Log(logINFO, "POHandler: %s\t\t%i\t\t%i\t\t%i", strLang.c_str(), m_mapStrings.size(), m_vecClassicEntries.size(),
-            ilCommsCntr);
+  m_CommsCntr = ilCommsCntr;
 
   return true;
 };
@@ -123,63 +113,41 @@ void CPOHandler::ClearCPOEntry (CPOEntry &entry)
   entry.msgIDPlur.clear();
   entry.msgCtxt.clear();
   entry.Type = UNKNOWN_FOUND;
+  entry.Content.clear();
 };
 
 
-bool CPOHandler::WritePOFile(const std::string &strDir, const std::string &strLang,
-                             std::map<std::string, CAddonXMLEntry> &mapAddonXMLData,
-                             const std::string &strResData, const std::string &strPOsuffix)
+bool CPOHandler::WritePOFile(const std::string &strOutputPOFilename)
 {
-  std::string OutputPOFilename = strDir + strLang + DirSepChar + "strings.po" + strPOsuffix;
-  if (!DirExists(strDir + strLang))
-    MakeDir(strDir + strLang);
-  if (mapAddonXMLData.empty())
-    mapAddonXMLData = m_mapAddoXMLEntries;
-
   CPODocument PODoc;
-  PODoc.WriteHeader(strResData, m_strHeader);
 
-  std::string LCode = FindLangCode(strLang);
-  bool bIsSource = LCode == "en";
+  PODoc.SetIfIsEnglish(m_bPOIsEnglish);
 
-  if (!(mapAddonXMLData["en"].strSummary).empty())
-  {
-    CPOEntry POEntry;
-    POEntry.Type = MSGID_FOUND;
-    POEntry.msgCtxt = "Addon Summary";
-    POEntry.msgID   = mapAddonXMLData["en"].strSummary;
-    POEntry.msgStr  = bIsSource ? "": mapAddonXMLData[LCode].strSummary;
+  PODoc.WriteHeader(m_strHeader);
+
+  CPOEntry POEntry;
+  POEntry.msgCtxt = "Addon Summary";
+  if (LookforClassicEntry(POEntry))
     PODoc.WritePOEntry(POEntry);
-  }
 
-  if (!mapAddonXMLData["en"].strDescription.empty())
-  {
-    CPOEntry POEntry;
-    POEntry.Type = MSGID_FOUND;
-    POEntry.msgCtxt = "Addon Description";
-    POEntry.msgID   = mapAddonXMLData["en"].strDescription;
-    POEntry.msgStr  = bIsSource ? "": mapAddonXMLData[LCode].strDescription;
+  ClearCPOEntry(POEntry);
+  POEntry.msgCtxt = "Addon Description";
+  if (LookforClassicEntry(POEntry))
     PODoc.WritePOEntry(POEntry);
-  }
 
-  if (!mapAddonXMLData["en"].strDisclaimer.empty())
-  {
-    CPOEntry POEntry;
-    POEntry.Type = MSGID_FOUND;
-    POEntry.msgCtxt = "Addon Disclaimer";
-    POEntry.msgID   = mapAddonXMLData["en"].strDisclaimer;
-    POEntry.msgStr  = bIsSource ? "": mapAddonXMLData[LCode].strDisclaimer;
+  ClearCPOEntry(POEntry);
+  POEntry.msgCtxt = "Addon Disclaimer";
+  if (LookforClassicEntry(POEntry))
     PODoc.WritePOEntry(POEntry);
-  }
 
-  for ( itStrings it = m_mapStrings.begin() ; it != m_mapStrings.end() ; it++)
+  for (itStrings it = m_mapStrings.begin(); it != m_mapStrings.end(); it++)
   {
 //    int id = it->first;
     CPOEntry currEntry = it->second;
     PODoc.WritePOEntry(currEntry);
   }
 
-  PODoc.SaveFile(OutputPOFilename);
+  PODoc.SaveFile(strOutputPOFilename);
 
   return true;
 };
@@ -214,6 +182,7 @@ bool CPOHandler::ModifyClassicEntry (CPOEntry &EntryToFind, CPOEntry EntryNewVal
       return true;
     }
   }
+  m_vecClassicEntries.push_back(EntryNewValue);
   return false;
 }
 
@@ -228,4 +197,54 @@ bool CPOHandler::DeleteClassicEntry (CPOEntry &EntryToFind)
     }
   }
   return false;
+}
+
+void CPOHandler::SetAddonMetaData (CAddonXMLEntry AddonXMLEntry, CAddonXMLEntry AddonXMLEntryEN)
+{
+  CPOEntry POEntryDesc, POEntryDiscl, POEntrySumm;
+  POEntryDesc.Type = MSGID_FOUND;
+  POEntryDiscl.Type = MSGID_FOUND;
+  POEntrySumm.Type = MSGID_FOUND;
+  POEntryDesc.msgCtxt = "Addon Description";
+  POEntryDiscl.msgCtxt = "Addon Disclaimer";
+  POEntrySumm.msgCtxt = "Addon Summary";
+
+  CPOEntry newPOEntryDesc = POEntryDesc;
+  CPOEntry newPOEntryDisc = POEntryDiscl;
+  CPOEntry newPOEntrySumm = POEntrySumm;
+
+  newPOEntryDesc.msgID = AddonXMLEntryEN.strDescription;
+  newPOEntryDisc.msgID = AddonXMLEntryEN.strDisclaimer;
+  newPOEntrySumm.msgID = AddonXMLEntryEN.strSummary;
+
+  if (!AddonXMLEntry.strDescription.empty() || !AddonXMLEntry.strDisclaimer.empty() || !AddonXMLEntry.strSummary.empty())
+  {
+    newPOEntryDesc.msgStr = AddonXMLEntry.strDescription;
+    newPOEntryDisc.msgStr = AddonXMLEntry.strDisclaimer;
+    newPOEntrySumm.msgStr = AddonXMLEntry.strSummary;
+  }
+
+  ModifyClassicEntry(POEntryDesc, newPOEntryDesc);
+  ModifyClassicEntry(POEntryDiscl, newPOEntryDisc);
+  ModifyClassicEntry(POEntrySumm, newPOEntrySumm);
+  return;
+}
+
+void CPOHandler::SetHeader (std::string strPreText)
+{
+  if (strPreText.empty())
+    return;
+
+  std::string strOutHeader;
+  size_t startPos;
+
+  if ((startPos = m_strHeader.find("# Translators")) != std::string::npos)
+    m_strHeader = m_strHeader.substr(startPos);
+  else if ((startPos = m_strHeader.find("msgid \"\"")) != std::string::npos)
+    m_strHeader = m_strHeader.substr(startPos);  startPos = m_strHeader.find("msgid \"\"");
+
+  strOutHeader += "# XBMC Media Center language file\n";
+
+  strOutHeader += strPreText + m_strHeader;
+  m_strHeader = strOutHeader;
 }

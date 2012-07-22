@@ -91,9 +91,9 @@ public:
   int GetEntryType() const {return m_Entry.Type;}
   void ParseEntry();
   CPOEntry GetEntryData() const {return m_Entry;}
-  void WriteHeader(const std::string &strResData, std::string strHeader);
-  void WritePOEntry(CPOEntry currEntry);
-  std::string GetLangCode() {return m_lcode;}
+  void WriteHeader(const std::string &strHeader);
+  void WritePOEntry(const CPOEntry &currEntry);
+  void SetIfIsEnglish(bool bIsENLang) {m_bIsForeignLang = !bIsENLang;}
   bool FetchTXToMem(const std::string &strURL);
 
 protected:
@@ -119,5 +119,4 @@ protected:
   bool m_bIsForeignLang;
   int m_previd;
   int m_writtenEntry;
-  std::string m_lcode;
 };

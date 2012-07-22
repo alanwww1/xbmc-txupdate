@@ -130,7 +130,39 @@ std::list<std::string> CJSONHandler::ParseAvailLanguages(std::string strJSON)
 };
 
 
+std::map<std::string, CLangcodes> CJSONHandler::ParseTransifexLanguageDatabase(std::string strJSON)
+{
+  Json::Value root;   // will contains the root value after parsing.
+  Json::Reader reader;
+  std::string lang;
 
+  bool parsingSuccessful = reader.parse(strJSON, root );
+  if ( !parsingSuccessful )
+  {
+    CLog::Log(logERROR, "JSONHandler: ParseTXLanguageDB: no valid JSON data");
+  }
+
+  std::map<std::string, CLangcodes> mapTXLangs;
+
+  const Json::Value JLangs = root;
+
+  for(Json::ValueIterator itr = JLangs.begin() ; itr !=JLangs.end() ; itr++)
+  {
+    Json::Value JValu = *itr;
+    const Json::Value JFields =JValu.get("fields", "unknown");
+
+    CLangcodes LangData;
+    LangData.Langcode = JFields.get("code", "unknown").asString();
+    LangData.Langname = JFields.get("name", "unknown").asString();
+    LangData.Pluralform = JFields.get("pluralequation", "unknown").asString();
+    LangData.nplurals = JFields.get("nplurals", 0).asInt();
+    if (LangData.Langcode != "unknown" && LangData.Langname != "unknown")
+      mapTXLangs[LangData.Langcode] = LangData;
+    else
+      CLog::Log(logWARNING, "JSONHandler: ParseTXLanguageDB: corrupt JSON data found while parsing Language Database from Transifex");
+  };
+  return mapTXLangs;
+};
 
 
 

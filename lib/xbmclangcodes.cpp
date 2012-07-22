@@ -23,9 +23,12 @@
 #include <stdio.h>
 #include "xbmclangcodes.h"
 #include "Log.h"
+#include "HTTPUtils.h"
+#include "JSONHandler.h"
 
 using namespace std;
 
+CLCodeHandler g_LCodeHandler;
 // #define MAXLANGCOUNT 2;
 
 enum
@@ -83,44 +86,71 @@ CLangcodes Langcodes [LANG_COUNT] =
   {"Ukrainian", "uk", 3, "(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2)"}
 };
 
-bool bUnknownLangFound = false;
+CLCodeHandler::CLCodeHandler()
+{}
 
-std::string FindLangCode(std::string LangToLook)
+CLCodeHandler::~CLCodeHandler()
+{}
+
+void CLCodeHandler::Init(std::string strURL)
+{
+  std::string strtemp = g_HTTPHandler.GetURLToSTR(strURL);
+  CJSONHandler JSONHandler;
+  m_mapLCodes = JSONHandler.ParseTransifexLanguageDatabase(strtemp);
+  CLog::Log(logINFO, "LCodeHandler: Succesfully fetched %i language codes from Transifex", m_mapLCodes.size());
+}
+
+int CLCodeHandler::GetnPlurals(std::string LangCode)
+{
+  if (m_mapLCodes.find(LangCode) != m_mapLCodes.end())
+    return m_mapLCodes[LangCode].nplurals;
+  CLog::Log(logERROR, "LangCodes: GetnPlurals: unable to find langcode: %s", LangCode.c_str());
+  return 0;
+}
+
+std::string CLCodeHandler::GetPlurForm(std::string LangCode)
+{
+  if (m_mapLCodes.find(LangCode) != m_mapLCodes.end())
+    return m_mapLCodes[LangCode].Pluralform;
+  CLog::Log(logERROR, "LangCodes: GetPlurForm: unable to find langcode: %s", LangCode.c_str());
+  return "(n != 1)";
+}
+
+std::string CLCodeHandler::FindLang(std::string LangCode)
+{
+  if (m_mapLCodes.find(LangCode) != m_mapLCodes.end())
+    return m_mapLCodes[LangCode].Langname;
+  CLog::Log(logERROR, "LangCodes: FindLang: unable to find language for langcode: %s", LangCode.c_str());
+  return "UNKNOWN";
+}
+
+std::string CLCodeHandler::FindLangCode(std::string Lang)
+{
+  for (itmapLCodes = m_mapLCodes.begin(); itmapLCodes != m_mapLCodes.end() ; itmapLCodes++)
+  {
+    if (Lang == itmapLCodes->second.Langname)
+      return itmapLCodes->first;
+  }
+  CLog::Log(logERROR, "LangCodes: FindLangCode: unable to find langcode for language: %s", Lang.c_str());
+  return "UNKNOWN";
+}
+
+std::string CLCodeHandler::FindCustomLangCode(std::string LangToLook)
 {
   for (int i=0; i<LANG_COUNT ; i++)
   {
     if (LangToLook == Langcodes[i].Langname) return Langcodes[i].Langcode;
   }
-  bUnknownLangFound = true;
+  CLog::Log(logERROR, "LCodeHandler: FindCustomLangCode: unable to find langcode for language: %s", LangToLook.c_str());
   return "UNKNOWN";
 }
 
-std::string FindLang(std::string LangCode)
+std::string CLCodeHandler::FindCustomLang(std::string LangCode)
 {
   for (int i=0; i<LANG_COUNT ; i++)
   {
     if (LangCode == Langcodes[i].Langcode) return Langcodes[i].Langname;
   }
-  CLog::Log(logERROR, "LangCodes: Unknown language code found in addon.xml data. Language Code: %s", LangCode.c_str());
-  return "UNRECOGNIZED_" + LangCode;
-}
-
-int GetnPlurals(std::string LangToLook)
-{
-  for (int i=0; i<LANG_COUNT ; i++)
-  {
-    if (LangToLook == Langcodes[i].Langname)
-      return Langcodes[i].nplurals;
-  }
-  return 2;
-}
-
-std::string GetPlurForm(std::string LangToLook)
-{
-  for (int i=0; i<LANG_COUNT ; i++)
-  {
-    if (LangToLook == Langcodes[i].Langname)
-      return Langcodes[i].Pluralform;
-  }
-  return "(n != 1)";
+  CLog::Log(logERROR, "LangCodes: FindCustomLanguage: unable to find language for langcode: %s", LangCode.c_str());
+  return "UNRECOGNIZED_";
 }

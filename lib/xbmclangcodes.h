@@ -18,9 +18,14 @@
  *  http://www.gnu.org/copyleft/gpl.html
  *
  */
+
+#ifndef LANGCODES_H
+#define LANGCODES_H
+
 #pragma once
 
 #include <string>
+#include <map>
 
 struct CLangcodes
 {
@@ -30,7 +35,23 @@ struct CLangcodes
   std::string Pluralform;
 };
 
-std::string FindLangCode(std::string LangToLook);
-std::string FindLang(std::string LangCode);
-int GetnPlurals(std::string LangToLook);
-std::string GetPlurForm(std::string LangToLook);
+class CLCodeHandler
+{
+public:
+  CLCodeHandler();
+  ~CLCodeHandler();
+  void Init(std::string strURL);
+  std::string FindLangCode(std::string Lang);
+  std::string FindLang(std::string LangCode);
+  int GetnPlurals(std::string LangToLook);
+  std::string GetPlurForm(std::string LangToLook);
+private:
+  std::map <std::string, CLangcodes> m_mapLCodes;
+  std::map <std::string, CLangcodes>::iterator itmapLCodes;
+  std::string FindCustomLangCode(std::string LangToLook);
+  std::string FindCustomLang(std::string LangCode);
+};
+
+extern CLCodeHandler g_LCodeHandler;
+
+#endif

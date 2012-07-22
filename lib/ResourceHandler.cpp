@@ -24,6 +24,7 @@
 #include <algorithm>
 #include "JSONHandler.h"
 #include "HTTPUtils.h"
+#include "xbmclangcodes.h"
 
 using namespace std;
 
@@ -56,7 +57,8 @@ bool CResourceHandler::LoadResource(std::string strResRootDir, std::string strPO
 
   for (itmapPOFiles = m_mapPOFiles.begin(); itmapPOFiles != m_mapPOFiles.end(); itmapPOFiles++)
   {
-    itmapPOFiles->second.LoadPOFile(m_langDir, itmapPOFiles->first, strPOsuffix);
+    itmapPOFiles->second.LoadPOFile(m_langDir + itmapPOFiles->first + DirSepChar + "strings.po" + strPOsuffix);
+    itmapPOFiles->second.SetIfIsEnglish(itmapPOFiles->first == "en");
 //    CLog::Log(logDEBUG, "ResHandler: Loaaded language file for: %s", itmapPOFiles->first.c_str());
   };
 
@@ -83,10 +85,8 @@ bool CResourceHandler::GetLangsFromDir(std::string strLangDir)
   {
     std::string strLcode;
     CPOHandler POHandler;
-    if (FindLangCode((strLcode = *itlistDirs)) != "UNKNOWN")
-      m_mapPOFiles[strLcode] = POHandler;
-    else
-      CLog::Log(logERROR, "ResHandler: No langcode found for dirname: %s" , itlistDirs->c_str());
+    strLcode = g_LCodeHandler.FindLangCode(*itlistDirs);
+    m_mapPOFiles[strLcode] = POHandler;
   }
   return true;
 };
@@ -415,21 +415,42 @@ bool CResourceHandler::FetchPOFilesTXToMem(std::string strURL, std::string strCa
 //    std::string strLangdir = GetResTypeFromTX(strResRootDir, category);
 
     m_mapPOFiles[*it] = POHandler;
-    m_mapPOFiles[*it].FetchPOTXToMem(strURL + "translation/" + *it + "/?file", *it);
+    CPOHandler * pPOHandler = &m_mapPOFiles[*it];
+    pPOHandler->FetchPOTXToMem(strURL + "translation/" + *it + "/?file");
+    pPOHandler->SetIfIsEnglish(*it == "en");
+    std::string strLang = *it;
+    strLang.resize(20, ' ');
+    CLog::Log(logINFO, "POHandler: %s\t\t%i\t\t%i\t\t%i", strLang.c_str(), pPOHandler->GetSizeNumEntries(),
+              pPOHandler->GetSizeClassEntries(), pPOHandler->GetSizeCommEntries());
   }
   m_strTXCategory = strCategory;
-};
+}
 
 bool CResourceHandler::WritePOToFiles(std::string strResourceDir, std::string strPOsuffix)
 {
   CLog::Log(logINFO, "ResHandler: Starting to write resource from memory to directory: %s",strResourceDir.c_str());
 
   std::string strLangdir = GetResTypeFromTX(strResourceDir, m_strTXCategory);
-
-  std::map<std::string, CAddonXMLEntry> emptyEntry;
+  std::string strListNewDirs;
 
   for (itmapPOFiles = m_mapPOFiles.begin(); itmapPOFiles != m_mapPOFiles.end(); itmapPOFiles++)
   {
-    m_mapPOFiles[itmapPOFiles->first].WritePOFile (strLangdir, FindLang(itmapPOFiles->first), emptyEntry, "", strPOsuffix);
-  };
-};
+    if (itmapPOFiles->first == "en")
+      continue;
+    std::string strPODir = strLangdir + g_LCodeHandler.FindLang(itmapPOFiles->first);
+    if (!DirExists(strPODir))
+    {
+      strListNewDirs += g_LCodeHandler.FindLang(itmapPOFiles->first) + " ";
+      MakeDir(strPODir);
+    }
+
+    CPOHandler * pPOHandler = &m_mapPOFiles[itmapPOFiles->first];
+    pPOHandler->WritePOFile(strPODir + DirSepChar + "strings.po" + strPOsuffix);
+    std::string strLang = g_LCodeHandler.FindLang(itmapPOFiles->first);
+    strLang.resize(20, ' ');
+    CLog::Log(logINFO, "POHandler: %s\t\t%i\t\t%i\t\t%i", strLang.c_str(), pPOHandler->GetSizeNumEntries(),
+              pPOHandler->GetSizeClassEntries(), pPOHandler->GetSizeCommEntries());
+  }
+  if (!strListNewDirs.empty())
+    CLog::Log(logINFO, "POHandler: New local directories already existing on Transifex: %s", strListNewDirs.c_str());
+}

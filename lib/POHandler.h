@@ -28,30 +28,33 @@ class CPOHandler
 public:
   CPOHandler();
   ~CPOHandler();
-  bool LoadPOFile(std::string strDir, std::string strLang, std::string strPOuffix);
-//  bool SavePOFile(std::string strDir, std::string strLang);
-  bool FetchPOTXToMem(std::string strURL, std::string strLang);
-  bool WritePOFile(const std::string &strDir, const std::string &strLang, std::map<std::string,
-                   CAddonXMLEntry> &mapAddonXMLData, const std::string &strResData, const std::string &strPOuffix);
+  bool LoadPOFile(std::string strPOFileName);
+  bool FetchPOTXToMem(std::string strURL);
+  bool WritePOFile(const std::string &strOutputPOFilename);
   bool LookforClassicEntry (CPOEntry &EntryToFind);
   void AddClassicEntry (CPOEntry &EntryToAdd);
   bool ModifyClassicEntry (CPOEntry &EntryToFind, CPOEntry EntryNewValue);
   bool DeleteClassicEntry (CPOEntry &EntryToFind);
+  void SetAddonMetaData (CAddonXMLEntry AddonXMLEntry, CAddonXMLEntry AddonXMLEntryEN);
+  void SetHeader (std::string strPreText);
+  size_t const GetSizeNumEntries() {return m_mapStrings.size();}
+  size_t const GetSizeClassEntries() {return m_vecClassicEntries.size();}
+  size_t const GetSizeCommEntries() {return m_CommsCntr;}
+  void SetIfIsEnglish(bool bIsENLang) {m_bPOIsEnglish = bIsENLang;}
 
 protected:
   void ClearCPOEntry (CPOEntry &entry);
-  bool ProcessPOFile(CPODocument &PODoc, std::string strLang);
+  bool ProcessPOFile(CPODocument &PODoc);
 
   std::string m_strHeader;
 
   std::map<uint32_t, CPOEntry> m_mapStrings;
   typedef std::map<uint32_t, CPOEntry>::iterator itStrings;
 
-  std::map<std::string, CAddonXMLEntry> m_mapAddoXMLEntries;
-  typedef std::map<std::string, CAddonXMLEntry>::iterator itAddonXMLEntry;
-
   std::vector<CPOEntry> m_vecClassicEntries;
   typedef std::vector<CPOEntry>::iterator itClassicEntries;
 
+  size_t m_CommsCntr;
+  bool m_bPOIsEnglish;
 };
 

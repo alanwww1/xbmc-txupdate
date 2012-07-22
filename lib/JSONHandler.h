@@ -25,6 +25,7 @@
 #include <jsoncpp/json/json.h>
 #include <map>
 #include <list>
+#include "xbmclangcodes.h"
 
 class CJSONHandler
 {
@@ -33,6 +34,7 @@ public:
   ~CJSONHandler();
   std::map<std::string, std::string> ParseResources(std::string strJSON);
   std::list<std::string> ParseAvailLanguages(std::string strJSON);
+  std::map<std::string, CLangcodes> ParseTransifexLanguageDatabase(std::string strJSON);
   bool PrintJSONTree( Json::Value root, unsigned short depth = 0);
   void PrintJSONValue( Json::Value val );
 private:
