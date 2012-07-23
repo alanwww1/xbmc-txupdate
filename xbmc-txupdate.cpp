@@ -105,8 +105,10 @@ int main(int argc, char* argv[])
   g_LCodeHandler.Init("https://raw.github.com/transifex/transifex/master/transifex/languages/fixtures/all_languages.json");
 
   CProjectHandler TXProject;
+  TXProject.InitUpdateXMLHandler(WorkingDir);
   TXProject.FetchResourcesFromTransifex(WorkingDir);
   TXProject.WriteResourcesToFile(WorkingDir, ".dtx");
+  TXProject.SaveUpdateXML(WorkingDir);
 
   printf("Warnings: %i\n", CLog::GetWarnCount());
 //  if (bUnknownLangFound)

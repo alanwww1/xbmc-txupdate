@@ -23,6 +23,7 @@
 #include "Log.h"
 #include "Settings.h"
 #include <stdlib.h>
+#include <sstream>
 
 
 using namespace std;
@@ -38,26 +39,6 @@ bool CUpdateXMLHandler::LoadXMLToMem (std::string rootDir)
   std::string UpdateXMLFilename = rootDir  + DirSepChar + "xbmc-txupdate.xml";
   TiXmlDocument xmlUpdateXML;
 
-/*
-  std::string strtemp;
-//  strtemp = HTTPHandler.GetURLToSTR("https://raw.github.com/xbmc/xbmc/master/language/English/strings.po");
-//  strtemp = HTTPHandler.GetURLToSTR("https://www.transifex.com/api/2/project/update-test/resource/visualization-projectm/translation/hu/?file", "un", "pw");
-  strtemp = g_HTTPHandler.GetURLToSTR("https://www.transifex.com/api/2/project/update-test/resources/");
-//  strtemp = HTTPHandler.GetURLToSTR("https://www.transifex.com/api/2/project/XBMC-Main-Frodo/resources/", "un", "pw");
-  printf("%s, strlength: %i", strtemp.c_str(), strtemp.size());
-
-  char cstrtemp[strtemp.size()];
-  strcpy(cstrtemp, strtemp.c_str());
-
-  CJSONHandler JSONHandler;
-  JSONHandler.ParseResources(strtemp);
-
-  g_HTTPHandler.Cleanup();
-  g_HTTPHandler.ReInit();
-  g_HTTPHandler.GetURLToFILE(rootDir + "test2.po", "https://raw.github.com/xbmc/xbmc/master/language/English/strings.po");
-//  HTTPHandler.GetURLToFILE(rootDir + "test1.po","https://www.transifex.com/api/2/project/update-test/resource/visualization-projectm/translation/hu/?file", "login", "passw");
-  */
-
   if (!xmlUpdateXML.LoadFile(UpdateXMLFilename.c_str()))
   {
     CLog::Log(logINFO, "UpdXMLHandler: No update.xml file exists, we will create one later");
@@ -66,10 +47,7 @@ bool CUpdateXMLHandler::LoadXMLToMem (std::string rootDir)
 
   CLog::Log(logINFO, "UpdXMLHandler: Succesfuly found the update.xml file");
 
-  CXMLResdata currResData;
-
   TiXmlElement* pRootElement = xmlUpdateXML.RootElement();
-
   if (!pRootElement || pRootElement->NoChildren() || pRootElement->ValueTStr()!="resources")
   {
     CLog::Log(logINFO, "UpdXMLHandler: No root element called \"resources\" in xml file. We will create it");
@@ -107,6 +85,7 @@ bool CUpdateXMLHandler::LoadXMLToMem (std::string rootDir)
   const TiXmlElement *pChildResElement = pRootElement->FirstChildElement("resource");
   while (pChildResElement && pChildResElement->FirstChild())
   {
+    CXMLResdata currResData;
     std::string strResName = pChildResElement->Attribute("name");
     if (pChildResElement->FirstChild())
     {
@@ -117,7 +96,7 @@ bool CUpdateXMLHandler::LoadXMLToMem (std::string rootDir)
       if (pChildUpstrLElement && pChildUpstrLElement->FirstChild())
         currResData.strLangsFromUpstream = pChildUpstrLElement->FirstChild()->Value();
       m_mapXMLResdata[strResName] = currResData;
-//      CLog::Log(logINFO, "UpdXMLHandler: found resource in update.xml file: %s", strResName.c_str());
+      CLog::Log(logINFO, "UpdXMLHandler: found resource in update.xml file: %s", strResName.c_str());
     }
     pChildResElement = pChildResElement->NextSiblingElement("resource");
   }
@@ -167,12 +146,10 @@ void CUpdateXMLHandler::AddResourceToXMLFile(std::string strResName)
 {
   CXMLResdata emptyResData;
   if (m_mapXMLResdata.find(strResName) == m_mapXMLResdata.end())
+  {
     m_mapXMLResdata[strResName] = emptyResData;
-};
-
-std::string CUpdateXMLHandler::GetProjectName()
-{
-  return m_ProjName;
+    CLog::Log(logINFO, "UpdXMLHandler: added new resource to xml file: %s", strResName.c_str());
+  }
 };
 
 void CUpdateXMLHandler::SaveMemToXML(std::string rootDir)
@@ -181,7 +158,11 @@ void CUpdateXMLHandler::SaveMemToXML(std::string rootDir)
   TiXmlDocument doc;
   TiXmlDeclaration * decl = new TiXmlDeclaration( "1.0", "", "" );
   TiXmlElement * pRootElement = new TiXmlElement( "resources" );
-  pRootElement->SetAttribute("projectname", m_ProjName.c_str());
+  pRootElement->SetAttribute("projectname", g_Settings.GetProjectname().c_str());
+  std::string strExptime = IntToStr(g_Settings.GetHTTPCacheExpire());
+  pRootElement->SetAttribute("http_cache_expire", strExptime.c_str());
+  std::string strMinCompl = IntToStr(g_Settings.GetMinCompletion()) + "%";
+  pRootElement->SetAttribute("min_completion", strMinCompl.c_str());
 
   for (itXMLResdata = m_mapXMLResdata.begin(); itXMLResdata != m_mapXMLResdata.end(); itXMLResdata++)
   {
@@ -204,4 +185,12 @@ void CUpdateXMLHandler::SaveMemToXML(std::string rootDir)
   doc.LinkEndChild( decl );
   doc.LinkEndChild( pRootElement );
   doc.SaveFile(UpdateXMLFilename.c_str());
+  CLog::Log(logINFO, "UpdXMLHandler: succesfully saved update xml data from memory to file");
+};
+
+std::string CUpdateXMLHandler::IntToStr(int number)
+{
+  std::stringstream ss;//create a stringstream
+  ss << number;//add number to the stream
+  return ss.str();//return a string with the contents of the stream
 };

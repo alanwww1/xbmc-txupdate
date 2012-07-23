@@ -21,6 +21,7 @@
 #pragma once
 
 #include "ResourceHandler.h"
+#include "UpdateXMLHandler.h"
 
 class CProjectHandler
 {
@@ -30,6 +31,8 @@ public:
   bool LoadProject(std::string strProjRootDir);
   bool FetchResourcesFromTransifex(std::string strProjRootDir);
   bool WriteResourcesToFile(std::string strProjRootDir, std::string strPOSuffix);
+  void InitUpdateXMLHandler(std::string strProjRootDir);
+  void SaveUpdateXML(std::string strProjRootDir);
 
 protected:
   bool GetResourcesFromDir(std::string strProjRootDir);
@@ -37,4 +40,5 @@ protected:
   std::map<std::string, CResourceHandler>::iterator itmapResources;
   std::map<std::string, std::string> m_mapResourcesTX;
   int m_resCount;
+  CUpdateXMLHandler m_UpdateXMLHandler;
 };

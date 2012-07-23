@@ -21,7 +21,6 @@
 
 #include "ProjectHandler.h"
 #include <list>
-#include "UpdateXMLHandler.h"
 #include "HTTPUtils.h"
 #include "JSONHandler.h"
 #include "Settings.h"
@@ -34,9 +33,6 @@ CProjectHandler::~CProjectHandler()
 
 bool CProjectHandler::LoadProject(std::string strProjRootDir)
 {
-//  CUpdateXMLHandler UpdateXMLHandler;
-//  UpdateXMLHandler.LoadXMLToMem(strProjRootDir);
-
   GetResourcesFromDir(strProjRootDir);
   int loadCounter = 0;
 
@@ -50,8 +46,6 @@ bool CProjectHandler::LoadProject(std::string strProjRootDir)
 
   CLog::Log(logLINEFEED, "");
   CLog::Log(logINFO, "ProjHandler: Loaded %i resources from root dir: %s", loadCounter, strProjRootDir.c_str());
-
-//  UpdateXMLHandler.SaveMemToXML(strProjRootDir);
 
   return true;
 };
@@ -86,8 +80,6 @@ bool CProjectHandler::GetResourcesFromDir(std::string strProjRootDir)
 
 bool CProjectHandler::FetchResourcesFromTransifex(std::string strProjRootDir)
 {
-  CUpdateXMLHandler UpdateXMLHandler;
-  UpdateXMLHandler.LoadXMLToMem(strProjRootDir);
 
   std::string strtemp = g_HTTPHandler.GetURLToSTR("https://www.transifex.com/api/2/project/" + g_Settings.GetProjectname()
                                                   + "/resources/");
@@ -109,7 +101,8 @@ bool CProjectHandler::FetchResourcesFromTransifex(std::string strProjRootDir)
     {
       CLog::Log(logERROR, "ProjHandler: Creating local directory for new resource on Transifex: %s", it->first.c_str());
       MakeDir(strProjRootDir + it->first);
-    } 
+    }
+    m_UpdateXMLHandler.AddResourceToXMLFile(it->first);
     m_mapResources[it->first] = ResourceHandler;
     m_mapResources[it->first].FetchPOFilesTXToMem("https://www.transifex.com/api/2/project/" + g_Settings.GetProjectname()
                                               + "/resource/" + it->first + "/", it->second);
@@ -133,15 +126,12 @@ bool CProjectHandler::WriteResourcesToFile(std::string strProjRootDir, std::stri
   }
 };
 
-/*
-if (!DirExists(strProjRootDir + it->first))
-  MakeDir(strProjRootDir + it->first);
-if (it->second == "skin" && !DirExists(strProjRootDir + it->first + DirSepChar + "language"))
-  MakeDir(strProjRootDir + it->first + DirSepChar + "language");
-if (it->second == "xbmc-core" && !DirExists(strProjRootDir + it->first + DirSepChar + "language"))
-  MakeDir(strProjRootDir + it->first + DirSepChar + "language");
-if (it->second == "addon" && !DirExists(strProjRootDir + it->first + DirSepChar + "resources"))
-  MakeDir(strProjRootDir + it->first + DirSepChar + "resources");
-if (it->second == "addon" && !DirExists(strProjRootDir + it->first + DirSepChar + "resources" + DirSepChar + "language"))
-  MakeDir(strProjRootDir + it->first + DirSepChar + "resources" + DirSepChar + "language");
-*/
+void CProjectHandler::InitUpdateXMLHandler(std::string strProjRootDir)
+{
+m_UpdateXMLHandler.LoadXMLToMem(strProjRootDir);
+}
+
+void CProjectHandler::SaveUpdateXML(std::string strProjRootDir)
+{
+m_UpdateXMLHandler.SaveMemToXML(strProjRootDir);
+}
