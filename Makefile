@@ -41,6 +41,7 @@ lib/POHandler.cpp \
 lib/ResourceHandler.cpp \
 lib/ProjectHandler.cpp \
 lib/UpdateXMLHandler.cpp \
+lib/AddonXMLHandler.cpp \
 lib/JSONHandler.cpp \
 $(OUTPUT)
 
@@ -74,3 +75,4 @@ UpdateXMLHandler.o: UpdateXMLHandler.h Log.cpp Log.h tinyxml.o
 HTTPUtils.o: HTTPUtils.h Log.h Log.cpp
 JSONHandler.o: JSONHandler.h JSONHandler.cpp
 Settings.o: Settings.h Settings.cpp
+AddonXMLHandler.cpp: AddonXMLHandler.h

@@ -21,7 +21,7 @@
 #pragma once
 
 #include "POHandler.h"
-#include "TinyXML/tinyxml.h"
+#include "AddonXMLHandler.h"
 
 class CResourceHandler
 {
@@ -33,20 +33,15 @@ public:
   bool WritePOToFiles(std::string strResourceDir, std::string strPOsuffix);
 
 protected:
-  bool GetEncoding(const TiXmlDocument* pDoc, std::string& strEncoding);
-  bool LoadCoreVersion(std::string filename);
-  std::string EscapeLF(const char * StrToEscape);
-  bool loadAddonXMLFile (std::string AddonXMLFilename);
   bool GetLangsFromDir(std::string strLangDir);
   void CreateMissingDirs (std::string strRootDir);
   void GetResTypeFromDir(std::string ResRootDir);
   void GetResTypeFromTX(std::string category);
-  std::map<std::string, CAddonXMLEntry> m_mapAddonXMLData;
-  std::map<std::string, CAddonXMLEntry>::iterator itAddonXMLData;
+
   std::map<std::string, CPOHandler> m_mapPOFiles;
   std::map<std::string, CPOHandler>::iterator itmapPOFiles;
   std::string m_langDir;
-  std::string m_strResourceData;
+  CAddonXMLHandler m_AddonXMLHandler;
   int m_resType;
   std::string m_strTXCategory;
 };
