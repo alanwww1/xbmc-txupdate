@@ -108,17 +108,8 @@ int main(int argc, char* argv[])
   TXProject.InitUpdateXMLHandler(WorkingDir);
   TXProject.LoadProject(WorkingDir);
 //  TXProject.FetchResourcesFromTransifex(WorkingDir);
-
-  TXProject1.InitUpdateXMLHandler(WorkingDir);
-//  TXProject1.LoadProject(WorkingDir);
-  TXProject1.FetchResourcesFromTransifex(WorkingDir);
-  
   TXProject.WriteResourcesToFile(WorkingDir, ".tx0");
   TXProject.SaveUpdateXML(WorkingDir);
-  
-  TXProject1.WriteResourcesToFile(WorkingDir, ".tx1");
-  TXProject1.SaveUpdateXML(WorkingDir);
-  
 
   printf("Warnings: %i\n", CLog::GetWarnCount());
 //  if (bUnknownLangFound)

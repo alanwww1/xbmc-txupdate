@@ -36,7 +36,7 @@ bool CProjectHandler::LoadProject(std::string strProjRootDir)
   GetResourcesFromDir(strProjRootDir);
   int loadCounter = 0;
 
-  for (itmapResources = m_mapResources.begin(); itmapResources != m_mapResources.end(); itmapResources++)
+  for (itmapResources = m_mapResourcesLocal.begin(); itmapResources != m_mapResourcesLocal.end(); itmapResources++)
   {
     CLog::Log(logLINEFEED, "");
     CLog::Log(logINFO, "ProjHandler: *** Resource: %s ***", itmapResources->first.c_str());
@@ -70,7 +70,7 @@ bool CProjectHandler::GetResourcesFromDir(std::string strProjRootDir)
   {
     resCounter++;
     CResourceHandler ResourceHandler;
-    m_mapResources[*itlistDirs] = ResourceHandler;
+    m_mapResourcesLocal[*itlistDirs] = ResourceHandler;
   }
 
   CLog::Log(logINFO, "ProjHandler: Found %i resources at root dir: %s", resCounter, strProjRootDir.c_str());
@@ -88,12 +88,12 @@ bool CProjectHandler::FetchResourcesFromTransifex(std::string strProjRootDir)
   strcpy(cstrtemp, strtemp.c_str());
 
   CJSONHandler JSONHandler;
-  m_mapResourcesTX.clear();
-  m_mapResourcesTX = JSONHandler.ParseResources(strtemp);
+  m_mapResourceNamesTX.clear();
+  m_mapResourceNamesTX = JSONHandler.ParseResources(strtemp);
 
   CResourceHandler ResourceHandler;
 
-  for (std::map<std::string, std::string>::iterator it = m_mapResourcesTX.begin(); it != m_mapResourcesTX.end(); it++)
+  for (std::map<std::string, std::string>::iterator it = m_mapResourceNamesTX.begin(); it != m_mapResourceNamesTX.end(); it++)
   {
     CLog::Log(logLINEFEED, "");
     CLog::Log(logINFO, "ProjHandler: *** Fetch Resource: %s ***", it->first.c_str());
@@ -103,8 +103,8 @@ bool CProjectHandler::FetchResourcesFromTransifex(std::string strProjRootDir)
       MakeDir(strProjRootDir + it->first);
     }
     m_UpdateXMLHandler.AddResourceToXMLFile(it->first);
-    m_mapResources[it->first] = ResourceHandler;
-    m_mapResources[it->first].FetchPOFilesTXToMem("https://www.transifex.com/api/2/project/" + g_Settings.GetProjectname()
+    m_mapResourcesTX[it->first] = ResourceHandler;
+    m_mapResourcesTX[it->first].FetchPOFilesTXToMem("https://www.transifex.com/api/2/project/" + g_Settings.GetProjectname()
                                               + "/resource/" + it->first + "/", it->second);
   }
   return true;
@@ -113,7 +113,7 @@ bool CProjectHandler::FetchResourcesFromTransifex(std::string strProjRootDir)
 
 bool CProjectHandler::WriteResourcesToFile(std::string strProjRootDir, std::string strPOSuffix)
 {
-  for (itmapResources = m_mapResources.begin(); itmapResources != m_mapResources.end(); itmapResources++)
+  for (itmapResources = m_mapResourcesTX.begin(); itmapResources != m_mapResourcesTX.end(); itmapResources++)
   {
     CLog::Log(logLINEFEED, "");
     CLog::Log(logINFO, "ProjHandler: *** Write Resource: %s ***", itmapResources->first.c_str());
@@ -122,7 +122,7 @@ bool CProjectHandler::WriteResourcesToFile(std::string strProjRootDir, std::stri
       CLog::Log(logERROR, "ProjHandler: Creating local directory for new resource on Transifex: %s", itmapResources->first.c_str());
       MakeDir(strProjRootDir + itmapResources->first + DirSepChar);
     }
-    m_mapResources[itmapResources->first].WritePOToFiles (strProjRootDir + itmapResources->first + DirSepChar, strPOSuffix);
+    m_mapResourcesTX[itmapResources->first].WritePOToFiles (strProjRootDir + itmapResources->first + DirSepChar, strPOSuffix);
   }
   return true;
 };

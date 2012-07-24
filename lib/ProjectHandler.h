@@ -36,9 +36,11 @@ public:
 
 protected:
   bool GetResourcesFromDir(std::string strProjRootDir);
-  std::map<std::string, CResourceHandler> m_mapResources;;
+  std::map<std::string, CResourceHandler> m_mapResourcesLocal;
+  std::map<std::string, CResourceHandler> m_mapResourcesTX;
+  std::map<std::string, CResourceHandler> m_mapResourcesUpstr;
   std::map<std::string, CResourceHandler>::iterator itmapResources;
-  std::map<std::string, std::string> m_mapResourcesTX;
+  std::map<std::string, std::string> m_mapResourceNamesTX;
   int m_resCount;
   CUpdateXMLHandler m_UpdateXMLHandler;
 };

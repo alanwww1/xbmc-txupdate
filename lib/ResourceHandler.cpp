@@ -92,46 +92,6 @@ bool CResourceHandler::GetLangsFromDir(std::string strLangDir)
   }
   return true;
 };
- /*
-bool CResourceHandler::CreateMissingDirs (std::string strRootDir)
-{
-  if (!DirExists(strRootDir + "resources"))
-  {
-    if ((!MakeDir(strRootDir + "resources")))
-      CLog::Log(logINFO, "ResHandler: Created missing resources directory at dir: %s", strRootDir.c_str());
-    else
-    {
-      CLog::Log(logERROR, "ResHandler: Not able to create resources directory at dir: %s", strRootDir.c_str());
-      return 1;
-    }
-  }
-
-  if (!DirExists(strRootDir + "resources" + DirSepChar + "language"))
-  {
-    if (!MakeDir(strRootDir + "resources"+ DirSepChar + "language"))
-      CLog::Log(logINFO, "ResHandler: Created missing language directory in dir: %s", (strRootDir + "resources").c_str());
-    else
-    {
-      CLog::Log(logERROR, "ResHandler: Not able to create language directory in dir: %s", (strRootDir + "resources").c_str());
-      return 1;
-    }
-  }
-
-  std::string WorkingDir = strRootDir + "resources"+ DirSepChar + "language" + DirSepChar;
-  for (itAddonXMLData = m_mapAddonXMLData.begin(); itAddonXMLData != m_mapAddonXMLData.end(); itAddonXMLData++)
-  {
-    if (!DirExists(WorkingDir + FindLang(itAddonXMLData->first)) && (!MakeDir(WorkingDir +
-      FindLang(itAddonXMLData->first))))
-    {
-      CLog::Log(logERROR, "ResHandler: Not able to create %s language directory at dir: %s", itAddonXMLData->first.c_str(),
-              WorkingDir.c_str());
-      return 1;
-    }
-  }
-  return true;
-};
-
-*/
 
 void CResourceHandler::GetResTypeFromDir(std::string ResRootDir)
 {
@@ -196,7 +156,6 @@ void CResourceHandler::CreateMissingDirs(std::string strResRootDir)
   return;
 };
 
-
 void CResourceHandler::GetResTypeFromTX(std::string category)
 {
   m_resType = UNKNOWN;
@@ -231,8 +190,6 @@ bool CResourceHandler::FetchPOFilesTXToMem(std::string strURL, std::string strCa
 
   for (std::list<std::string>::iterator it = listLangsTX.begin(); it != listLangsTX.end(); it++)
   {
-//    std::string strLangdir = GetResTypeFromTX(strResRootDir, category);
-
     m_mapPOFiles[*it] = POHandler;
     CPOHandler * pPOHandler = &m_mapPOFiles[*it];
     pPOHandler->FetchPOTXToMem(strURL + "translation/" + *it + "/?file");
