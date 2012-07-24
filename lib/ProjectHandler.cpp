@@ -121,9 +121,10 @@ bool CProjectHandler::WriteResourcesToFile(std::string strProjRootDir, std::stri
     {
       CLog::Log(logERROR, "ProjHandler: Creating local directory for new resource on Transifex: %s", itmapResources->first.c_str());
       MakeDir(strProjRootDir + itmapResources->first + DirSepChar);
-    } 
+    }
     m_mapResources[itmapResources->first].WritePOToFiles (strProjRootDir + itmapResources->first + DirSepChar, strPOSuffix);
   }
+  return true;
 };
 
 void CProjectHandler::InitUpdateXMLHandler(std::string strProjRootDir)

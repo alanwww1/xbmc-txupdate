@@ -40,6 +40,7 @@ bool CResourceHandler::LoadResource(std::string strResRootDir, std::string strPO
             strResRootDir.c_str(), strPOsuffix.c_str());
 
   GetResTypeFromDir(strResRootDir);
+  CreateMissingDirs(strResRootDir);
   GetLangsFromDir(m_langDir);
 
   if (m_resType == ADDON || m_resType == ADDON_NOSTRINGS || m_resType == SKIN)
@@ -57,7 +58,8 @@ bool CResourceHandler::LoadResource(std::string strResRootDir, std::string strPO
 
   for (itmapPOFiles = m_mapPOFiles.begin(); itmapPOFiles != m_mapPOFiles.end(); itmapPOFiles++)
   {
-    itmapPOFiles->second.LoadPOFile(m_langDir + itmapPOFiles->first + DirSepChar + "strings.po" + strPOsuffix);
+    itmapPOFiles->second.LoadPOFile(m_langDir + g_LCodeHandler.FindLang(itmapPOFiles->first) + DirSepChar + "strings.po"
+                                    + strPOsuffix);
     itmapPOFiles->second.SetIfIsEnglish(itmapPOFiles->first == "en");
 //    CLog::Log(logDEBUG, "ResHandler: Loaaded language file for: %s", itmapPOFiles->first.c_str());
   };
@@ -328,71 +330,79 @@ void CResourceHandler::GetResTypeFromDir(std::string ResRootDir)
     DirSepChar + "English" + DirSepChar + "strings.po")))
   {
     m_resType = ADDON;
-    m_langDir = ResRootDir + DirSepChar + "resources" + DirSepChar + "language"+ DirSepChar;
   }
   else if ((FileExist(ResRootDir + "addon.xml")) && (FileExist(ResRootDir + "language" + DirSepChar + "English" +
     DirSepChar + "strings.po")))
   {
     m_resType = SKIN;
-    m_langDir = ResRootDir + DirSepChar + "language"+ DirSepChar;
   }
   else if (FileExist(ResRootDir + "addon.xml"))
   {
     m_resType = ADDON_NOSTRINGS;
-    m_langDir = ResRootDir + DirSepChar + "resources" + DirSepChar + "language"+ DirSepChar;
   }
   else if (FileExist(ResRootDir + "xbmc" + DirSepChar + "GUIInfoManager.h"))
   {
     m_resType = CORE;
-    m_langDir = ResRootDir + DirSepChar + "language" + DirSepChar;
   }
   else
   {
     m_resType = UNKNOWN;
-    m_langDir = ResRootDir;
+    m_langDir = "";
+    CLog::Log(logERROR, "ResHandler: GetResTypeFromDir: Type of resource can not be determined at rootdir: %s",
+              ResRootDir.c_str());
   }
 };
 
 
 // Download from Transifex related functions
 
-std::string CResourceHandler::GetResTypeFromTX(std::string strResRootDir, std::string category)
+void CResourceHandler::CreateMissingDirs(std::string strResRootDir)
 {
-  std::string strLangdir;
-  m_resType = UNKNOWN;
-  if (category == "skin" || category == "xbmc-core")
+  if (m_resType == SKIN || m_resType == CORE)
   {
     if (!DirExists(strResRootDir + "language"))
     {
-      CLog::Log(logERROR, "ProjHandler: Creating language directory for new %s resource on Transifex", category.c_str());
+      CLog::Log(logINFO, "ResHandler: Creating language directory for new resource on Transifex");
       MakeDir(strResRootDir + "language");
     }
-    if (category == "xbmc-core")
-      m_resType = CORE;
-    else
-      m_resType = SKIN;
-    strLangdir = strResRootDir + "language" + DirSepChar;
+    m_langDir = strResRootDir + "language" + DirSepChar;
   }
-  if (category == "addon")
+  if (m_resType == ADDON || m_resType == ADDON_NOSTRINGS)
   {
     if (!DirExists(strResRootDir + "resources"))
     {
-      CLog::Log(logERROR, "ProjHandler: Creating \"resources\" directory for new addon resource on Transifex");
+      CLog::Log(logINFO, "ResHandler: Creating \"resources\" directory for new addon resource on Transifex");
       MakeDir(strResRootDir + "resources");
     }
     if (!DirExists(strResRootDir + "resources" + DirSepChar + "language"))
     {
-      CLog::Log(logERROR, "ProjHandler: Creating \"resources\" directory for new addon resource on Transifex");
+      CLog::Log(logINFO, "ResHandler: Creating language directory for new addon resource on Transifex");
       MakeDir(strResRootDir + "resources" + DirSepChar + "language");
     }
-    m_resType = ADDON;
-    strLangdir = strResRootDir + "resources" + DirSepChar + "language" + DirSepChar;
+    m_langDir = strResRootDir + "resources" + DirSepChar + "language" + DirSepChar;
   }
   if (m_resType == UNKNOWN)
-    CLog::Log(logERROR, "ProjHandler: Impossible to determine resource type on Transifex (addon, skin, xbmc-core)");
+    CLog::Log(logERROR, "ResHandler: Impossible to determine resource type on Transifex (addon, skin, xbmc-core)");
 
-  m_langDir = strLangdir;
-  return strLangdir;
+  return;
+};
+
+
+void CResourceHandler::GetResTypeFromTX(std::string category)
+{
+  m_resType = UNKNOWN;
+  if (category == "xbmc-core")
+    m_resType = CORE;
+  else if (category == "skin")
+    m_resType = SKIN;
+  else if (category == "addon")
+    m_resType = ADDON;
+  else if (category == "addon_nostrings")
+    m_resType = ADDON_NOSTRINGS;
+  else
+    CLog::Log(logERROR, "ResHandler: Impossible to determine resource type on Transifex (addon, skin, xbmc-core)");
+
+  return;
 };
 
 bool CResourceHandler::FetchPOFilesTXToMem(std::string strURL, std::string strCategory)
@@ -423,21 +433,22 @@ bool CResourceHandler::FetchPOFilesTXToMem(std::string strURL, std::string strCa
     CLog::Log(logINFO, "POHandler: %s\t\t%i\t\t%i\t\t%i", strLang.c_str(), pPOHandler->GetSizeNumEntries(),
               pPOHandler->GetSizeClassEntries(), pPOHandler->GetSizeCommEntries());
   }
-  m_strTXCategory = strCategory;
+  GetResTypeFromTX(strCategory);
+  return true;
 }
 
 bool CResourceHandler::WritePOToFiles(std::string strResourceDir, std::string strPOsuffix)
 {
   CLog::Log(logINFO, "ResHandler: Starting to write resource from memory to directory: %s",strResourceDir.c_str());
 
-  std::string strLangdir = GetResTypeFromTX(strResourceDir, m_strTXCategory);
+  CreateMissingDirs(strResourceDir);
   std::string strListNewDirs;
 
   for (itmapPOFiles = m_mapPOFiles.begin(); itmapPOFiles != m_mapPOFiles.end(); itmapPOFiles++)
   {
     if (itmapPOFiles->first == "en")
       continue;
-    std::string strPODir = strLangdir + g_LCodeHandler.FindLang(itmapPOFiles->first);
+    std::string strPODir = m_langDir + g_LCodeHandler.FindLang(itmapPOFiles->first);
     if (!DirExists(strPODir))
     {
       strListNewDirs += g_LCodeHandler.FindLang(itmapPOFiles->first) + " ";
@@ -453,4 +464,5 @@ bool CResourceHandler::WritePOToFiles(std::string strResourceDir, std::string st
   }
   if (!strListNewDirs.empty())
     CLog::Log(logINFO, "POHandler: New local directories already existing on Transifex: %s", strListNewDirs.c_str());
+  return true;
 }

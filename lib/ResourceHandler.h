@@ -38,9 +38,9 @@ protected:
   std::string EscapeLF(const char * StrToEscape);
   bool loadAddonXMLFile (std::string AddonXMLFilename);
   bool GetLangsFromDir(std::string strLangDir);
-  bool CreateMissingDirs (std::string strRootDir);
+  void CreateMissingDirs (std::string strRootDir);
   void GetResTypeFromDir(std::string ResRootDir);
-  std::string GetResTypeFromTX(std::string strResRootDir, std::string category);
+  void GetResTypeFromTX(std::string category);
   std::map<std::string, CAddonXMLEntry> m_mapAddonXMLData;
   std::map<std::string, CAddonXMLEntry>::iterator itAddonXMLData;
   std::map<std::string, CPOHandler> m_mapPOFiles;

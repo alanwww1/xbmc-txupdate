@@ -78,7 +78,10 @@ bool CPODocument::LoadFile(const std::string &pofilename)
   FILE * file;
   file = fopen(pofilename.c_str(), "rb");
   if (!file)
+  {
+    CLog::Log(logDEBUG, "POParser: No PO file exists called: %s", pofilename.c_str());
     return false;
+  }
 
   fseek(file, 0, SEEK_END);
   int64_t fileLength = ftell(file);
