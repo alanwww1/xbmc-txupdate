@@ -94,7 +94,7 @@ public:
   void WriteHeader(const std::string &strHeader);
   void WritePOEntry(const CPOEntry &currEntry);
   void SetIfIsEnglish(bool bIsENLang) {m_bIsForeignLang = !bIsENLang;}
-  bool FetchTXToMem(const std::string &strURL);
+  bool FetchURLToMem(const std::string &strURL);
 
 protected:
   std::string IntToStr(int number);

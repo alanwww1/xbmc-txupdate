@@ -108,7 +108,35 @@ bool CProjectHandler::FetchResourcesFromTransifex(std::string strProjRootDir)
                                               + "/resource/" + it->first + "/", it->second);
   }
   return true;
+};
 
+bool CProjectHandler::FetchResourcesFromUpstream(std::string strProjRootDir)
+{
+
+  std::map<std::string, CXMLResdata> mapRes = m_UpdateXMLHandler.GetResMap();
+  std::map<std::string, CXMLResdata> mapResWithUpstream;
+
+  for (std::map<std::string, CXMLResdata>::iterator it = mapRes.begin(); it != mapRes.end(); it++)
+  {
+    if (!it->second.strUptreamURL.empty())
+      mapResWithUpstream[it->first] = it->second;
+  }
+
+  CResourceHandler ResourceHandler;
+
+  for (std::map<std::string, CXMLResdata>::iterator it = mapResWithUpstream.begin(); it != mapResWithUpstream.end(); it++)
+  {
+    CLog::Log(logLINEFEED, "");
+    CLog::Log(logINFO, "ProjHandler: *** Fetch Resource from upstream: %s ***", it->first.c_str());
+    if (!DirExists(strProjRootDir + it->first))
+    {
+      CLog::Log(logERROR, "ProjHandler: Creating local directory for new resource in update.xml: %s", it->first.c_str());
+      MakeDir(strProjRootDir + it->first);
+    }
+    m_mapResourcesUpstr[it->first] = ResourceHandler;
+    m_mapResourcesUpstr[it->first].FetchPOFilesUpstreamToMem(it->second);
+  }
+  return true;
 };
 
 bool CProjectHandler::WriteResourcesToFile(std::string strProjRootDir, std::string strPOSuffix)

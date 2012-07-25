@@ -38,6 +38,8 @@ public:
   bool LoadXMLToMem(std::string rootDir);
   void AddResourceToXMLFile(std::string strResName);
   void SaveMemToXML(std::string rootDir);
+  CXMLResdata GetResData(std::string strResName);
+  const std::map<std::string, CXMLResdata> &GetResMap() const {return m_mapXMLResdata;}
 private:
   int GetResType(std::string ResRootDir);
   std::string IntToStr(int number);

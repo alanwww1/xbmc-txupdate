@@ -52,6 +52,7 @@ private:
   std::string CacheFileNameFromURL(std::string strURL);
   void curlURLToCache(std::string strCacheFile, std::string strURL);
   CLoginData GetCredentials (std::string strURL);
+  std::string URLEncode (std::string strURL);
   std::map<std::string, CLoginData> m_mapLoginData;
   std::map<std::string, CLoginData>::iterator itMapLoginData;
 };

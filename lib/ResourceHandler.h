@@ -22,6 +22,7 @@
 
 #include "POHandler.h"
 #include "AddonXMLHandler.h"
+#include "UpdateXMLHandler.h"
 
 class CResourceHandler
 {
@@ -30,6 +31,7 @@ public:
   ~CResourceHandler();
   bool LoadResource(std::string strResRootDir, std::string strPOsuffix);
   bool FetchPOFilesTXToMem(std::string strURL, std::string strCategory);
+  bool FetchPOFilesUpstreamToMem(CXMLResdata XMLResdata);
   bool WritePOToFiles(std::string strResourceDir, std::string strPOsuffix);
 
 protected:

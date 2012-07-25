@@ -37,8 +37,8 @@ public:
   ~CSettings();
   void SetProjectname(std::string strName);
   std::string GetProjectname();
-  void SetHTTPCacheExpire(int exptime);
-  int GetHTTPCacheExpire();
+  void SetHTTPCacheExpire(size_t exptime);
+  size_t GetHTTPCacheExpire();
   void SetMinCompletion(int complperc);
   int GetMinCompletion();
 private:

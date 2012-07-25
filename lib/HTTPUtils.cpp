@@ -88,6 +88,8 @@ void CHTTPHandler::curlURLToCache(std::string strCacheFile, std::string strURL)
   CURLcode curlResult;
   FILE *dloadfile;
 
+  strURL = URLEncode(strURL);
+
   CLoginData LoginData = GetCredentials(strURL);
 
     if(m_curlHandle) 
@@ -251,3 +253,16 @@ CLoginData CHTTPHandler::GetCredentials (std::string strURL)
 
   return LoginData;
 };
+
+std::string CHTTPHandler::URLEncode (std::string strURL)
+{
+  std::string strOut;
+  for (std::string::iterator it = strURL.begin(); it != strURL.end(); it++)
+  {
+    if (*it == ' ')
+      strOut += "%20";
+    else
+      strOut += *it;
+  }
+  return strOut;
+}

@@ -175,7 +175,7 @@ void CResourceHandler::GetResTypeFromTX(std::string category)
 
 bool CResourceHandler::FetchPOFilesTXToMem(std::string strURL, std::string strCategory)
 {
-  CLog::Log(logINFO, "ResHandler: Starting to load resource from URL: %s into memory",strURL.c_str());
+  CLog::Log(logINFO, "ResHandler: Starting to load resource from TX URL: %s into memory",strURL.c_str());
 
   std::string strtemp = g_HTTPHandler.GetURLToSTR(strURL + "stats/");
 //  printf("%s, strlength: %i", strtemp.c_str(), strtemp.size());
@@ -192,7 +192,7 @@ bool CResourceHandler::FetchPOFilesTXToMem(std::string strURL, std::string strCa
   {
     m_mapPOFiles[*it] = POHandler;
     CPOHandler * pPOHandler = &m_mapPOFiles[*it];
-    pPOHandler->FetchPOTXToMem(strURL + "translation/" + *it + "/?file");
+    pPOHandler->FetchPOURLToMem(strURL + "translation/" + *it + "/?file");
     pPOHandler->SetIfIsEnglish(*it == "en");
     std::string strLang = *it;
     strLang.resize(20, ' ');
@@ -202,6 +202,50 @@ bool CResourceHandler::FetchPOFilesTXToMem(std::string strURL, std::string strCa
   GetResTypeFromTX(strCategory);
   return true;
 }
+
+bool CResourceHandler::FetchPOFilesUpstreamToMem(CXMLResdata XMLResdata)
+{
+  CLog::Log(logINFO, "ResHandler: Starting to load resource from Upsream URL: %s into memory",XMLResdata.strUptreamURL.c_str());
+
+  std::list<std::string> listLangs;
+  std::string strLangs;
+  if (XMLResdata.strLangsFromUpstream.empty())
+    strLangs = "en";
+  else
+    strLangs = "en " + XMLResdata.strLangsFromUpstream;
+  size_t posEnd;
+
+  do
+  {
+    posEnd = strLangs.find(" ");
+  if (posEnd != std::string::npos)
+  {
+    listLangs.push_back(strLangs.substr(0,posEnd));
+    strLangs = strLangs.substr(posEnd+1);
+  }
+  else
+    listLangs.push_back(strLangs);
+  }
+  while (posEnd != std::string::npos);
+
+  CPOHandler POHandler;
+
+  for (std::list<std::string>::iterator it = listLangs.begin(); it != listLangs.end(); it++)
+  {
+    m_mapPOFiles[*it] = POHandler;
+    CPOHandler * pPOHandler = &m_mapPOFiles[*it];
+    pPOHandler->FetchPOURLToMem(XMLResdata.strUptreamURL + g_LCodeHandler.FindLang(*it) + DirSepChar + "strings.po");
+    pPOHandler->SetIfIsEnglish(*it == "en");
+    std::string strLang = *it;
+    strLang.resize(20, ' ');
+    CLog::Log(logINFO, "POHandler: %s\t\t%i\t\t%i\t\t%i", strLang.c_str(), pPOHandler->GetSizeNumEntries(),
+              pPOHandler->GetSizeClassEntries(), pPOHandler->GetSizeCommEntries());
+  }
+//  GetResTypeFromTX(strCategory);
+  return true;
+}
+
+
 
 bool CResourceHandler::WritePOToFiles(std::string strResourceDir, std::string strPOsuffix)
 {

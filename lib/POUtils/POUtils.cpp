@@ -132,7 +132,7 @@ bool CPODocument::LoadFile(const std::string &pofilename)
   return false;
 };
 
-bool CPODocument::FetchTXToMem(const std::string &strURL)
+bool CPODocument::FetchURLToMem(const std::string &strURL)
 {
   m_strBuffer.clear();
   m_strBuffer = "\n" + g_HTTPHandler.GetURLToSTR(strURL);

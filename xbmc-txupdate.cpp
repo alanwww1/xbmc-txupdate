@@ -107,7 +107,8 @@ int main(int argc, char* argv[])
   CProjectHandler TXProject, TXProject1;
   TXProject.InitUpdateXMLHandler(WorkingDir);
   TXProject.LoadProject(WorkingDir);
-//  TXProject.FetchResourcesFromTransifex(WorkingDir);
+  TXProject.FetchResourcesFromTransifex(WorkingDir);
+  TXProject.FetchResourcesFromUpstream(WorkingDir);
   TXProject.WriteResourcesToFile(WorkingDir, ".tx0");
   TXProject.SaveUpdateXML(WorkingDir);
 

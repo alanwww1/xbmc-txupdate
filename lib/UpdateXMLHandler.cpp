@@ -194,3 +194,9 @@ std::string CUpdateXMLHandler::IntToStr(int number)
   ss << number;//add number to the stream
   return ss.str();//return a string with the contents of the stream
 };
+
+CXMLResdata CUpdateXMLHandler::GetResData(string strResName)
+{
+  return m_mapXMLResdata[strResName];
+}
+

@@ -35,10 +35,10 @@ bool CPOHandler::LoadPOFile(std::string strPOFileName)
   return ProcessPOFile(PODoc);
 };
 
-bool CPOHandler::FetchPOTXToMem (std::string strURL)
+bool CPOHandler::FetchPOURLToMem (std::string strURL)
 {
   CPODocument PODoc;
-  if (!PODoc.FetchTXToMem(strURL))
+  if (!PODoc.FetchURLToMem(strURL))
     return false;
   return ProcessPOFile(PODoc);
 };

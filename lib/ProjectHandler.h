@@ -30,6 +30,7 @@ public:
   ~CProjectHandler();
   bool LoadProject(std::string strProjRootDir);
   bool FetchResourcesFromTransifex(std::string strProjRootDir);
+  bool FetchResourcesFromUpstream(std::string strProjRootDir);
   bool WriteResourcesToFile(std::string strProjRootDir, std::string strPOSuffix);
   void InitUpdateXMLHandler(std::string strProjRootDir);
   void SaveUpdateXML(std::string strProjRootDir);

@@ -46,12 +46,12 @@ string CSettings::GetProjectname()
   return m_strProjectName;
 };
 
-void CSettings::SetHTTPCacheExpire(int exptime)
+void CSettings::SetHTTPCacheExpire(size_t exptime)
 {
   m_CacheExpire = exptime;
 };
 
-int CSettings::GetHTTPCacheExpire()
+size_t CSettings::GetHTTPCacheExpire()
 {
   return m_CacheExpire;
 };
