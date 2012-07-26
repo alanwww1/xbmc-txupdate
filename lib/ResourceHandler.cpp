@@ -249,6 +249,11 @@ bool CResourceHandler::FetchPOFilesUpstreamToMem(CXMLResdata XMLResdata, int res
       CLog::Log(logINFO, "ResHandler: No resourcetype defined for upsream URL:",XMLResdata.strUptreamURL.c_str());
   }
 
+  if (resType == CORE)
+    m_AddonXMLHandler.FetchCoreVersionUpstr(XMLResdata.strUptreamURL + "xbmc/GUIInfoManager.h");
+  else
+    m_AddonXMLHandler.FetchAddonXMLFileUpstr(XMLResdata.strUptreamURL + "addon.xml");
+
   CPOHandler POHandler;
 
   for (std::list<std::string>::iterator it = listLangs.begin(); it != listLangs.end(); it++)
