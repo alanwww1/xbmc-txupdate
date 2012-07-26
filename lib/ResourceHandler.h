@@ -31,8 +31,9 @@ public:
   ~CResourceHandler();
   bool LoadResource(std::string strResRootDir, std::string strPOsuffix);
   bool FetchPOFilesTXToMem(std::string strURL, std::string strCategory);
-  bool FetchPOFilesUpstreamToMem(CXMLResdata XMLResdata);
+  bool FetchPOFilesUpstreamToMem(CXMLResdata XMLResdata, int resType);
   bool WritePOToFiles(std::string strResourceDir, std::string strPOsuffix);
+  int GetCurrResType() const {return m_resType;}
 
 protected:
   bool GetLangsFromDir(std::string strLangDir);
