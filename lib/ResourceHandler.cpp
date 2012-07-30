@@ -196,8 +196,8 @@ bool CResourceHandler::FetchPOFilesTXToMem(std::string strURL, std::string strCa
     pPOHandler->SetIfIsEnglish(*it == "en");
     std::string strLang = *it;
     strLang.resize(20, ' ');
-    CLog::Log(logINFO, "POHandler: %s\t\t%i\t\t%i\t\t%i", strLang.c_str(), pPOHandler->GetSizeNumEntries(),
-              pPOHandler->GetSizeClassEntries(), pPOHandler->GetSizeCommEntries());
+    CLog::Log(logINFO, "POHandler: %s\t\t%i\t\t%i\t\t%i", strLang.c_str(), pPOHandler->GetNumEntriesCount(),
+              pPOHandler->GetClassEntriesCount(), pPOHandler->GetSizeCommEntries());
   }
   GetResTypeFromTX(strCategory);
   return true;
@@ -264,8 +264,8 @@ bool CResourceHandler::FetchPOFilesUpstreamToMem(CXMLResdata XMLResdata, int res
     pPOHandler->SetIfIsEnglish(*it == "en");
     std::string strLang = *it;
     strLang.resize(20, ' ');
-    CLog::Log(logINFO, "POHandler: %s\t\t%i\t\t%i\t\t%i", strLang.c_str(), pPOHandler->GetSizeNumEntries(),
-              pPOHandler->GetSizeClassEntries(), pPOHandler->GetSizeCommEntries());
+    CLog::Log(logINFO, "POHandler: %s\t\t%i\t\t%i\t\t%i", strLang.c_str(), pPOHandler->GetNumEntriesCount(),
+              pPOHandler->GetClassEntriesCount(), pPOHandler->GetSizeCommEntries());
   }
 //  GetResTypeFromTX(strCategory);
   return true;
@@ -295,8 +295,8 @@ bool CResourceHandler::WritePOToFiles(std::string strResourceDir, std::string st
     pPOHandler->WritePOFile(strPODir + DirSepChar + "strings.po" + strPOsuffix);
     std::string strLang = g_LCodeHandler.FindLang(itmapPOFiles->first);
     strLang.resize(20, ' ');
-    CLog::Log(logINFO, "POHandler: %s\t\t%i\t\t%i\t\t%i", strLang.c_str(), pPOHandler->GetSizeNumEntries(),
-              pPOHandler->GetSizeClassEntries(), pPOHandler->GetSizeCommEntries());
+    CLog::Log(logINFO, "POHandler: %s\t\t%i\t\t%i\t\t%i", strLang.c_str(), pPOHandler->GetNumEntriesCount(),
+              pPOHandler->GetClassEntriesCount(), pPOHandler->GetSizeCommEntries());
   }
   if (!strListNewDirs.empty())
     CLog::Log(logINFO, "POHandler: New local directories already existing on Transifex: %s", strListNewDirs.c_str());

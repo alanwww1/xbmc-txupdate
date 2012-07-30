@@ -34,6 +34,9 @@ public:
   bool FetchPOFilesUpstreamToMem(CXMLResdata XMLResdata, int resType);
   bool WritePOToFiles(std::string strResourceDir, std::string strPOsuffix);
   int GetCurrResType() const {return m_resType;}
+  size_t GetLangsCount() const {return m_mapPOFiles.size();}
+  std::string GetLangCodeFromPos(size_t pos) const {itmapPOFiles = m_mapPOFiles.begin() + pos; return itmapPOFiles->first;}
+  CPOHandler GetPOData(std::string strLang) const {return m_mapPOFiles[strLang];}
 
 protected:
   bool GetLangsFromDir(std::string strLangDir);

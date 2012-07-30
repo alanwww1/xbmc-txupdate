@@ -35,11 +35,14 @@ public:
   void AddClassicEntry (CPOEntry &EntryToAdd);
   bool ModifyClassicEntry (CPOEntry &EntryToFind, CPOEntry EntryNewValue);
   bool DeleteClassicEntry (CPOEntry &EntryToFind);
+
+  CPOEntry GetNumPOEntry(uint32_t numid) const {return m_mapStrings[numid];}
+
   void SetAddonMetaData (CAddonXMLEntry AddonXMLEntry, CAddonXMLEntry AddonXMLEntryEN);
   void SetHeader (std::string strPreText);
-  size_t const GetSizeNumEntries() {return m_mapStrings.size();}
-  size_t const GetSizeClassEntries() {return m_vecClassicEntries.size();}
-  size_t const GetSizeCommEntries() {return m_CommsCntr;}
+  size_t const GetNumEntriesCount() {return m_mapStrings.size();}
+  size_t const GetClassEntriesCount() {return m_vecClassicEntries.size();}
+  size_t const GetCommntEntriesCount() {return m_CommsCntr;}
   void SetIfIsEnglish(bool bIsENLang) {m_bPOIsEnglish = bIsENLang;}
 
 protected:
