@@ -24,6 +24,8 @@
 #include "AddonXMLHandler.h"
 #include "UpdateXMLHandler.h"
 
+typedef std::map<std::string, CPOHandler>::iterator T_itmapPOFiles;
+
 class CResourceHandler
 {
 public:
@@ -35,17 +37,17 @@ public:
   bool WritePOToFiles(std::string strResourceDir, std::string strPOsuffix);
   int GetCurrResType() const {return m_resType;}
   size_t GetLangsCount() const {return m_mapPOFiles.size();}
-  std::string GetLangCodeFromPos(size_t pos) const {itmapPOFiles = m_mapPOFiles.begin() + pos; return itmapPOFiles->first;}
-  CPOHandler GetPOData(std::string strLang) const {return m_mapPOFiles[strLang];}
+  std::string GetLangCodeFromPos(size_t pos) {T_itmapPOFiles it = IterateToMapIndex (m_mapPOFiles.begin(), pos); return it->first;}
+  CPOHandler GetPOData(std::string strLang) {return m_mapPOFiles[strLang];}
 
 protected:
   bool GetLangsFromDir(std::string strLangDir);
   void CreateMissingDirs (std::string strRootDir);
   void GetResTypeFromDir(std::string ResRootDir);
   void GetResTypeFromTX(std::string category);
+  T_itmapPOFiles IterateToMapIndex(T_itmapPOFiles it, size_t index);
 
   std::map<std::string, CPOHandler> m_mapPOFiles;
-  std::map<std::string, CPOHandler>::iterator itmapPOFiles;
   std::string m_langDir;
   CAddonXMLHandler m_AddonXMLHandler;
   int m_resType;

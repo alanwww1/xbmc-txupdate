@@ -23,6 +23,10 @@
 #include "POUtils/POUtils.h"
 #include <map>
 
+typedef std::map<uint32_t, CPOEntry>::iterator itStrings;
+typedef std::vector<CPOEntry>::iterator itClassicEntries;
+
+
 class CPOHandler
 {
 public:
@@ -36,7 +40,8 @@ public:
   bool ModifyClassicEntry (CPOEntry &EntryToFind, CPOEntry EntryNewValue);
   bool DeleteClassicEntry (CPOEntry &EntryToFind);
 
-  CPOEntry GetNumPOEntry(uint32_t numid) const {return m_mapStrings[numid];}
+  CPOEntry GetNumPOEntryByID(uint32_t numid) {return m_mapStrings[numid];}
+  CPOEntry GetNumPOEntryByIdx(size_t pos) {itStrings it = IterateToMapIndex(m_mapStrings.begin(), pos); return it->second;}
 
   void SetAddonMetaData (CAddonXMLEntry AddonXMLEntry, CAddonXMLEntry AddonXMLEntryEN);
   void SetHeader (std::string strPreText);
@@ -48,14 +53,12 @@ public:
 protected:
   void ClearCPOEntry (CPOEntry &entry);
   bool ProcessPOFile(CPODocument &PODoc);
+  itStrings IterateToMapIndex(itStrings it, size_t index) {for (size_t i = 0; i != index; i++) it++; return it;}
 
   std::string m_strHeader;
 
   std::map<uint32_t, CPOEntry> m_mapStrings;
-  typedef std::map<uint32_t, CPOEntry>::iterator itStrings;
-
   std::vector<CPOEntry> m_vecClassicEntries;
-  typedef std::vector<CPOEntry>::iterator itClassicEntries;
 
   size_t m_CommsCntr;
   bool m_bPOIsEnglish;

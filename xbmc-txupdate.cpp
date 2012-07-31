@@ -109,6 +109,7 @@ int main(int argc, char* argv[])
   TXProject.LoadProject(WorkingDir);
   TXProject.FetchResourcesFromTransifex(WorkingDir);
   TXProject.FetchResourcesFromUpstream(WorkingDir);
+  TXProject.CreateMergedResources();
   TXProject.WriteResourcesToFile(WorkingDir, ".tx0");
   TXProject.SaveUpdateXML(WorkingDir);
 

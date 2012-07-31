@@ -56,7 +56,7 @@ bool CResourceHandler::LoadResource(std::string strResRootDir, std::string strPO
 
   CLog::Log(logINFO, "POHandler: Language\t\t\tID entries\tnon-ID entries\tInterline-comments");
 
-  for (itmapPOFiles = m_mapPOFiles.begin(); itmapPOFiles != m_mapPOFiles.end(); itmapPOFiles++)
+  for (T_itmapPOFiles itmapPOFiles = m_mapPOFiles.begin(); itmapPOFiles != m_mapPOFiles.end(); itmapPOFiles++)
   {
     itmapPOFiles->second.LoadPOFile(m_langDir + g_LCodeHandler.FindLang(itmapPOFiles->first) + DirSepChar + "strings.po"
                                     + strPOsuffix);
@@ -197,7 +197,7 @@ bool CResourceHandler::FetchPOFilesTXToMem(std::string strURL, std::string strCa
     std::string strLang = *it;
     strLang.resize(20, ' ');
     CLog::Log(logINFO, "POHandler: %s\t\t%i\t\t%i\t\t%i", strLang.c_str(), pPOHandler->GetNumEntriesCount(),
-              pPOHandler->GetClassEntriesCount(), pPOHandler->GetSizeCommEntries());
+              pPOHandler->GetClassEntriesCount(), pPOHandler->GetCommntEntriesCount());
   }
   GetResTypeFromTX(strCategory);
   return true;
@@ -265,7 +265,7 @@ bool CResourceHandler::FetchPOFilesUpstreamToMem(CXMLResdata XMLResdata, int res
     std::string strLang = *it;
     strLang.resize(20, ' ');
     CLog::Log(logINFO, "POHandler: %s\t\t%i\t\t%i\t\t%i", strLang.c_str(), pPOHandler->GetNumEntriesCount(),
-              pPOHandler->GetClassEntriesCount(), pPOHandler->GetSizeCommEntries());
+              pPOHandler->GetClassEntriesCount(), pPOHandler->GetCommntEntriesCount());
   }
 //  GetResTypeFromTX(strCategory);
   return true;
@@ -280,7 +280,7 @@ bool CResourceHandler::WritePOToFiles(std::string strResourceDir, std::string st
   CreateMissingDirs(strResourceDir);
   std::string strListNewDirs;
 
-  for (itmapPOFiles = m_mapPOFiles.begin(); itmapPOFiles != m_mapPOFiles.end(); itmapPOFiles++)
+  for (T_itmapPOFiles itmapPOFiles = m_mapPOFiles.begin(); itmapPOFiles != m_mapPOFiles.end(); itmapPOFiles++)
   {
     if (itmapPOFiles->first == "en")
       continue;
@@ -296,9 +296,15 @@ bool CResourceHandler::WritePOToFiles(std::string strResourceDir, std::string st
     std::string strLang = g_LCodeHandler.FindLang(itmapPOFiles->first);
     strLang.resize(20, ' ');
     CLog::Log(logINFO, "POHandler: %s\t\t%i\t\t%i\t\t%i", strLang.c_str(), pPOHandler->GetNumEntriesCount(),
-              pPOHandler->GetClassEntriesCount(), pPOHandler->GetSizeCommEntries());
+              pPOHandler->GetClassEntriesCount(), pPOHandler->GetCommntEntriesCount());
   }
   if (!strListNewDirs.empty())
     CLog::Log(logINFO, "POHandler: New local directories already existing on Transifex: %s", strListNewDirs.c_str());
   return true;
+}
+
+T_itmapPOFiles CResourceHandler::IterateToMapIndex(T_itmapPOFiles it, size_t index)
+{
+  for (size_t i = 0; i != index; i++) it++;
+  return it;
 }

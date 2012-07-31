@@ -36,7 +36,7 @@ bool CProjectHandler::LoadProject(std::string strProjRootDir)
   GetResourcesFromDir(strProjRootDir);
   int loadCounter = 0;
 
-  for (itmapResources = m_mapResourcesLocal.begin(); itmapResources != m_mapResourcesLocal.end(); itmapResources++)
+  for (T_itmapRes itmapResources = m_mapResourcesLocal.begin(); itmapResources != m_mapResourcesLocal.end(); itmapResources++)
   {
     CLog::Log(logLINEFEED, "");
     CLog::Log(logINFO, "ProjHandler: *** Resource: %s ***", itmapResources->first.c_str());
@@ -141,7 +141,7 @@ bool CProjectHandler::FetchResourcesFromUpstream(std::string strProjRootDir)
 
 bool CProjectHandler::WriteResourcesToFile(std::string strProjRootDir, std::string strPOSuffix)
 {
-  for (itmapResources = m_mapResourcesTX.begin(); itmapResources != m_mapResourcesTX.end(); itmapResources++)
+  for (T_itmapRes itmapResources = m_mapResourcesTX.begin(); itmapResources != m_mapResourcesTX.end(); itmapResources++)
   {
     CLog::Log(logLINEFEED, "");
     CLog::Log(logINFO, "ProjHandler: *** Write Resource: %s ***", itmapResources->first.c_str());
@@ -154,6 +154,62 @@ bool CProjectHandler::WriteResourcesToFile(std::string strProjRootDir, std::stri
   }
   return true;
 };
+
+bool CProjectHandler::CreateMergedResources()
+{
+
+  std::map<std::string, CresourceAvail> mapResAvail;
+  CresourceAvail currResAvail, emptyResAvail;
+
+  emptyResAvail.bhasLocal = false;
+  emptyResAvail.bhasonTX = false;
+  emptyResAvail.bhasUpstream = false;
+
+  for (T_itmapRes it = m_mapResourcesUpstr.begin(); it != m_mapResourcesUpstr.end(); it++)
+  {
+    if (mapResAvail.find(it->first) == mapResAvail.end())
+      mapResAvail[it->first] = emptyResAvail;
+    mapResAvail[it->first].bhasUpstream = true;
+  }
+
+  for (T_itmapRes it = m_mapResourcesTX.begin(); it != m_mapResourcesTX.end(); it++)
+  {
+    if (mapResAvail.find(it->first) == mapResAvail.end())
+      mapResAvail[it->first] = emptyResAvail;
+    mapResAvail[it->first].bhasonTX = true;
+  }
+
+  for (T_itmapRes it = m_mapResourcesLocal.begin(); it != m_mapResourcesLocal.end(); it++)
+  {
+    if (mapResAvail.find(it->first) == mapResAvail.end())
+      mapResAvail[it->first] = emptyResAvail;
+    mapResAvail[it->first].bhasLocal = true;
+  }
+
+  std::map<std::string, CResourceHandler> * pmapRes;
+
+  for (std::map<std::string, CresourceAvail>::iterator itResAvail = mapResAvail.begin(); itResAvail != mapResAvail.end(); itResAvail++)
+  {
+    printf("*******************************\n");
+    if (itResAvail->second.bhasUpstream)
+      pmapRes = &m_mapResourcesUpstr;
+    else if (itResAvail->second.bhasonTX)
+      pmapRes = &m_mapResourcesTX;
+    else
+      pmapRes = &m_mapResourcesLocal;
+    CResourceHandler currResHandler = (*pmapRes)[itResAvail->first];
+
+    for (size_t LangsIdx = 0; LangsIdx != currResHandler.GetLangsCount(); LangsIdx++)
+    {
+      for (size_t POEntryIdx = 0; POEntryIdx != currResHandler.GetPOData("en").GetNumEntriesCount(); POEntryIdx++)
+      {
+        printf("po:%s\n", currResHandler.GetPOData("en").GetNumPOEntryByIdx(POEntryIdx).msgID.c_str());
+      }
+    }
+  }
+
+}
+
 
 void CProjectHandler::InitUpdateXMLHandler(std::string strProjRootDir)
 {
