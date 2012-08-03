@@ -42,9 +42,11 @@ public:
 
   CPOEntry GetNumPOEntryByID(uint32_t numid) {return m_mapStrings[numid];}
   CPOEntry GetNumPOEntryByIdx(size_t pos) {itStrings it = IterateToMapIndex(m_mapStrings.begin(), pos); return it->second;}
+  void SetHeader (std::string strHeader) {m_strHeader = strHeader;}
+  std::string GetHeader () const {return m_strHeader;}
 
   void SetAddonMetaData (CAddonXMLEntry AddonXMLEntry, CAddonXMLEntry AddonXMLEntryEN);
-  void SetHeader (std::string strPreText);
+  void SetPreHeader (std::string strPreText);
   size_t const GetNumEntriesCount() {return m_mapStrings.size();}
   size_t const GetClassEntriesCount() {return m_vecClassicEntries.size();}
   size_t const GetCommntEntriesCount() {return m_CommsCntr;}

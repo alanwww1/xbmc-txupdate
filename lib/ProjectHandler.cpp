@@ -187,6 +187,7 @@ bool CProjectHandler::CreateMergedResources()
   }
 
   std::map<std::string, CResourceHandler> * pmapRes;
+  m_mapResMerged.clear();
 
   for (std::map<std::string, CresourceAvail>::iterator itResAvail = mapResAvail.begin(); itResAvail != mapResAvail.end(); itResAvail++)
   {
@@ -199,13 +200,28 @@ bool CProjectHandler::CreateMergedResources()
       pmapRes = &m_mapResourcesLocal;
     CResourceHandler currResHandler = (*pmapRes)[itResAvail->first];
 
+    CResourceHandler mergedResHandler;
+    mergedResHandler.SetResType(currResHandler.GetResType());
+    mergedResHandler.SetXMLHandler(currResHandler.GetXMLHandler());
+    mergedResHandler.SetLangDir(currResHandler.GetLangDir());
+
     for (size_t LangsIdx = 0; LangsIdx != currResHandler.GetLangsCount(); LangsIdx++)
     {
+      std::string strLangCode = currResHandler.GetLangCodeFromPos(LangsIdx);
+      CPOHandler mergedPOHandler;
+
       for (size_t POEntryIdx = 0; POEntryIdx != currResHandler.GetPOData("en").GetNumEntriesCount(); POEntryIdx++)
       {
+        size_t numID = currResHandler.GetPOData(strLangCode).GetNumPOEntryByIdx(POEntryIdx).numID;
+        CPOEntry currPOEntry = currResHandler.GetPOData(strLangCode).GetNumPOEntryByIdx(POEntryIdx);
+        CPOEntry POEntryTX = m_mapResourcesTX[itResAvail->first].GetPOData(strLangCode).GetNumPOEntryByID(numID);
+
+        if (POEntryTX.msgID == currPOEntry.msgID)
         printf("po:%s\n", currResHandler.GetPOData("en").GetNumPOEntryByIdx(POEntryIdx).msgID.c_str());
       }
+      mergedResHandler.AddPOData(mergedPOHandler, strLangCode);
     }
+    m_mapResMerged[itResAvail->first] = mergedResHandler;
   }
 
 }

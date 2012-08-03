@@ -230,7 +230,7 @@ void CPOHandler::SetAddonMetaData (CAddonXMLEntry AddonXMLEntry, CAddonXMLEntry 
   return;
 }
 
-void CPOHandler::SetHeader (std::string strPreText)
+void CPOHandler::SetPreHeader (std::string strPreText)
 {
   if (strPreText.empty())
     return;
