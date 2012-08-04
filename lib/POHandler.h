@@ -40,13 +40,15 @@ public:
   bool ModifyClassicEntry (CPOEntry &EntryToFind, CPOEntry EntryNewValue);
   bool DeleteClassicEntry (CPOEntry &EntryToFind);
 
-  CPOEntry GetNumPOEntryByID(uint32_t numid) {return m_mapStrings[numid];}
-  CPOEntry GetNumPOEntryByIdx(size_t pos) {itStrings it = IterateToMapIndex(m_mapStrings.begin(), pos); return it->second;}
-  void SetHeader (std::string strHeader) {m_strHeader = strHeader;}
-  std::string GetHeader () const {return m_strHeader;}
+  bool GetNumPOEntryByID(uint32_t numid, CPOEntry &POEntry);
+  bool AddNumPOEntryByID(uint32_t numid, CPOEntry const &POEntry);
 
-  void SetAddonMetaData (CAddonXMLEntry AddonXMLEntry, CAddonXMLEntry AddonXMLEntryEN);
-  void SetPreHeader (std::string strPreText);
+  CPOEntry GetNumPOEntryByIdx(size_t pos);
+  void SetHeader (std::string &strHeader) {m_strHeader = strHeader;}
+  std::string GetHeader () {return m_strHeader;}
+
+  void SetAddonMetaData (CAddonXMLEntry &AddonXMLEntry, CAddonXMLEntry &AddonXMLEntryEN);
+  void SetPreHeader (std::string &strPreText);
   size_t const GetNumEntriesCount() {return m_mapStrings.size();}
   size_t const GetClassEntriesCount() {return m_vecClassicEntries.size();}
   size_t const GetCommntEntriesCount() {return m_CommsCntr;}
@@ -55,7 +57,7 @@ public:
 protected:
   void ClearCPOEntry (CPOEntry &entry);
   bool ProcessPOFile(CPODocument &PODoc);
-  itStrings IterateToMapIndex(itStrings it, size_t index) {for (size_t i = 0; i != index; i++) it++; return it;}
+  itStrings IterateToMapIndex(itStrings it, size_t index);
 
   std::string m_strHeader;
 
@@ -65,4 +67,3 @@ protected:
   size_t m_CommsCntr;
   bool m_bPOIsEnglish;
 };
-

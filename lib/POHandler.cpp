@@ -199,7 +199,7 @@ bool CPOHandler::DeleteClassicEntry (CPOEntry &EntryToFind)
   return false;
 }
 
-void CPOHandler::SetAddonMetaData (CAddonXMLEntry AddonXMLEntry, CAddonXMLEntry AddonXMLEntryEN)
+void CPOHandler::SetAddonMetaData (CAddonXMLEntry &AddonXMLEntry, CAddonXMLEntry &AddonXMLEntryEN)
 {
   CPOEntry POEntryDesc, POEntryDiscl, POEntrySumm;
   POEntryDesc.Type = MSGID_FOUND;
@@ -230,7 +230,7 @@ void CPOHandler::SetAddonMetaData (CAddonXMLEntry AddonXMLEntry, CAddonXMLEntry 
   return;
 }
 
-void CPOHandler::SetPreHeader (std::string strPreText)
+void CPOHandler::SetPreHeader (std::string &strPreText)
 {
   if (strPreText.empty())
     return;
@@ -247,4 +247,37 @@ void CPOHandler::SetPreHeader (std::string strPreText)
 
   strOutHeader += strPreText + m_strHeader;
   m_strHeader = strOutHeader;
+}
+
+bool CPOHandler::AddNumPOEntryByID(uint32_t numid, CPOEntry const &POEntry)
+{
+  if (m_mapStrings.find(numid) != m_mapStrings.end())
+    return false;
+  m_mapStrings[numid] = POEntry;
+  return true;
+}
+
+bool CPOHandler::GetNumPOEntryByID(uint32_t numid, CPOEntry &POEntry)
+{
+  if (m_mapStrings.find(numid) == m_mapStrings.end())
+    return false;
+  POEntry = m_mapStrings[numid];
+  return true;
+}
+
+CPOEntry CPOHandler::GetNumPOEntryByIdx(size_t pos)
+{
+//  printf  ("start");
+  std::map<uint32_t, CPOEntry>::const_iterator it_mapStrings;
+  it_mapStrings = m_mapStrings.begin();
+  advance(it_mapStrings, pos);
+//  printf  ("end");
+  return it_mapStrings->second;
+}
+
+itStrings CPOHandler::IterateToMapIndex(itStrings it, size_t index)
+{
+  for (size_t i = 0; i != index; i++)
+    it++;
+  return it;
 }
