@@ -210,35 +210,35 @@ bool CProjectHandler::CreateMergedResources()
       CLog::Log(logINFO, "CreateMergedResources: Using Local English file as source for merging");
     }
 
-    CResourceHandler currResHandler = (*pmapRes)[itResAvail->first];
+    CResourceHandler * pcurrResHandler = &((*pmapRes)[itResAvail->first]);
 
     CResourceHandler mergedResHandler;
-    mergedResHandler.SetResType(currResHandler.GetResType());
-    mergedResHandler.SetXMLHandler(currResHandler.GetXMLHandler());
-    mergedResHandler.SetLangDir(currResHandler.GetLangDir());
+    mergedResHandler.SetResType(pcurrResHandler->GetResType());
+    mergedResHandler.SetXMLHandler(pcurrResHandler->GetXMLHandler());
+    mergedResHandler.SetLangDir(pcurrResHandler->GetLangDir());
 
     CLog::Log(logINFO, "MergedPOHandl:\tLanguage\t\t\tID entries\tnon-ID entries\tInterline-comments");
 
-    for (size_t LangsIdx = 0; LangsIdx != currResHandler.GetLangsCount(); LangsIdx++)
+    for (size_t LangsIdx = 0; LangsIdx != pcurrResHandler->GetLangsCount(); LangsIdx++)
     {
-      std::string strLangCode = currResHandler.GetLangCodeFromPos(LangsIdx);
+      std::string strLangCode = pcurrResHandler->GetLangCodeFromPos(LangsIdx);
       CPOHandler mergedPOHandler;
-      CPOEntry POEntryTX;
+      const CPOEntry* pPOEntryTX;
 
-      for (size_t POEntryIdx = 0; POEntryIdx != currResHandler.GetPOData("en").GetNumEntriesCount(); POEntryIdx++)
+      for (size_t POEntryIdx = 0; POEntryIdx != pcurrResHandler->GetPOData("en")->GetNumEntriesCount(); POEntryIdx++)
       {
         printf("start", POEntryIdx);
-        size_t numID = currResHandler.GetPOData(strLangCode).GetNumPOEntryByIdx(POEntryIdx).numID;
-        CPOEntry currPOEntry = currResHandler.GetPOData(strLangCode).GetNumPOEntryByIdx(POEntryIdx);
-        bool bValidTXEntry = m_mapResourcesTX[itResAvail->first].GetPOData(strLangCode).GetNumPOEntryByID(numID, POEntryTX);
+        size_t numID = pcurrResHandler->GetPOData(strLangCode)->GetNumPOEntryByIdx(POEntryIdx)->numID;
+        const CPOEntry* pcurrPOEntry = pcurrResHandler->GetPOData(strLangCode)->GetNumPOEntryByIdx(POEntryIdx);
+        pPOEntryTX = m_mapResourcesTX[itResAvail->first].GetPOData(strLangCode)->GetNumPOEntryByID(numID);
 
         if (itResAvail->first == "xbmc-core")
           printf("POIdx: %i\n", POEntryIdx);
 
-        if (bValidTXEntry && POEntryTX.msgID == currPOEntry.msgID && !POEntryTX.msgStr.empty())
-          mergedPOHandler.AddNumPOEntryByID(numID, POEntryTX);
+        if (pPOEntryTX && pPOEntryTX->msgID == pcurrPOEntry->msgID && !pPOEntryTX->msgStr.empty())
+          mergedPOHandler.AddNumPOEntryByID(numID, *pPOEntryTX);
         else
-          mergedPOHandler.AddNumPOEntryByID(numID,currPOEntry);
+          mergedPOHandler.AddNumPOEntryByID(numID, *pcurrPOEntry);
         printf("stop", POEntryIdx);
       }
       if (mergedPOHandler.GetNumEntriesCount() !=0 || mergedPOHandler.GetClassEntriesCount() !=0)

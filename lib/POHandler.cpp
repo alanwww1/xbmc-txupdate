@@ -257,22 +257,19 @@ bool CPOHandler::AddNumPOEntryByID(uint32_t numid, CPOEntry const &POEntry)
   return true;
 }
 
-bool CPOHandler::GetNumPOEntryByID(uint32_t numid, CPOEntry &POEntry)
+const CPOEntry* CPOHandler::GetNumPOEntryByID(uint32_t numid)
 {
   if (m_mapStrings.find(numid) == m_mapStrings.end())
-    return false;
-  POEntry = m_mapStrings[numid];
-  return true;
+    return NULL;
+  return &(m_mapStrings[numid]);
 }
 
-CPOEntry CPOHandler::GetNumPOEntryByIdx(size_t pos)
+const CPOEntry* CPOHandler::GetNumPOEntryByIdx(size_t pos) const
 {
-//  printf  ("start");
   std::map<uint32_t, CPOEntry>::const_iterator it_mapStrings;
   it_mapStrings = m_mapStrings.begin();
   advance(it_mapStrings, pos);
-//  printf  ("end");
-  return it_mapStrings->second;
+  return &(it_mapStrings->second);
 }
 
 itStrings CPOHandler::IterateToMapIndex(itStrings it, size_t index)

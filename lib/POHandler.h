@@ -40,10 +40,10 @@ public:
   bool ModifyClassicEntry (CPOEntry &EntryToFind, CPOEntry EntryNewValue);
   bool DeleteClassicEntry (CPOEntry &EntryToFind);
 
-  bool GetNumPOEntryByID(uint32_t numid, CPOEntry &POEntry);
+  const CPOEntry* GetNumPOEntryByID(uint32_t numid);
   bool AddNumPOEntryByID(uint32_t numid, CPOEntry const &POEntry);
 
-  CPOEntry GetNumPOEntryByIdx(size_t pos);
+  const CPOEntry* GetNumPOEntryByIdx(size_t pos) const;
   void SetHeader (std::string &strHeader) {m_strHeader = strHeader;}
   std::string GetHeader () {return m_strHeader;}
 
