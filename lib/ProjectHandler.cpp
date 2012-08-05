@@ -141,7 +141,7 @@ bool CProjectHandler::FetchResourcesFromUpstream(std::string strProjRootDir)
 
 bool CProjectHandler::WriteResourcesToFile(std::string strProjRootDir, std::string strPOSuffix)
 {
-  for (T_itmapRes itmapResources = m_mapResourcesTX.begin(); itmapResources != m_mapResourcesTX.end(); itmapResources++)
+  for (T_itmapRes itmapResources = m_mapResMerged.begin(); itmapResources != m_mapResMerged.end(); itmapResources++)
   {
     CLog::Log(logLINEFEED, "");
     CLog::Log(logINFO, "ProjHandler: *** Write Resource: %s ***", itmapResources->first.c_str());
@@ -150,7 +150,7 @@ bool CProjectHandler::WriteResourcesToFile(std::string strProjRootDir, std::stri
       CLog::Log(logERROR, "ProjHandler: Creating local directory for new resource on Transifex: %s", itmapResources->first.c_str());
       MakeDir(strProjRootDir + itmapResources->first + DirSepChar);
     }
-    m_mapResourcesTX[itmapResources->first].WritePOToFiles (strProjRootDir + itmapResources->first + DirSepChar, strPOSuffix);
+    m_mapResMerged[itmapResources->first].WritePOToFiles (strProjRootDir + itmapResources->first + DirSepChar, strPOSuffix);
   }
   return true;
 };
@@ -227,19 +227,21 @@ bool CProjectHandler::CreateMergedResources()
 
       for (size_t POEntryIdx = 0; POEntryIdx != pcurrResHandler->GetPOData("en")->GetNumEntriesCount(); POEntryIdx++)
       {
-        printf("start", POEntryIdx);
-        size_t numID = pcurrResHandler->GetPOData(strLangCode)->GetNumPOEntryByIdx(POEntryIdx)->numID;
-        const CPOEntry* pcurrPOEntry = pcurrResHandler->GetPOData(strLangCode)->GetNumPOEntryByIdx(POEntryIdx);
+        size_t numID = pcurrResHandler->GetPOData("en")->GetNumPOEntryByIdx(POEntryIdx)->numID;
+        const CPOEntry* pcurrPOEntry = pcurrResHandler->GetPOData("en")->GetNumPOEntryByIdx(POEntryIdx);
         pPOEntryTX = m_mapResourcesTX[itResAvail->first].GetPOData(strLangCode)->GetNumPOEntryByID(numID);
 
-        if (itResAvail->first == "xbmc-core")
+        if (itResAvail->first == "xbmc-core" && numID == 36025)
+        {
           printf("POIdx: %i\n", POEntryIdx);
-
+        }
+        
+        printf("POIdx: %i\n", POEntryIdx);
+        
         if (pPOEntryTX && pPOEntryTX->msgID == pcurrPOEntry->msgID && !pPOEntryTX->msgStr.empty())
           mergedPOHandler.AddNumPOEntryByID(numID, *pPOEntryTX);
         else
           mergedPOHandler.AddNumPOEntryByID(numID, *pcurrPOEntry);
-        printf("stop", POEntryIdx);
       }
       if (mergedPOHandler.GetNumEntriesCount() !=0 || mergedPOHandler.GetClassEntriesCount() !=0)
       {
