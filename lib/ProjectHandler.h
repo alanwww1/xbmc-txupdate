@@ -45,6 +45,8 @@ public:
 
 protected:
   bool GetResourcesFromDir(std::string strProjRootDir);
+  const CPOEntry * SafeGetPOEntry(std::map<std::string, CResourceHandler> &mapResHandl, const std::string &strResname,
+                            std::string &strLangCode, size_t numID);
   std::map<std::string, CResourceHandler> m_mapResourcesLocal;
   std::map<std::string, CResourceHandler> m_mapResourcesTX;
   std::map<std::string, CResourceHandler> m_mapResourcesUpstr;
