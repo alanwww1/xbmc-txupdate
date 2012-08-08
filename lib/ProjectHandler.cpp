@@ -24,6 +24,7 @@
 #include "HTTPUtils.h"
 #include "JSONHandler.h"
 #include "Settings.h"
+#include <algorithm>
 
 CProjectHandler::CProjectHandler()
 {};
@@ -219,9 +220,32 @@ bool CProjectHandler::CreateMergedResources()
 
     CLog::Log(logINFO, "MergedPOHandl:\tLanguage\t\t\tID entries\tnon-ID entries\tInterline-comments");
 
-    for (size_t LangsIdx = 0; LangsIdx != pcurrResHandler->GetLangsCount(); LangsIdx++)
+    std::list<std::string> listMergedLangs;
+
+    for (size_t i =0; i != m_mapResourcesTX[itResAvail->first].GetLangsCount(); i++)
     {
-      std::string strLangCode = pcurrResHandler->GetLangCodeFromPos(LangsIdx);
+      std::string strMLCode = m_mapResourcesTX[itResAvail->first].GetLangCodeFromPos(i);
+      if (std::find(listMergedLangs.begin(), listMergedLangs.end(), strMLCode) == listMergedLangs.end())
+        listMergedLangs.push_back(strMLCode);
+    }
+
+    for (size_t i =0; i != m_mapResourcesLocal[itResAvail->first].GetLangsCount(); i++)
+    {
+      std::string strMLCode = m_mapResourcesLocal[itResAvail->first].GetLangCodeFromPos(i);
+      if (std::find(listMergedLangs.begin(), listMergedLangs.end(), strMLCode) == listMergedLangs.end())
+        listMergedLangs.push_back(strMLCode);
+    }
+
+    for (size_t i =0; i != m_mapResourcesUpstr[itResAvail->first].GetLangsCount(); i++)
+    {
+      std::string strMLCode = m_mapResourcesUpstr[itResAvail->first].GetLangCodeFromPos(i);
+      if (std::find(listMergedLangs.begin(), listMergedLangs.end(), strMLCode) == listMergedLangs.end())
+        listMergedLangs.push_back(strMLCode);
+    }
+
+    for (std::list<std::string>::iterator itlang = listMergedLangs.begin(); itlang != listMergedLangs.end(); itlang++)
+    {
+      std::string strLangCode = *itlang;
       CPOHandler mergedPOHandler;
       const CPOEntry* pPOEntryTX;
       const CPOEntry* pPOEntryUpstr;
@@ -243,10 +267,10 @@ bool CProjectHandler::CreateMergedResources()
 
         if (itResAvail->first == "xbmc-core" && numID == 36025)
         {
-          printf("POIdx: %i\n", POEntryIdx);
+          printf("lang: %s\n", strLangCode.c_str());
         }
         
-        printf("POIdx: %i\n", POEntryIdx);
+//        printf("POIdx: %i\n", POEntryIdx);
         
         if (pPOEntryTX && pPOEntryTX->msgID == pcurrPOEntryEN->msgID && !pPOEntryTX->msgStr.empty())
           mergedPOHandler.AddNumPOEntryByID(numID, *pPOEntryTX);
