@@ -265,14 +265,14 @@ bool CProjectHandler::CreateMergedResources()
 //        pPOEntryUpstr = m_mapResourcesUpstr[itResAvail->first].GetPOData(strLangCode)->GetNumPOEntryByID(numID);
 //        pPOEntryLocal = m_mapResourcesLocal[itResAvail->first].GetPOData(strLangCode)->GetNumPOEntryByID(numID);
 
-        if (itResAvail->first == "xbmc-core" && numID == 36025)
+        if (itResAvail->first == "xbmc-core" && strLangCode == "en")
         {
-          printf("lang: %s\n", strLangCode.c_str());
+//          printf("ilcommUpstr: %i, ilcommTX:%i\n", pPOEntryUpstr->interlineComm.size(), pPOEntryTX->interlineComm.size());
         }
         
 //        printf("POIdx: %i\n", POEntryIdx);
         
-        if (pPOEntryTX && pPOEntryTX->msgID == pcurrPOEntryEN->msgID && !pPOEntryTX->msgStr.empty())
+        if (strLangCode != "en" && pPOEntryTX && pPOEntryTX->msgID == pcurrPOEntryEN->msgID && !pPOEntryTX->msgStr.empty())
           mergedPOHandler.AddNumPOEntryByID(numID, *pPOEntryTX);
         else if (pPOEntryUpstr && pPOEntryUpstr->msgID == pcurrPOEntryEN->msgID && !pPOEntryUpstr->msgStr.empty())
           mergedPOHandler.AddNumPOEntryByID(numID, *pPOEntryUpstr);
@@ -280,6 +280,7 @@ bool CProjectHandler::CreateMergedResources()
           mergedPOHandler.AddNumPOEntryByID(numID, *pPOEntryLocal);
         else
           mergedPOHandler.AddNumPOEntryByID(numID, *pcurrPOEntryEN);
+
       }
       if (mergedPOHandler.GetNumEntriesCount() !=0 || mergedPOHandler.GetClassEntriesCount() !=0)
       {

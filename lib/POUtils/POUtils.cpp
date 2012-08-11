@@ -478,6 +478,7 @@ void CPODocument::WriteHeader(const std::string &strHeader)
 
 void CPODocument::WritePOEntry(const CPOEntry &currEntry)
 {
+  m_bhasLFWritten = false;
   int id = currEntry.numID;
   if (!m_bIsForeignLang)
   {

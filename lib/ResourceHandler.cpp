@@ -282,8 +282,8 @@ bool CResourceHandler::WritePOToFiles(std::string strResourceDir, std::string st
 
   for (T_itmapPOFiles itmapPOFiles = m_mapPOFiles.begin(); itmapPOFiles != m_mapPOFiles.end(); itmapPOFiles++)
   {
-    if (itmapPOFiles->first == "en")
-      continue;
+//    if (itmapPOFiles->first == "en")
+//      continue;
     std::string strPODir = m_langDir + g_LCodeHandler.FindLang(itmapPOFiles->first);
     if (!DirExists(strPODir))
     {

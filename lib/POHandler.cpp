@@ -88,6 +88,8 @@ bool CPOHandler::ProcessPOFile(CPODocument &PODoc)
 
       if (currType == ID_FOUND)
         m_mapStrings[currEntry.numID] = currEntry;
+      if (currEntry.interlineComm.size() > 0)
+        printf("ilcomm:%s", currEntry.interlineComm.front().c_str());
       else
       {
         m_vecClassicEntries.push_back(currEntry);
