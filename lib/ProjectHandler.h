@@ -22,6 +22,7 @@
 
 #include "ResourceHandler.h"
 #include "UpdateXMLHandler.h"
+#include <list>
 
 struct CresourceAvail
 {
@@ -47,9 +48,14 @@ protected:
   bool GetResourcesFromDir(std::string strProjRootDir);
   const CPOEntry * SafeGetPOEntry(std::map<std::string, CResourceHandler> &mapResHandl, const std::string &strResname,
                             std::string &strLangCode, size_t numID);
+  std::list<std::string> CreateLanguageList(std::string strResname);
+  CResourceHandler * ChoosePrefResMap(std::string strResname);
+  std::list<std::string> CreateResourceList();
+
   std::map<std::string, CResourceHandler> m_mapResourcesLocal;
   std::map<std::string, CResourceHandler> m_mapResourcesTX;
   std::map<std::string, CResourceHandler> m_mapResourcesUpstr;
+
   std::map<std::string, CResourceHandler> m_mapResMerged;
   std::map<std::string, CResourceHandler> m_mapResUpdateTX;
   typedef std::map<std::string, CResourceHandler>::iterator T_itmapRes;

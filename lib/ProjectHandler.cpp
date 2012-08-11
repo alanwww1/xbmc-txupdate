@@ -160,58 +160,17 @@ bool CProjectHandler::CreateMergedResources()
 {
   CLog::Log(logINFO, "CreateMergedResources started");
 
-  std::map<std::string, CresourceAvail> mapResAvail;
-  CresourceAvail emptyResAvail;
+  std::list<std::string> listMergedResource = CreateResourceList();
 
-  emptyResAvail.bhasLocal = false;
-  emptyResAvail.bhasonTX = false;
-  emptyResAvail.bhasUpstream = false;
-
-  for (T_itmapRes it = m_mapResourcesUpstr.begin(); it != m_mapResourcesUpstr.end(); it++)
-  {
-    if (mapResAvail.find(it->first) == mapResAvail.end())
-      mapResAvail[it->first] = emptyResAvail;
-    mapResAvail[it->first].bhasUpstream = true;
-  }
-
-  for (T_itmapRes it = m_mapResourcesTX.begin(); it != m_mapResourcesTX.end(); it++)
-  {
-    if (mapResAvail.find(it->first) == mapResAvail.end())
-      mapResAvail[it->first] = emptyResAvail;
-    mapResAvail[it->first].bhasonTX = true;
-  }
-
-  for (T_itmapRes it = m_mapResourcesLocal.begin(); it != m_mapResourcesLocal.end(); it++)
-  {
-    if (mapResAvail.find(it->first) == mapResAvail.end())
-      mapResAvail[it->first] = emptyResAvail;
-    mapResAvail[it->first].bhasLocal = true;
-  }
-
-  std::map<std::string, CResourceHandler> * pmapRes;
   m_mapResMerged.clear();
 
-  for (std::map<std::string, CresourceAvail>::iterator itResAvail = mapResAvail.begin(); itResAvail != mapResAvail.end(); itResAvail++)
+  for (std::list<std::string>::iterator itResAvail = listMergedResource.begin(); itResAvail != listMergedResource.end(); itResAvail++)
   {
-    printf("Merging resource: %s\n", itResAvail->first.c_str());
-    CLog::Log(logINFO, "CreateMergedResources: Merging resource:%s", itResAvail->first.c_str());
-    if (itResAvail->second.bhasUpstream)
-    {
-      pmapRes = &m_mapResourcesUpstr;
-      CLog::Log(logINFO, "CreateMergedResources: Using upstream English file as source for merging");
-    }
-    else if (itResAvail->second.bhasonTX)
-    {
-      pmapRes = &m_mapResourcesTX;
-      CLog::Log(logINFO, "CreateMergedResources: Using Transifex English file as source for merging");
-    }
-    else
-    {
-      pmapRes = &m_mapResourcesLocal;
-      CLog::Log(logINFO, "CreateMergedResources: Using Local English file as source for merging");
-    }
+    printf("Merging resource: %s\n", itResAvail->c_str());
+    CLog::Log(logINFO, "CreateMergedResources: Merging resource:%s", itResAvail->c_str());
 
-    CResourceHandler * pcurrResHandler = &((*pmapRes)[itResAvail->first]);
+
+    CResourceHandler * pcurrResHandler = ChoosePrefResMap(*itResAvail);
 
     CResourceHandler mergedResHandler;
     mergedResHandler.SetResType(pcurrResHandler->GetResType());
@@ -220,28 +179,7 @@ bool CProjectHandler::CreateMergedResources()
 
     CLog::Log(logINFO, "MergedPOHandl:\tLanguage\t\t\tID entries\tnon-ID entries\tInterline-comments");
 
-    std::list<std::string> listMergedLangs;
-
-    for (size_t i =0; i != m_mapResourcesTX[itResAvail->first].GetLangsCount(); i++)
-    {
-      std::string strMLCode = m_mapResourcesTX[itResAvail->first].GetLangCodeFromPos(i);
-      if (std::find(listMergedLangs.begin(), listMergedLangs.end(), strMLCode) == listMergedLangs.end())
-        listMergedLangs.push_back(strMLCode);
-    }
-
-    for (size_t i =0; i != m_mapResourcesLocal[itResAvail->first].GetLangsCount(); i++)
-    {
-      std::string strMLCode = m_mapResourcesLocal[itResAvail->first].GetLangCodeFromPos(i);
-      if (std::find(listMergedLangs.begin(), listMergedLangs.end(), strMLCode) == listMergedLangs.end())
-        listMergedLangs.push_back(strMLCode);
-    }
-
-    for (size_t i =0; i != m_mapResourcesUpstr[itResAvail->first].GetLangsCount(); i++)
-    {
-      std::string strMLCode = m_mapResourcesUpstr[itResAvail->first].GetLangCodeFromPos(i);
-      if (std::find(listMergedLangs.begin(), listMergedLangs.end(), strMLCode) == listMergedLangs.end())
-        listMergedLangs.push_back(strMLCode);
-    }
+    std::list<std::string> listMergedLangs = CreateLanguageList(*itResAvail);
 
     for (std::list<std::string>::iterator itlang = listMergedLangs.begin(); itlang != listMergedLangs.end(); itlang++)
     {
@@ -252,26 +190,23 @@ bool CProjectHandler::CreateMergedResources()
       const CPOEntry* pPOEntryLocal;
 
       mergedPOHandler.SetIfIsEnglish(strLangCode == "en");
+//      mergedPOHandler.SetAddonMetaData(pcurrResHandler->GetXMLHandler().);
 
       for (size_t POEntryIdx = 0; POEntryIdx != pcurrResHandler->GetPOData("en")->GetNumEntriesCount(); POEntryIdx++)
       {
         size_t numID = pcurrResHandler->GetPOData("en")->GetNumPOEntryByIdx(POEntryIdx)->numID;
         const CPOEntry* pcurrPOEntryEN = pcurrResHandler->GetPOData("en")->GetNumPOEntryByIdx(POEntryIdx);
 
-        pPOEntryTX = SafeGetPOEntry(m_mapResourcesTX, itResAvail->first, strLangCode, numID);
-        pPOEntryUpstr = SafeGetPOEntry(m_mapResourcesUpstr, itResAvail->first, strLangCode, numID);
-        pPOEntryLocal = SafeGetPOEntry(m_mapResourcesLocal, itResAvail->first, strLangCode, numID);
-//        pPOEntryTX = m_mapResourcesTX[itResAvail->first].GetPOData(strLangCode)->GetNumPOEntryByID(numID);
-//        pPOEntryUpstr = m_mapResourcesUpstr[itResAvail->first].GetPOData(strLangCode)->GetNumPOEntryByID(numID);
-//        pPOEntryLocal = m_mapResourcesLocal[itResAvail->first].GetPOData(strLangCode)->GetNumPOEntryByID(numID);
+        pPOEntryTX = SafeGetPOEntry(m_mapResourcesTX, *itResAvail, strLangCode, numID);
+        pPOEntryUpstr = SafeGetPOEntry(m_mapResourcesUpstr, *itResAvail, strLangCode, numID);
+        pPOEntryLocal = SafeGetPOEntry(m_mapResourcesLocal, *itResAvail, strLangCode, numID);
 
-        if (itResAvail->first == "xbmc-core" && strLangCode == "en")
+
+        if (*itResAvail == "xbmc-core" && strLangCode == "en")
         {
 //          printf("ilcommUpstr: %i, ilcommTX:%i\n", pPOEntryUpstr->interlineComm.size(), pPOEntryTX->interlineComm.size());
         }
-        
-//        printf("POIdx: %i\n", POEntryIdx);
-        
+
         if (strLangCode != "en" && pPOEntryTX && pPOEntryTX->msgID == pcurrPOEntryEN->msgID && !pPOEntryTX->msgStr.empty())
           mergedPOHandler.AddNumPOEntryByID(numID, *pPOEntryTX);
         else if (pPOEntryUpstr && pPOEntryUpstr->msgID == pcurrPOEntryEN->msgID && !pPOEntryUpstr->msgStr.empty())
@@ -290,9 +225,80 @@ bool CProjectHandler::CreateMergedResources()
       }
     }
     if (mergedResHandler.GetLangsCount() != 0)
-      m_mapResMerged[itResAvail->first] = mergedResHandler;
+      m_mapResMerged[*itResAvail] = mergedResHandler;
   }
   return true;
+}
+
+std::list<std::string> CProjectHandler::CreateLanguageList(std::string strResname)
+{
+  std::list<std::string> listMergedLangs;
+  for (size_t i =0; i != m_mapResourcesTX[strResname].GetLangsCount(); i++)
+  {
+    std::string strMLCode = m_mapResourcesTX[strResname].GetLangCodeFromPos(i);
+    if (std::find(listMergedLangs.begin(), listMergedLangs.end(), strMLCode) == listMergedLangs.end())
+      listMergedLangs.push_back(strMLCode);
+  }
+
+  for (size_t i =0; i != m_mapResourcesLocal[strResname].GetLangsCount(); i++)
+  {
+    std::string strMLCode = m_mapResourcesLocal[strResname].GetLangCodeFromPos(i);
+    if (std::find(listMergedLangs.begin(), listMergedLangs.end(), strMLCode) == listMergedLangs.end())
+      listMergedLangs.push_back(strMLCode);
+  }
+
+  for (size_t i =0; i != m_mapResourcesUpstr[strResname].GetLangsCount(); i++)
+  {
+    std::string strMLCode = m_mapResourcesUpstr[strResname].GetLangCodeFromPos(i);
+    if (std::find(listMergedLangs.begin(), listMergedLangs.end(), strMLCode) == listMergedLangs.end())
+      listMergedLangs.push_back(strMLCode);
+  }
+
+  return listMergedLangs;
+}
+
+std::list<std::string> CProjectHandler::CreateResourceList()
+{
+  std::list<std::string> listMergedResources;
+  for (T_itmapRes it = m_mapResourcesUpstr.begin(); it != m_mapResourcesUpstr.end(); it++)
+  {
+    if (std::find(listMergedResources.begin(), listMergedResources.end(), it->first) == listMergedResources.end())
+      listMergedResources.push_back(it->first);
+  }
+
+  for (T_itmapRes it = m_mapResourcesTX.begin(); it != m_mapResourcesTX.end(); it++)
+  {
+    if (std::find(listMergedResources.begin(), listMergedResources.end(), it->first) == listMergedResources.end())
+      listMergedResources.push_back(it->first);
+  }
+
+  for (T_itmapRes it = m_mapResourcesLocal.begin(); it != m_mapResourcesLocal.end(); it++)
+  {
+    if (std::find(listMergedResources.begin(), listMergedResources.end(), it->first) == listMergedResources.end())
+      listMergedResources.push_back(it->first);
+  }
+  return listMergedResources;
+}
+
+CResourceHandler * CProjectHandler::ChoosePrefResMap(std::string strResname)
+{
+  std::map<std::string, CResourceHandler> * pmapRes;
+  if (m_mapResourcesUpstr.find(strResname) != m_mapResourcesUpstr.end())
+  {
+    pmapRes = &m_mapResourcesUpstr;
+    CLog::Log(logINFO, "CreateMergedResources: Using upstream English file as source for merging");
+  }
+  else if (m_mapResourcesTX.find(strResname) != m_mapResourcesTX.end())
+  {
+    pmapRes = &m_mapResourcesTX;
+    CLog::Log(logINFO, "CreateMergedResources: Using Transifex English file as source for merging");
+  }
+  else
+  {
+    pmapRes = &m_mapResourcesLocal;
+    CLog::Log(logINFO, "CreateMergedResources: Using Local English file as source for merging");
+  }
+  return &((*pmapRes)[strResname]);
 }
 
 const CPOEntry * CProjectHandler::SafeGetPOEntry(std::map<std::string, CResourceHandler> &mapResHandl, const std::string &strResname,
