@@ -33,7 +33,7 @@ public:
   bool LoadCoreVersion(std::string filename);
   bool FetchCoreVersionUpstr(std::string strURL);
   std::string GetResHeaderPretext () const {return m_strResourceData;}
-  std::map<std::string, CAddonXMLEntry> GetMapAddonXMLData () const {return m_mapAddonXMLData;}
+  std::map<std::string, CAddonXMLEntry> * GetMapAddonXMLData () {return &m_mapAddonXMLData;}
   void SetMapAddonXMLData (std::map<std::string, CAddonXMLEntry> mapData) {m_mapAddonXMLData = mapData;}
 
 protected:

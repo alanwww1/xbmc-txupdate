@@ -166,20 +166,31 @@ bool CProjectHandler::CreateMergedResources()
 
   for (std::list<std::string>::iterator itResAvail = listMergedResource.begin(); itResAvail != listMergedResource.end(); itResAvail++)
   {
-    printf("Merging resource: %s\n", itResAvail->c_str());
+    printf("\nMerging resource: %s\n", itResAvail->c_str());
     CLog::Log(logINFO, "CreateMergedResources: Merging resource:%s", itResAvail->c_str());
 
-
-    CResourceHandler * pcurrResHandler = ChoosePrefResMap(*itResAvail);
+    CResourceHandler * pcurrResHandler;
+    pcurrResHandler = &(ChoosePrefResMap(*itResAvail)->operator[](*itResAvail));
 
     CResourceHandler mergedResHandler;
     mergedResHandler.SetResType(pcurrResHandler->GetResType());
-    mergedResHandler.SetXMLHandler(pcurrResHandler->GetXMLHandler());
+//    mergedResHandler.SetXMLHandler(pcurrResHandler->GetXMLHandler());
     mergedResHandler.SetLangDir(pcurrResHandler->GetLangDir());
 
     CLog::Log(logINFO, "MergedPOHandl:\tLanguage\t\t\tID entries\tnon-ID entries\tInterline-comments");
 
     std::list<std::string> listMergedLangs = CreateLanguageList(*itResAvail);
+
+    CAddonXMLEntry * pENAddonXMLEntry;
+
+    if ((pENAddonXMLEntry = GetAddonDataFromXML(&m_mapResourcesUpstr, *itResAvail, "en")) != NULL)
+      CLog::Log(logINFO, "CreateMergedResources: Using Upstream AddonXML file as source for merging");
+    else if ((pENAddonXMLEntry = GetAddonDataFromXML(&m_mapResourcesLocal, *itResAvail, "en")) != NULL)
+      CLog::Log(logINFO, "CreateMergedResources: Using Local AddonXML file as source for merging");
+    else if (*itResAvail != "xbmc-core")
+      CLog::Log(logERROR, "CreateMergedResources: No Local or Upstream AddonXML file found as source for merging");
+
+//    printf("ENEntry%s\n", pENAddonXMLEntry->strSummary.c_str());
 
     for (std::list<std::string>::iterator itlang = listMergedLangs.begin(); itlang != listMergedLangs.end(); itlang++)
     {
@@ -191,6 +202,29 @@ bool CProjectHandler::CreateMergedResources()
 
       mergedPOHandler.SetIfIsEnglish(strLangCode == "en");
 //      mergedPOHandler.SetAddonMetaData(pcurrResHandler->GetXMLHandler().);
+      CAddonXMLEntry MergedAddonXMLEntry;
+      CAddonXMLEntry * pAddonXMLEntry;
+//      printf("ENEntry2:%s\n", pENAddonXMLEntry->strSummary.c_str());
+      if ((pAddonXMLEntry = GetAddonDataFromXML(&m_mapResourcesUpstr, *itResAvail, *itlang)) != NULL)
+        MergeAddonXMLEntry(*pAddonXMLEntry, MergedAddonXMLEntry, *pENAddonXMLEntry,
+                           *GetAddonDataFromXML(&m_mapResourcesUpstr, *itResAvail, "en"));
+      else if ((pAddonXMLEntry = GetAddonDataFromXML(&m_mapResourcesLocal, *itResAvail, *itlang)) != NULL)
+        MergeAddonXMLEntry(*pAddonXMLEntry, MergedAddonXMLEntry, *pENAddonXMLEntry,
+                           *GetAddonDataFromXML(&m_mapResourcesLocal, *itResAvail, "en"));
+//      else
+//        CLog::Log(logERROR, "CreateMergedResources: No Local or Upstream AddonXML file found as source for merging");
+
+      printf("%s:%s\n", itlang->c_str(), MergedAddonXMLEntry.strSummary.c_str());
+      
+      if (*itResAvail == "xbmc-core")
+      {
+        sleep(2);
+        printf("");
+      }
+
+      if (*itResAvail != "xbmc-core")
+        mergedPOHandler.SetAddonMetaData(MergedAddonXMLEntry, *pENAddonXMLEntry);
+
 
       for (size_t POEntryIdx = 0; POEntryIdx != pcurrResHandler->GetPOData("en")->GetNumEntriesCount(); POEntryIdx++)
       {
@@ -204,7 +238,12 @@ bool CProjectHandler::CreateMergedResources()
 
         if (*itResAvail == "xbmc-core" && strLangCode == "en")
         {
-//          printf("ilcommUpstr: %i, ilcommTX:%i\n", pPOEntryUpstr->interlineComm.size(), pPOEntryTX->interlineComm.size());
+          printf("POENTRYIdx: %i, ilcommUpstr: %i, ilcommTX:%i\n", POEntryIdx, pPOEntryUpstr ? pPOEntryUpstr->interlineComm.size(): -99,
+                 pPOEntryTX ? pPOEntryTX->interlineComm.size(): -99);
+          if (POEntryIdx == 667)
+          {
+            printf ("667 reached\n");
+          }
         }
 
         if (strLangCode != "en" && pPOEntryTX && pPOEntryTX->msgID == pcurrPOEntryEN->msgID && !pPOEntryTX->msgStr.empty())
@@ -216,6 +255,10 @@ bool CProjectHandler::CreateMergedResources()
         else
           mergedPOHandler.AddNumPOEntryByID(numID, *pcurrPOEntryEN);
 
+      }
+      if (*itResAvail == "xbmc-core" && strLangCode == "en")
+      {
+        printf("MergePOHandler reached END");
       }
       if (mergedPOHandler.GetNumEntriesCount() !=0 || mergedPOHandler.GetClassEntriesCount() !=0)
       {
@@ -233,25 +276,35 @@ bool CProjectHandler::CreateMergedResources()
 std::list<std::string> CProjectHandler::CreateLanguageList(std::string strResname)
 {
   std::list<std::string> listMergedLangs;
-  for (size_t i =0; i != m_mapResourcesTX[strResname].GetLangsCount(); i++)
+
+  if (m_mapResourcesTX.find(strResname) != m_mapResourcesTX.end())
   {
-    std::string strMLCode = m_mapResourcesTX[strResname].GetLangCodeFromPos(i);
-    if (std::find(listMergedLangs.begin(), listMergedLangs.end(), strMLCode) == listMergedLangs.end())
-      listMergedLangs.push_back(strMLCode);
+    for (size_t i =0; i != m_mapResourcesTX[strResname].GetLangsCount(); i++)
+    {
+      std::string strMLCode = m_mapResourcesTX[strResname].GetLangCodeFromPos(i);
+      if (std::find(listMergedLangs.begin(), listMergedLangs.end(), strMLCode) == listMergedLangs.end())
+        listMergedLangs.push_back(strMLCode);
+    }
   }
 
-  for (size_t i =0; i != m_mapResourcesLocal[strResname].GetLangsCount(); i++)
+  if (m_mapResourcesLocal.find(strResname) != m_mapResourcesLocal.end())
   {
-    std::string strMLCode = m_mapResourcesLocal[strResname].GetLangCodeFromPos(i);
-    if (std::find(listMergedLangs.begin(), listMergedLangs.end(), strMLCode) == listMergedLangs.end())
-      listMergedLangs.push_back(strMLCode);
+    for (size_t i =0; i != m_mapResourcesLocal[strResname].GetLangsCount(); i++)
+    {
+      std::string strMLCode = m_mapResourcesLocal[strResname].GetLangCodeFromPos(i);
+      if (std::find(listMergedLangs.begin(), listMergedLangs.end(), strMLCode) == listMergedLangs.end())
+        listMergedLangs.push_back(strMLCode);
+    }
   }
 
-  for (size_t i =0; i != m_mapResourcesUpstr[strResname].GetLangsCount(); i++)
+  if (m_mapResourcesUpstr.find(strResname) != m_mapResourcesUpstr.end())
   {
-    std::string strMLCode = m_mapResourcesUpstr[strResname].GetLangCodeFromPos(i);
-    if (std::find(listMergedLangs.begin(), listMergedLangs.end(), strMLCode) == listMergedLangs.end())
-      listMergedLangs.push_back(strMLCode);
+    for (size_t i =0; i != m_mapResourcesUpstr[strResname].GetLangsCount(); i++)
+    {
+      std::string strMLCode = m_mapResourcesUpstr[strResname].GetLangCodeFromPos(i);
+      if (std::find(listMergedLangs.begin(), listMergedLangs.end(), strMLCode) == listMergedLangs.end())
+        listMergedLangs.push_back(strMLCode);
+    }
   }
 
   return listMergedLangs;
@@ -280,7 +333,7 @@ std::list<std::string> CProjectHandler::CreateResourceList()
   return listMergedResources;
 }
 
-CResourceHandler * CProjectHandler::ChoosePrefResMap(std::string strResname)
+std::map<std::string, CResourceHandler> * CProjectHandler::ChoosePrefResMap(std::string strResname)
 {
   std::map<std::string, CResourceHandler> * pmapRes;
   if (m_mapResourcesUpstr.find(strResname) != m_mapResourcesUpstr.end())
@@ -293,12 +346,28 @@ CResourceHandler * CProjectHandler::ChoosePrefResMap(std::string strResname)
     pmapRes = &m_mapResourcesTX;
     CLog::Log(logINFO, "CreateMergedResources: Using Transifex English file as source for merging");
   }
-  else
+  else if (m_mapResourcesLocal.find(strResname) != m_mapResourcesLocal.end())
   {
     pmapRes = &m_mapResourcesLocal;
     CLog::Log(logINFO, "CreateMergedResources: Using Local English file as source for merging");
   }
-  return &((*pmapRes)[strResname]);
+  else
+    CLog::Log(logERROR, "CreateMergedResources: Resource %s was not found in any sources", strResname.c_str());
+
+  return pmapRes;;
+}
+
+CAddonXMLEntry * const CProjectHandler::GetAddonDataFromXML(std::map<std::string, CResourceHandler> * pmapRes,
+                                                            const std::string &strResname, const std::string &strLangCode) const
+{
+  if (pmapRes->find(strResname) == pmapRes->end())
+    return NULL;
+
+  CResourceHandler * pRes = &(pmapRes->operator[](strResname));
+  if (pRes->GetXMLHandler()->GetMapAddonXMLData()->find(strLangCode) == pRes->GetXMLHandler()->GetMapAddonXMLData()->end())
+    return NULL;
+
+  return &(pRes->GetXMLHandler()->GetMapAddonXMLData()->operator[](strLangCode));
 }
 
 const CPOEntry * CProjectHandler::SafeGetPOEntry(std::map<std::string, CResourceHandler> &mapResHandl, const std::string &strResname,
@@ -311,7 +380,21 @@ const CPOEntry * CProjectHandler::SafeGetPOEntry(std::map<std::string, CResource
   return mapResHandl[strResname].GetPOData(strLangCode)->GetNumPOEntryByID(numID);
 }
 
+void CProjectHandler::MergeAddonXMLEntry(CAddonXMLEntry const &EntryToMerge, CAddonXMLEntry &MergedAddonXMLEntry,
+                                         CAddonXMLEntry const &SourceENEntry, CAddonXMLEntry const &CurrENEntry)
+{
+  if (!EntryToMerge.strDescription.empty() && MergedAddonXMLEntry.strDescription.empty() &&
+      CurrENEntry.strDescription == SourceENEntry.strDescription)
+    MergedAddonXMLEntry.strDescription = EntryToMerge.strDescription;
 
+  if (!EntryToMerge.strDisclaimer.empty() && MergedAddonXMLEntry.strDisclaimer.empty() &&
+    CurrENEntry.strDisclaimer == SourceENEntry.strDisclaimer)
+    MergedAddonXMLEntry.strDisclaimer = EntryToMerge.strDisclaimer;
+
+  if (!EntryToMerge.strSummary.empty() && MergedAddonXMLEntry.strSummary.empty() &&
+    CurrENEntry.strSummary == SourceENEntry.strSummary)
+    MergedAddonXMLEntry.strSummary = EntryToMerge.strSummary;
+}
 
 void CProjectHandler::InitUpdateXMLHandler(std::string strProjRootDir)
 {

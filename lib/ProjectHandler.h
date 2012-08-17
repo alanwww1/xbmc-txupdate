@@ -49,8 +49,12 @@ protected:
   const CPOEntry * SafeGetPOEntry(std::map<std::string, CResourceHandler> &mapResHandl, const std::string &strResname,
                             std::string &strLangCode, size_t numID);
   std::list<std::string> CreateLanguageList(std::string strResname);
-  CResourceHandler * ChoosePrefResMap(std::string strResname);
+  std::map<std::string, CResourceHandler> * ChoosePrefResMap(std::string strResname);
   std::list<std::string> CreateResourceList();
+  CAddonXMLEntry * const GetAddonDataFromXML(std::map<std::string, CResourceHandler> * pmapRes,
+                                             const std::string &strResname, const std::string &strLangCode) const;
+  void MergeAddonXMLEntry(CAddonXMLEntry const &EntryToMerge, CAddonXMLEntry &MergedAddonXMLEntry,
+                                           CAddonXMLEntry const &SourceENEntry, CAddonXMLEntry const &CurrENEntry);
 
   std::map<std::string, CResourceHandler> m_mapResourcesLocal;
   std::map<std::string, CResourceHandler> m_mapResourcesTX;

@@ -42,7 +42,7 @@ public:
   void AddPOData(CPOHandler &POHandler, std::string strLang) {m_mapPOFiles[strLang] = POHandler;}
   std::string GetLangDir () const {return m_langDir;}
   void SetLangDir (std::string langDir) {m_langDir = langDir;}
-  CAddonXMLHandler GetXMLHandler () {return m_AddonXMLHandler;}
+  CAddonXMLHandler * GetXMLHandler () {return &m_AddonXMLHandler;}
   void SetXMLHandler (CAddonXMLHandler XMLHandler) {m_AddonXMLHandler = XMLHandler;}
   int GetResType () const {return m_resType;}
   void SetResType (int resType) {m_resType = resType;}
