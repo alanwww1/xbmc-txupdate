@@ -28,6 +28,16 @@
 
 using namespace std;
 
+CPOEntry::CPOEntry()
+{
+  numID = 0;
+  Type = UNKNOWN_FOUND;
+}
+
+CPOEntry::~CPOEntry()
+{}
+
+
 bool CPOEntry::operator==(const CPOEntry& poentry) const
 {
   bool bhasMatch = true;
@@ -53,12 +63,6 @@ CPODocument::CPODocument()
   m_CursorPos = 0;
   m_nextEntryPos = 0;
   m_POfilelength = 0;
-  m_Entry.msgStrPlural.clear();
-  m_Entry.translatorComm.clear();
-  m_Entry.referenceComm.clear();
-  m_Entry.interlineComm.clear();
-  m_Entry.extractedComm.clear();
-  m_Entry.numID = 0;
   m_bhasLFWritten = false;
   m_previd = -1;
   m_writtenEntry = 0;

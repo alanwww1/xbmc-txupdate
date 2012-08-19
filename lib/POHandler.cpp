@@ -88,8 +88,6 @@ bool CPOHandler::ProcessPOFile(CPODocument &PODoc)
 
       if (currType == ID_FOUND)
         m_mapStrings[currEntry.numID] = currEntry;
-      if (currEntry.interlineComm.size() > 0)
-        printf("ilcomm:%s", currEntry.interlineComm.front().c_str());
       else
       {
         m_vecClassicEntries.push_back(currEntry);
@@ -201,7 +199,7 @@ bool CPOHandler::DeleteClassicEntry (CPOEntry &EntryToFind)
   return false;
 }
 
-void CPOHandler::SetAddonMetaData (CAddonXMLEntry &AddonXMLEntry, CAddonXMLEntry &AddonXMLEntryEN)
+void CPOHandler::SetAddonMetaData (CAddonXMLEntry const &AddonXMLEntry, CAddonXMLEntry const &AddonXMLEntryEN)
 {
   CPOEntry POEntryDesc, POEntryDiscl, POEntrySumm;
   POEntryDesc.Type = MSGID_FOUND;
@@ -229,6 +227,37 @@ void CPOHandler::SetAddonMetaData (CAddonXMLEntry &AddonXMLEntry, CAddonXMLEntry
   ModifyClassicEntry(POEntryDesc, newPOEntryDesc);
   ModifyClassicEntry(POEntryDiscl, newPOEntryDisc);
   ModifyClassicEntry(POEntrySumm, newPOEntrySumm);
+  return;
+}
+
+void CPOHandler::GetAddonMetaData (CAddonXMLEntry &AddonXMLEntry, CAddonXMLEntry &AddonXMLEntryEN)
+{
+  CAddonXMLEntry newAddonXMLEntry, newENAddonXMLEntry;
+  CPOEntry POEntry;
+  POEntry.msgCtxt = "Addon Summary";
+  if (LookforClassicEntry(POEntry))
+  {
+    newAddonXMLEntry.strSummary = POEntry.msgStr;
+    newENAddonXMLEntry.strSummary = POEntry.msgID;
+  }
+
+  ClearCPOEntry(POEntry);
+  POEntry.msgCtxt = "Addon Description";
+  if (LookforClassicEntry(POEntry))
+  {
+    newAddonXMLEntry.strDescription = POEntry.msgStr;
+    newENAddonXMLEntry.strDescription = POEntry.msgID;
+  }
+
+  ClearCPOEntry(POEntry);
+  POEntry.msgCtxt = "Addon Disclaimer";
+  if (LookforClassicEntry(POEntry))
+  {
+    newAddonXMLEntry.strDisclaimer = POEntry.msgStr;
+    newENAddonXMLEntry.strDisclaimer = POEntry.msgID;
+  }
+  AddonXMLEntry = newAddonXMLEntry;
+  AddonXMLEntryEN = newENAddonXMLEntry;
   return;
 }
 

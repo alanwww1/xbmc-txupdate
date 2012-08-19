@@ -38,7 +38,7 @@ public:
   int GetCurrResType() const {return m_resType;}
   size_t GetLangsCount() const {return m_mapPOFiles.size();}
   std::string GetLangCodeFromPos(size_t pos) {T_itmapPOFiles it = IterateToMapIndex (m_mapPOFiles.begin(), pos); return it->first;}
-  CPOHandler* GetPOData(std::string strLang) {return &m_mapPOFiles[strLang];}
+  CPOHandler* GetPOData(std::string strLang);
   void AddPOData(CPOHandler &POHandler, std::string strLang) {m_mapPOFiles[strLang] = POHandler;}
   std::string GetLangDir () const {return m_langDir;}
   void SetLangDir (std::string langDir) {m_langDir = langDir;}

@@ -204,6 +204,13 @@ bool CProjectHandler::CreateMergedResources()
 //      mergedPOHandler.SetAddonMetaData(pcurrResHandler->GetXMLHandler().);
       CAddonXMLEntry MergedAddonXMLEntry;
       CAddonXMLEntry * pAddonXMLEntry;
+      if (m_mapResourcesTX.find(*itResAvail) != m_mapResourcesTX.end() && m_mapResourcesTX[*itResAvail].GetPOData(*itlang))
+      {
+        CAddonXMLEntry AddonXMLEntryInPO, AddonENXMLEntryInPO;
+        m_mapResourcesTX[*itResAvail].GetPOData(*itlang)->GetAddonMetaData(AddonXMLEntryInPO, AddonENXMLEntryInPO);
+        MergeAddonXMLEntry(AddonXMLEntryInPO, MergedAddonXMLEntry, *pENAddonXMLEntry, AddonENXMLEntryInPO);
+        printf("???????????%s\n", MergedAddonXMLEntry.strSummary.c_str());
+      }
 //      printf("ENEntry2:%s\n", pENAddonXMLEntry->strSummary.c_str());
       if ((pAddonXMLEntry = GetAddonDataFromXML(&m_mapResourcesUpstr, *itResAvail, *itlang)) != NULL)
         MergeAddonXMLEntry(*pAddonXMLEntry, MergedAddonXMLEntry, *pENAddonXMLEntry,
@@ -215,12 +222,12 @@ bool CProjectHandler::CreateMergedResources()
 //        CLog::Log(logERROR, "CreateMergedResources: No Local or Upstream AddonXML file found as source for merging");
 
       printf("%s:%s\n", itlang->c_str(), MergedAddonXMLEntry.strSummary.c_str());
-      
-      if (*itResAvail == "xbmc-core")
-      {
-        sleep(2);
-        printf("");
-      }
+
+//      if (*itResAvail == "xbmc-core")
+//      {
+//        sleep(2);
+//        printf("");
+//      }
 
       if (*itResAvail != "xbmc-core")
         mergedPOHandler.SetAddonMetaData(MergedAddonXMLEntry, *pENAddonXMLEntry);
@@ -354,7 +361,7 @@ std::map<std::string, CResourceHandler> * CProjectHandler::ChoosePrefResMap(std:
   else
     CLog::Log(logERROR, "CreateMergedResources: Resource %s was not found in any sources", strResname.c_str());
 
-  return pmapRes;;
+  return pmapRes;
 }
 
 CAddonXMLEntry * const CProjectHandler::GetAddonDataFromXML(std::map<std::string, CResourceHandler> * pmapRes,

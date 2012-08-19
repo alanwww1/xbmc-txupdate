@@ -68,6 +68,14 @@ bool CResourceHandler::LoadResource(std::string strResRootDir, std::string strPO
   return true;
 };
 
+CPOHandler* CResourceHandler::GetPOData(std::string strLang)
+{
+  if (m_mapPOFiles.find(strLang) != m_mapPOFiles.end())
+    return &m_mapPOFiles[strLang];
+  return NULL;
+}
+
+
 bool CResourceHandler::GetLangsFromDir(std::string strLangDir)
 {
   std::list<std::string> listDirs;

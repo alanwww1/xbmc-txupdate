@@ -64,6 +64,8 @@ struct CAddonXMLEntry
 class CPOEntry
 {
 public:
+  CPOEntry();
+  ~CPOEntry();
   int Type;
   uint32_t numID;
   std::string msgCtxt;

@@ -47,7 +47,8 @@ public:
   void SetHeader (std::string &strHeader) {m_strHeader = strHeader;}
   std::string GetHeader () {return m_strHeader;}
 
-  void SetAddonMetaData (CAddonXMLEntry &AddonXMLEntry, CAddonXMLEntry &AddonXMLEntryEN);
+  void SetAddonMetaData (CAddonXMLEntry const &AddonXMLEntry, CAddonXMLEntry const &AddonXMLEntryEN);
+  void GetAddonMetaData (CAddonXMLEntry &AddonXMLEntry, CAddonXMLEntry &AddonXMLEntryEN);
   void SetPreHeader (std::string &strPreText);
   size_t const GetNumEntriesCount() {return m_mapStrings.size();}
   size_t const GetClassEntriesCount() {return m_vecClassicEntries.size();}
