@@ -260,17 +260,17 @@ bool CAddonXMLHandler::UpdateAddonXMLFile (std::string strAddonXMLFilename)
   for (std::list<std::string>::iterator it = listAddonDataLangs.begin(); it != listAddonDataLangs.end(); it++)
   {
     if (!m_mapAddonXMLData[*it].strSummary.empty())
-      strNewMetadata += strAllign + "<summary lang=" + *it + ">" + m_mapAddonXMLData[*it].strSummary + "</summary>\n";
+      strNewMetadata += strAllign + "<summary lang=\"" + *it + "\">" + m_mapAddonXMLData[*it].strSummary + "</summary>\n";
   }
   for (std::list<std::string>::iterator it = listAddonDataLangs.begin(); it != listAddonDataLangs.end(); it++)
   {
     if (!m_mapAddonXMLData[*it].strDescription.empty())
-      strNewMetadata += strAllign + "<description lang=" + *it + ">" + m_mapAddonXMLData[*it].strDescription + "</description>\n";
+      strNewMetadata += strAllign + "<description lang=\"" + *it + "\">" + m_mapAddonXMLData[*it].strDescription + "</description>\n";
   }
   for (std::list<std::string>::iterator it = listAddonDataLangs.begin(); it != listAddonDataLangs.end(); it++)
   {
     if (!m_mapAddonXMLData[*it].strDisclaimer.empty())
-      strNewMetadata += strAllign + "<disclaimer lang=" + *it + ">" + m_mapAddonXMLData[*it].strDisclaimer + "</disclaimer>\n";
+      strNewMetadata += strAllign + "<disclaimer lang=\"" + *it + "\">" + m_mapAddonXMLData[*it].strDisclaimer + "</disclaimer>\n";
   }
 
   for (std::vector<std::string>::iterator itvec = vecEntryToKeep.begin(); itvec != vecEntryToKeep.end();itvec++)
@@ -278,7 +278,7 @@ bool CAddonXMLHandler::UpdateAddonXMLFile (std::string strAddonXMLFilename)
 
 
   m_strAddonXMLFile.replace(posMetaDataStart, posMetaDataEnd -posMetaDataStart +1, strNewMetadata);
-  WriteFileFromStr(strAddonXMLFilename + "_edited.xml", m_strAddonXMLFile.c_str());
+  WriteFileFromStr(strAddonXMLFilename, m_strAddonXMLFile.c_str());
 
   return true;
 }
