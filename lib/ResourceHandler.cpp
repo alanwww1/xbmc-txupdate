@@ -281,7 +281,7 @@ bool CResourceHandler::FetchPOFilesUpstreamToMem(CXMLResdata XMLResdata, int res
 
 
 
-bool CResourceHandler::WritePOToFiles(std::string strResourceDir, std::string strPOsuffix)
+bool CResourceHandler::WritePOToFiles(std::string strResourceDir, std::string strPOsuffix, std::string strResname)
 {
   CLog::Log(logINFO, "ResHandler: Starting to write resource from memory to directory: %s",strResourceDir.c_str());
 
@@ -306,6 +306,11 @@ bool CResourceHandler::WritePOToFiles(std::string strResourceDir, std::string st
     CLog::Log(logINFO, "POHandler: %s\t\t%i\t\t%i\t\t%i", strLang.c_str(), pPOHandler->GetNumEntriesCount(),
               pPOHandler->GetClassEntriesCount(), pPOHandler->GetCommntEntriesCount());
   }
+
+  // update local addon.xml file
+  if (strResname != "xbmc-core")
+    m_AddonXMLHandler.UpdateAddonXMLFile(strResourceDir + "addon.xml");
+
   if (!strListNewDirs.empty())
     CLog::Log(logINFO, "POHandler: New local directories already existing on Transifex: %s", strListNewDirs.c_str());
   return true;

@@ -49,7 +49,7 @@ std::map<std::string, std::string> CJSONHandler::ParseResources(std::string strJ
 
   for(Json::ValueIterator itr = root.begin() ; itr != root.end() ; itr++)
   {
-    printf("key:%i\n", itr.key().asUInt());
+//    printf("key:%i\n", itr.key().asUInt());
     Json::Value valu = *itr;
     resName = valu.get("slug", "unknown").asString();
     resType = valu.get("category", "unknown").asString();

@@ -131,7 +131,47 @@ std::string ReadFileToStr(std::string strFileName)
 
   if (readBytes != fileLength)
   {
-    CLog::Log(logERROR, "POParser: actual read data differs from file size, for string file: %s",strFileName.c_str());
+    CLog::Log(logERROR, "FileUtils: actual read data differs from file size, for string file: %s",strFileName.c_str());
   }
   return strRead;
+};
+
+bool WriteFileFromStr(const std::string &pofilename, std::string const &strToWrite)
+{
+  FILE * pFile = fopen (pofilename.c_str(),"wb");
+  if (pFile == NULL)
+  {
+    CLog::Log(logERROR, "FileUtils: WriteFileFromStr failed for file: %s\n", pofilename.c_str());
+    return false;
+  }
+  fprintf(pFile, "%s", strToWrite.c_str());
+  fclose(pFile);
+
+  return true;
+};
+
+void ConvertStrLineEnds(std::string &strToConvert)
+{
+  size_t foundPos = strToConvert.find_first_of("\r");
+  if (foundPos == std::string::npos)
+    return; // We have only Linux style line endings in the file, nothing to do
+
+  if (foundPos+1 >= strToConvert.size() || strToConvert[foundPos+1] != '\n')
+    CLog::Log(logWARNING, "FileUtils: string has Mac Style Line Endings. Converted in memory to Linux LF");
+  else
+    CLog::Log(logWARNING, "FileUtils: string has Win Style Line Endings. Converted in memory to Linux LF.");
+
+  std::string strTemp;
+  strTemp.reserve(strToConvert.size());
+  for (std::string::const_iterator it = strToConvert.begin(); it < strToConvert.end(); it++)
+  {
+    if (*it == '\r')
+    {
+      if (it+1 == strToConvert.end() || *(it+1) != '\n')
+        strTemp.push_back('\n'); // convert Mac style line ending and continue
+        continue; // we have Win style line ending so we exclude this CR now
+    }
+    strTemp.push_back(*it);
+  }
+  strToConvert.swap(strTemp);
 };

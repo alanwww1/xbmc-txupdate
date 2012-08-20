@@ -34,7 +34,7 @@ public:
   bool LoadResource(std::string strResRootDir, std::string strPOsuffix);
   bool FetchPOFilesTXToMem(std::string strURL, std::string strCategory);
   bool FetchPOFilesUpstreamToMem(CXMLResdata XMLResdata, int resType);
-  bool WritePOToFiles(std::string strResourceDir, std::string strPOsuffix);
+  bool WritePOToFiles(std::string strResourceDir, std::string strPOsuffix, std::string strResName);
   int GetCurrResType() const {return m_resType;}
   size_t GetLangsCount() const {return m_mapPOFiles.size();}
   std::string GetLangCodeFromPos(size_t pos) {T_itmapPOFiles it = IterateToMapIndex (m_mapPOFiles.begin(), pos); return it->first;}

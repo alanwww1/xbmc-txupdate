@@ -151,7 +151,8 @@ bool CProjectHandler::WriteResourcesToFile(std::string strProjRootDir, std::stri
       CLog::Log(logERROR, "ProjHandler: Creating local directory for new resource on Transifex: %s", itmapResources->first.c_str());
       MakeDir(strProjRootDir + itmapResources->first + DirSepChar);
     }
-    m_mapResMerged[itmapResources->first].WritePOToFiles (strProjRootDir + itmapResources->first + DirSepChar, strPOSuffix);
+    m_mapResMerged[itmapResources->first].WritePOToFiles (strProjRootDir + itmapResources->first + DirSepChar, strPOSuffix,
+                                                          itmapResources->first);
   }
   return true;
 };
@@ -184,9 +185,15 @@ bool CProjectHandler::CreateMergedResources()
     CAddonXMLEntry * pENAddonXMLEntry;
 
     if ((pENAddonXMLEntry = GetAddonDataFromXML(&m_mapResourcesUpstr, *itResAvail, "en")) != NULL)
+    {
       CLog::Log(logINFO, "CreateMergedResources: Using Upstream AddonXML file as source for merging");
+      mergedResHandler.GetXMLHandler()->SetStrAddonXMLFile(m_mapResourcesUpstr[*itResAvail].GetXMLHandler()->GetStrAddonXMLFile());
+    }
     else if ((pENAddonXMLEntry = GetAddonDataFromXML(&m_mapResourcesLocal, *itResAvail, "en")) != NULL)
+    {
       CLog::Log(logINFO, "CreateMergedResources: Using Local AddonXML file as source for merging");
+      mergedResHandler.GetXMLHandler()->SetStrAddonXMLFile(m_mapResourcesLocal[*itResAvail].GetXMLHandler()->GetStrAddonXMLFile());
+    }
     else if (*itResAvail != "xbmc-core")
       CLog::Log(logERROR, "CreateMergedResources: No Local or Upstream AddonXML file found as source for merging");
 
@@ -209,7 +216,6 @@ bool CProjectHandler::CreateMergedResources()
         CAddonXMLEntry AddonXMLEntryInPO, AddonENXMLEntryInPO;
         m_mapResourcesTX[*itResAvail].GetPOData(*itlang)->GetAddonMetaData(AddonXMLEntryInPO, AddonENXMLEntryInPO);
         MergeAddonXMLEntry(AddonXMLEntryInPO, MergedAddonXMLEntry, *pENAddonXMLEntry, AddonENXMLEntryInPO);
-        printf("???????????%s\n", MergedAddonXMLEntry.strSummary.c_str());
       }
 //      printf("ENEntry2:%s\n", pENAddonXMLEntry->strSummary.c_str());
       if ((pAddonXMLEntry = GetAddonDataFromXML(&m_mapResourcesUpstr, *itResAvail, *itlang)) != NULL)
@@ -221,7 +227,7 @@ bool CProjectHandler::CreateMergedResources()
 //      else
 //        CLog::Log(logERROR, "CreateMergedResources: No Local or Upstream AddonXML file found as source for merging");
 
-      printf("%s:%s\n", itlang->c_str(), MergedAddonXMLEntry.strSummary.c_str());
+//      printf("%s:%s\n", itlang->c_str(), MergedAddonXMLEntry.strSummary.c_str());
 
 //      if (*itResAvail == "xbmc-core")
 //      {
@@ -230,8 +236,10 @@ bool CProjectHandler::CreateMergedResources()
 //      }
 
       if (*itResAvail != "xbmc-core")
+      {
         mergedPOHandler.SetAddonMetaData(MergedAddonXMLEntry, *pENAddonXMLEntry);
-
+        mergedResHandler.GetXMLHandler()->GetMapAddonXMLData()->operator[](*itlang) = MergedAddonXMLEntry;
+      }
 
       for (size_t POEntryIdx = 0; POEntryIdx != pcurrResHandler->GetPOData("en")->GetNumEntriesCount(); POEntryIdx++)
       {
@@ -243,16 +251,6 @@ bool CProjectHandler::CreateMergedResources()
         pPOEntryLocal = SafeGetPOEntry(m_mapResourcesLocal, *itResAvail, strLangCode, numID);
 
 
-        if (*itResAvail == "xbmc-core" && strLangCode == "en")
-        {
-          printf("POENTRYIdx: %i, ilcommUpstr: %i, ilcommTX:%i\n", POEntryIdx, pPOEntryUpstr ? pPOEntryUpstr->interlineComm.size(): -99,
-                 pPOEntryTX ? pPOEntryTX->interlineComm.size(): -99);
-          if (POEntryIdx == 667)
-          {
-            printf ("667 reached\n");
-          }
-        }
-
         if (strLangCode != "en" && pPOEntryTX && pPOEntryTX->msgID == pcurrPOEntryEN->msgID && !pPOEntryTX->msgStr.empty())
           mergedPOHandler.AddNumPOEntryByID(numID, *pPOEntryTX);
         else if (pPOEntryUpstr && pPOEntryUpstr->msgID == pcurrPOEntryEN->msgID && !pPOEntryUpstr->msgStr.empty())
@@ -262,10 +260,6 @@ bool CProjectHandler::CreateMergedResources()
         else
           mergedPOHandler.AddNumPOEntryByID(numID, *pcurrPOEntryEN);
 
-      }
-      if (*itResAvail == "xbmc-core" && strLangCode == "en")
-      {
-        printf("MergePOHandler reached END");
       }
       if (mergedPOHandler.GetNumEntriesCount() !=0 || mergedPOHandler.GetClassEntriesCount() !=0)
       {

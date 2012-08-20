@@ -21,6 +21,7 @@
 
 #include "AddonXMLHandler.h"
 #include <list>
+#include <vector>
 #include <algorithm>
 #include "HTTPUtils.h"
 
@@ -33,16 +34,27 @@ CAddonXMLHandler::CAddonXMLHandler()
 CAddonXMLHandler::~CAddonXMLHandler()
 {};
 
-bool CAddonXMLHandler::LoadAddonXMLFile (std::string AddonXMLFilename)
+bool CAddonXMLHandler::LoadAddonXMLFile (std::string strAddonXMLFilename)
 {
-  TiXmlDocument xmlAddonXML;
-
-  if (!xmlAddonXML.LoadFile(AddonXMLFilename.c_str()))
+  m_strAddonXMLFile = ReadFileToStr(strAddonXMLFilename);
+  if (m_strAddonXMLFile.empty())
   {
-    CLog::Log(logERROR, "AddonXMLHandler: AddonXML file problem: %s %s\n", xmlAddonXML.ErrorDesc(), (AddonXMLFilename + "addon.xml").c_str());
+    CLog::Log(logERROR, "AddonXMLHandler: Load AddonXML file problem for file: %s\n", strAddonXMLFilename.c_str());
     return false;
   }
-  return ProcessAddonXMLFile(AddonXMLFilename, xmlAddonXML);
+
+  ConvertStrLineEnds(m_strAddonXMLFile);
+
+//  printf("%s", m_strAddonXMLFile.c_str());
+
+  TiXmlDocument xmlAddonXML;
+
+  if (!xmlAddonXML.LoadFile(strAddonXMLFilename.c_str()))
+  {
+    CLog::Log(logERROR, "AddonXMLHandler: AddonXML file problem: %s %s\n", xmlAddonXML.ErrorDesc(), strAddonXMLFilename.c_str());
+    return false;
+  }
+  return ProcessAddonXMLFile(strAddonXMLFilename, xmlAddonXML);
 }
 
 bool CAddonXMLHandler::FetchAddonXMLFileUpstr (std::string strURL)
@@ -50,6 +62,12 @@ bool CAddonXMLHandler::FetchAddonXMLFileUpstr (std::string strURL)
   TiXmlDocument xmlAddonXML;
 
   std::string strXMLFile = g_HTTPHandler.GetURLToSTR(strURL);
+
+  m_strAddonXMLFile = strXMLFile;
+  ConvertStrLineEnds(m_strAddonXMLFile);
+
+//  printf("%s", m_strAddonXMLFile.c_str());
+
 
   if (!xmlAddonXML.Parse(strXMLFile.c_str(), 0, TIXML_DEFAULT_ENCODING))
   {
@@ -167,6 +185,126 @@ bool CAddonXMLHandler::ProcessAddonXMLFile (std::string AddonXMLFilename, TiXmlD
 
   return true;
 };
+
+bool CAddonXMLHandler::UpdateAddonXMLFile (std::string strAddonXMLFilename)
+{
+
+  std::string strXMLEntry;
+  size_t posS1, posE1, posS2, posE2;
+  posE1 = 0; posS1 =0;
+
+  do
+  {
+    posS1 = posE1;
+    strXMLEntry = GetXMLEntry("<extension", posS1, posE1);
+    if (posS1 == std::string::npos)
+      CLog::Log(logERROR, "AddonXMLHandler: UpdateAddonXML file problem: %s\n", strAddonXMLFilename.c_str());
+  }
+  while (strXMLEntry.find("point") == std::string::npos || strXMLEntry.find("xbmc.addon.metadata") == std::string::npos);
+
+  posS2 = posE1+1;
+  GetXMLEntry("</extension", posS2, posE2);
+  if (posS2 == std::string::npos)
+  CLog::Log(logERROR, "AddonXMLHandler: UpdateAddonXML file problem: %s\n", strAddonXMLFilename.c_str());
+
+  size_t posMetaDataStart = posE1 +1;
+  size_t posMetaDataEnd = posS2-1;
+
+  std::string strPrevMetaData = m_strAddonXMLFile.substr(posMetaDataStart, posMetaDataEnd-posMetaDataStart+1);
+  std::string strAllign = m_strAddonXMLFile.substr(m_strAddonXMLFile.find_first_not_of("\n\r", posMetaDataStart),
+                                                   m_strAddonXMLFile.find("<",posMetaDataStart) - 
+                                                   m_strAddonXMLFile.find_first_not_of("\n\r", posMetaDataStart));
+
+  bool bisEntryToKeep = false;
+  bool bisSecondClose = false;
+  std::string strEntry;
+  std::vector<std::string> vecEntryToKeep;
+
+  // find entries not about summary, description, discaimer. Collect them in a vector.
+  for (std::string::iterator it = strPrevMetaData.begin(); it != strPrevMetaData.end(); it++)
+  {
+    if (!bisSecondClose && *it == '<')
+    {
+      size_t pos  = it - strPrevMetaData.begin();
+      std::string temp = strPrevMetaData.substr(pos+1,1);
+      if (strPrevMetaData.substr(pos+1,1) != "/" && strPrevMetaData.substr(pos+1,7) != "summary" && 
+          strPrevMetaData.substr(pos+1,11) != "description" && strPrevMetaData.substr(pos+1,10) != "disclaimer")
+      {
+        bisEntryToKeep = true;
+        bisSecondClose = false;
+      }
+    }
+    if (bisEntryToKeep)
+      strEntry += *it;
+    if (bisEntryToKeep && *it == '>')
+    {
+      if (bisSecondClose)
+      {
+        vecEntryToKeep.push_back(strEntry);
+        strEntry.clear();
+        bisEntryToKeep = false;
+      }
+      else
+        bisSecondClose = true;
+    }
+  }
+
+  std::list<std::string> listAddonDataLangs;
+
+  for (itAddonXMLData = m_mapAddonXMLData.begin(); itAddonXMLData != m_mapAddonXMLData.end(); itAddonXMLData++)
+    listAddonDataLangs.push_back(itAddonXMLData->first);
+
+  std::string strNewMetadata;
+  strNewMetadata += "\n";
+
+  for (std::list<std::string>::iterator it = listAddonDataLangs.begin(); it != listAddonDataLangs.end(); it++)
+  {
+    if (!m_mapAddonXMLData[*it].strSummary.empty())
+      strNewMetadata += strAllign + "<summary lang=" + *it + ">" + m_mapAddonXMLData[*it].strSummary + "</summary>\n";
+  }
+  for (std::list<std::string>::iterator it = listAddonDataLangs.begin(); it != listAddonDataLangs.end(); it++)
+  {
+    if (!m_mapAddonXMLData[*it].strDescription.empty())
+      strNewMetadata += strAllign + "<description lang=" + *it + ">" + m_mapAddonXMLData[*it].strDescription + "</description>\n";
+  }
+  for (std::list<std::string>::iterator it = listAddonDataLangs.begin(); it != listAddonDataLangs.end(); it++)
+  {
+    if (!m_mapAddonXMLData[*it].strDisclaimer.empty())
+      strNewMetadata += strAllign + "<disclaimer lang=" + *it + ">" + m_mapAddonXMLData[*it].strDisclaimer + "</disclaimer>\n";
+  }
+
+  for (std::vector<std::string>::iterator itvec = vecEntryToKeep.begin(); itvec != vecEntryToKeep.end();itvec++)
+    strNewMetadata += strAllign + *itvec + "\n";
+
+
+  m_strAddonXMLFile.replace(posMetaDataStart, posMetaDataEnd -posMetaDataStart +1, strNewMetadata);
+  WriteFileFromStr(strAddonXMLFilename + "_edited.xml", m_strAddonXMLFile.c_str());
+
+  return true;
+}
+
+std::string CAddonXMLHandler::GetXMLEntry (std::string const &strprefix, size_t &pos1, size_t &pos2)
+{
+  pos1 =   m_strAddonXMLFile.find(strprefix, pos1);
+  pos2 =   m_strAddonXMLFile.find(">", pos1);
+  return m_strAddonXMLFile.substr(pos1, pos2 - pos1 +1);
+}
+
+void CAddonXMLHandler::CleanWSBetweenXMLEntries (std::string &strXMLString)
+{
+  bool bInsideEntry = false;
+  std::string strCleaned;
+  for (std::string::iterator it = strXMLString.begin(); it != strXMLString.end(); it++)
+  {
+    if (*it == '<')
+      bInsideEntry = true;
+    if (bInsideEntry)
+      strCleaned += *it;
+    if (*it == '>')
+      bInsideEntry = false;
+  }
+  strCleaned.swap(strXMLString);
+}
 
 bool CAddonXMLHandler::GetEncoding(const TiXmlDocument* pDoc, std::string& strEncoding)
 {
