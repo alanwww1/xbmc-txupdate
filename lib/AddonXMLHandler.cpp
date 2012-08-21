@@ -208,7 +208,7 @@ bool CAddonXMLHandler::UpdateAddonXMLFile (std::string strAddonXMLFilename)
   CLog::Log(logERROR, "AddonXMLHandler: UpdateAddonXML file problem: %s\n", strAddonXMLFilename.c_str());
 
   size_t posMetaDataStart = posE1 +1;
-  size_t posMetaDataEnd = posS2-1;
+  size_t posMetaDataEnd = m_strAddonXMLFile.find_last_not_of("\t ", posS2-1);
 
   std::string strPrevMetaData = m_strAddonXMLFile.substr(posMetaDataStart, posMetaDataEnd-posMetaDataStart+1);
   std::string strAllign = m_strAddonXMLFile.substr(m_strAddonXMLFile.find_first_not_of("\n\r", posMetaDataStart),
