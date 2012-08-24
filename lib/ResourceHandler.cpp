@@ -46,7 +46,7 @@ bool CResourceHandler::LoadResource(std::string strResRootDir, std::string strPO
   if (m_resType == ADDON || m_resType == ADDON_NOSTRINGS || m_resType == SKIN)
   {
     CLog::Log(logINFO, "ResHandler: Addon or skin resource detected.");
-  m_AddonXMLHandler.LoadAddonXMLFile(strResRootDir + "addon.xml");
+    m_AddonXMLHandler.LoadAddonXMLFile(strResRootDir + "addon.xml");
   }
   else if (m_resType == CORE)
   {

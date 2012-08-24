@@ -51,6 +51,8 @@ bool CPOEntry::operator==(const CPOEntry& poentry) const
     bhasMatch = bhasMatch && (poentry.msgIDPlur == msgIDPlur);
   if (!poentry.msgStr.empty())
     bhasMatch = bhasMatch && (poentry.msgStr == msgStr);
+  if (!poentry.msgStrPlural.empty())
+    bhasMatch = bhasMatch && (poentry.msgStrPlural == msgStrPlural);
   if (!poentry.Type == ID_FOUND)
     bhasMatch = bhasMatch && (poentry.numID == numID);
   if (poentry.Type != UNKNOWN_FOUND && poentry.Type != 0)

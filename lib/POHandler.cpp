@@ -303,6 +303,14 @@ const CPOEntry* CPOHandler::GetNumPOEntryByIdx(size_t pos) const
   return &(it_mapStrings->second);
 }
 
+const CPOEntry* CPOHandler::GetClassicPOEntryByIdx(size_t pos) const
+{
+  std::vector<CPOEntry>::const_iterator it_vecPOEntry;
+  it_vecPOEntry = m_vecClassicEntries.begin();
+  advance(it_vecPOEntry, pos);
+  return &(*it_vecPOEntry);
+}
+
 itStrings CPOHandler::IterateToMapIndex(itStrings it, size_t index)
 {
   for (size_t i = 0; i != index; i++)

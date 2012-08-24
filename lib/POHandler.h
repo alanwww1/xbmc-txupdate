@@ -42,9 +42,10 @@ public:
 
   const CPOEntry* GetNumPOEntryByID(uint32_t numid);
   bool AddNumPOEntryByID(uint32_t numid, CPOEntry const &POEntry);
+  const CPOEntry* GetClassicPOEntryByIdx(size_t pos) const;
 
   const CPOEntry* GetNumPOEntryByIdx(size_t pos) const;
-  void SetHeader (std::string &strHeader) {m_strHeader = strHeader;}
+  void SetHeader (std::string strHeader) {m_strHeader = strHeader;}
   std::string GetHeader () {return m_strHeader;}
 
   void SetAddonMetaData (CAddonXMLEntry const &AddonXMLEntry, CAddonXMLEntry const &AddonXMLEntryEN);

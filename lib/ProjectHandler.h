@@ -48,6 +48,8 @@ protected:
   bool GetResourcesFromDir(std::string strProjRootDir);
   const CPOEntry * SafeGetPOEntry(std::map<std::string, CResourceHandler> &mapResHandl, const std::string &strResname,
                             std::string &strLangCode, size_t numID);
+  CPOHandler * SafeGetPOHandler(std::map<std::string, CResourceHandler> &mapResHandl, const std::string &strResname,
+                                      std::string &strLangCode);
   std::list<std::string> CreateLanguageList(std::string strResname);
   std::map<std::string, CResourceHandler> * ChoosePrefResMap(std::string strResname);
   std::list<std::string> CreateResourceList();
@@ -55,6 +57,7 @@ protected:
                                              const std::string &strResname, const std::string &strLangCode) const;
   void MergeAddonXMLEntry(CAddonXMLEntry const &EntryToMerge, CAddonXMLEntry &MergedAddonXMLEntry,
                                            CAddonXMLEntry const &SourceENEntry, CAddonXMLEntry const &CurrENEntry);
+  bool ComparePOFiles(CPOHandler &POHandler1, CPOHandler &POHandler2) const;
 
   std::map<std::string, CResourceHandler> m_mapResourcesLocal;
   std::map<std::string, CResourceHandler> m_mapResourcesTX;
