@@ -200,7 +200,7 @@ bool CResourceHandler::FetchPOFilesTXToMem(std::string strURL, std::string strCa
   {
     m_mapPOFiles[*it] = POHandler;
     CPOHandler * pPOHandler = &m_mapPOFiles[*it];
-    pPOHandler->FetchPOURLToMem(strURL + "translation/" + *it + "/?file");
+    pPOHandler->FetchPOURLToMem(strURL + "translation/" + *it + "/?file", false);
     pPOHandler->SetIfIsEnglish(*it == "en");
     std::string strLang = *it;
     strLang.resize(20, ' ');
@@ -211,30 +211,36 @@ bool CResourceHandler::FetchPOFilesTXToMem(std::string strURL, std::string strCa
   return true;
 }
 
-bool CResourceHandler::FetchPOFilesUpstreamToMem(CXMLResdata XMLResdata, int resType)
+bool CResourceHandler::FetchPOFilesUpstreamToMem(CXMLResdata XMLResdata, int resType, std::list<std::string> listLangsAll)
 {
   CLog::Log(logINFO, "ResHandler: Starting to load resource from Upsream URL: %s into memory",XMLResdata.strUptreamURL.c_str());
 
   std::list<std::string> listLangs;
-  std::string strLangs;
-  if (XMLResdata.strLangsFromUpstream.empty())
-    strLangs = "en";
-  else
-    strLangs = "en " + XMLResdata.strLangsFromUpstream;
-  size_t posEnd;
 
-  do
-  {
-    posEnd = strLangs.find(" ");
-  if (posEnd != std::string::npos)
-  {
-    listLangs.push_back(strLangs.substr(0,posEnd));
-    strLangs = strLangs.substr(posEnd+1);
-  }
+  if (XMLResdata.strLangsFromUpstream == "all")
+    listLangs = listLangsAll;
   else
-    listLangs.push_back(strLangs);
+  {
+    std::string strLangs;
+    if (XMLResdata.strLangsFromUpstream.empty())
+      strLangs = "en";
+    else
+      strLangs = "en " + XMLResdata.strLangsFromUpstream;
+    size_t posEnd;
+
+    do
+    {
+      posEnd = strLangs.find(" ");
+    if (posEnd != std::string::npos)
+    {
+      listLangs.push_back(strLangs.substr(0,posEnd));
+      strLangs = strLangs.substr(posEnd+1);
+    }
+    else
+      listLangs.push_back(strLangs);
+    }
+    while (posEnd != std::string::npos);
   }
-  while (posEnd != std::string::npos);
 
   std::string strLangdirPrefix;
 
@@ -262,18 +268,19 @@ bool CResourceHandler::FetchPOFilesUpstreamToMem(CXMLResdata XMLResdata, int res
   else
     m_AddonXMLHandler.FetchAddonXMLFileUpstr(XMLResdata.strUptreamURL + "addon.xml");
 
-  CPOHandler POHandler;
-
   for (std::list<std::string>::iterator it = listLangs.begin(); it != listLangs.end(); it++)
   {
-    m_mapPOFiles[*it] = POHandler;
-    CPOHandler * pPOHandler = &m_mapPOFiles[*it];
-    pPOHandler->FetchPOURLToMem(XMLResdata.strUptreamURL + strLangdirPrefix + g_LCodeHandler.FindLang(*it) + DirSepChar + "strings.po");
-    pPOHandler->SetIfIsEnglish(*it == "en");
-    std::string strLang = *it;
-    strLang.resize(20, ' ');
-    CLog::Log(logINFO, "POHandler: %s\t\t%i\t\t%i\t\t%i", strLang.c_str(), pPOHandler->GetNumEntriesCount(),
-              pPOHandler->GetClassEntriesCount(), pPOHandler->GetCommntEntriesCount());
+    CPOHandler POHandler;
+    if (POHandler.FetchPOURLToMem(XMLResdata.strUptreamURL + strLangdirPrefix + g_LCodeHandler.FindLang(*it) + DirSepChar + "strings.po",
+                              true))
+    {
+      POHandler.SetIfIsEnglish(*it == "en");
+      m_mapPOFiles[*it] = POHandler;
+      std::string strLang = *it;
+      strLang.resize(20, ' ');
+      CLog::Log(logINFO, "POHandler: %s\t\t%i\t\t%i\t\t%i", strLang.c_str(), POHandler.GetNumEntriesCount(),
+              POHandler.GetClassEntriesCount(), POHandler.GetCommntEntriesCount());
+    }
   }
 //  GetResTypeFromTX(strCategory);
   return true;

@@ -89,14 +89,14 @@ public:
 
   bool LoadFile(const std::string &pofilename);
   bool SaveFile(const std::string &pofilename);
-  bool GetNextEntry();
+  bool GetNextEntry(bool bSkipError);
   int GetEntryType() const {return m_Entry.Type;}
   void ParseEntry();
   CPOEntry GetEntryData() const {return m_Entry;}
   void WriteHeader(const std::string &strHeader);
   void WritePOEntry(const CPOEntry &currEntry);
   void SetIfIsEnglish(bool bIsENLang) {m_bIsForeignLang = !bIsENLang;}
-  bool FetchURLToMem(const std::string &strURL);
+  bool FetchURLToMem(const std::string &strURL, bool bSkipError);
 
 protected:
   std::string IntToStr(int number);

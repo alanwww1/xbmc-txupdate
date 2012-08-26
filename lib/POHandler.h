@@ -33,7 +33,7 @@ public:
   CPOHandler();
   ~CPOHandler();
   bool LoadPOFile(std::string strPOFileName);
-  bool FetchPOURLToMem(std::string strURL);
+  bool FetchPOURLToMem(std::string strURL, bool bSkipError);
   bool WritePOFile(const std::string &strOutputPOFilename);
   bool LookforClassicEntry (CPOEntry &EntryToFind);
   void AddClassicEntry (CPOEntry &EntryToAdd);

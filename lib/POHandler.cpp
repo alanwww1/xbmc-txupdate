@@ -35,10 +35,10 @@ bool CPOHandler::LoadPOFile(std::string strPOFileName)
   return ProcessPOFile(PODoc);
 };
 
-bool CPOHandler::FetchPOURLToMem (std::string strURL)
+bool CPOHandler::FetchPOURLToMem (std::string strURL, bool bSkipError)
 {
   CPODocument PODoc;
-  if (!PODoc.FetchURLToMem(strURL))
+  if (!PODoc.FetchURLToMem(strURL, bSkipError))
     return false;
   return ProcessPOFile(PODoc);
 };
@@ -59,7 +59,7 @@ bool CPOHandler::ProcessPOFile(CPODocument &PODoc)
   CPOEntry currEntry;
   int currType = UNKNOWN_FOUND;
 
-  while ((PODoc.GetNextEntry()))
+  while ((PODoc.GetNextEntry(false)))
   {
     PODoc.ParseEntry();
     currEntry = PODoc.GetEntryData();

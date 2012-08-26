@@ -23,6 +23,7 @@
 #include "POHandler.h"
 #include "AddonXMLHandler.h"
 #include "UpdateXMLHandler.h"
+#include <list>
 
 typedef std::map<std::string, CPOHandler>::iterator T_itmapPOFiles;
 
@@ -33,7 +34,7 @@ public:
   ~CResourceHandler();
   bool LoadResource(std::string strResRootDir, std::string strPOsuffix);
   bool FetchPOFilesTXToMem(std::string strURL, std::string strCategory);
-  bool FetchPOFilesUpstreamToMem(CXMLResdata XMLResdata, int resType);
+  bool FetchPOFilesUpstreamToMem(CXMLResdata XMLResdata, int resType, std::list<std::string> listLangsAll);
   bool WritePOToFiles(std::string strResourceDir, std::string strPOsuffix, std::string strResName);
   int GetCurrResType() const {return m_resType;}
   size_t GetLangsCount() const {return m_mapPOFiles.size();}

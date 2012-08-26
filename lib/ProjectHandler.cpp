@@ -135,7 +135,8 @@ bool CProjectHandler::FetchResourcesFromUpstream(std::string strProjRootDir)
       MakeDir(strProjRootDir + it->first);
     }
     m_mapResourcesUpstr[it->first] = ResourceHandler;
-    m_mapResourcesUpstr[it->first].FetchPOFilesUpstreamToMem(it->second, m_mapResourcesLocal[it->first].GetCurrResType());
+    m_mapResourcesUpstr[it->first].FetchPOFilesUpstreamToMem(it->second, m_mapResourcesLocal[it->first].GetCurrResType(),
+                                                             CreateLanguageList(it->first));
   }
   return true;
 };

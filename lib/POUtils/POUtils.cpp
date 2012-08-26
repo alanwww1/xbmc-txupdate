@@ -126,7 +126,7 @@ bool CPODocument::LoadFile(const std::string &pofilename)
     m_POfilelength++;
   }
 
-  if (GetNextEntry() && m_Entry.Type == MSGID_FOUND &&
+  if (GetNextEntry(false) && m_Entry.Type == MSGID_FOUND &&
     m_Entry.Content.find("msgid \"\"")  != std::string::npos &&
     m_Entry.Content.find("msgstr \"\"") != std::string::npos)
   {
@@ -138,7 +138,7 @@ bool CPODocument::LoadFile(const std::string &pofilename)
   return false;
 };
 
-bool CPODocument::FetchURLToMem(const std::string &strURL)
+bool CPODocument::FetchURLToMem(const std::string &strURL, bool bSkipError)
 {
   m_strBuffer.clear();
   m_strBuffer = "\n" + g_HTTPHandler.GetURLToSTR(strURL);
@@ -153,7 +153,7 @@ bool CPODocument::FetchURLToMem(const std::string &strURL)
   }
   m_POfilelength = m_strBuffer.size();
 
-  if (GetNextEntry() && m_Entry.Type == MSGID_FOUND &&
+  if (GetNextEntry(true) && m_Entry.Type == MSGID_FOUND &&
     m_Entry.Content.find("msgid \"\"")  != std::string::npos &&
     m_Entry.Content.find("msgstr \"\"") != std::string::npos)
   {
@@ -161,11 +161,14 @@ bool CPODocument::FetchURLToMem(const std::string &strURL)
     return true;
   }
 
-  CLog::Log(logERROR, "POParser: unable to read PO file header from URL: %s", strURL.c_str());
+  if (bSkipError)
+    CLog::Log(logINFO, "POParser: unable to read PO file header from URL: %s", strURL.c_str());
+  else
+    CLog::Log(logERROR, "POParser: unable to read PO file header from URL: %s", strURL.c_str());
   return false;
 };
 
-bool CPODocument::GetNextEntry()
+bool CPODocument::GetNextEntry(bool bSkipError)
 {
   do
   {
@@ -210,7 +213,7 @@ bool CPODocument::GetNextEntry()
       return true;
       }
     }
-    if (m_nextEntryPos != m_POfilelength-1)
+    if (m_nextEntryPos != m_POfilelength-1 && !bSkipError)
       CLog::Log(logWARNING, "POParser: unknown entry found, Failed entry: %s", m_Entry.Content.c_str());
   }
   while (m_nextEntryPos != m_POfilelength-1);
