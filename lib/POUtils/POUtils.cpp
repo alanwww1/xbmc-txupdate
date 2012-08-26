@@ -485,9 +485,10 @@ void CPODocument::WriteHeader(const std::string &strHeader)
 void CPODocument::WritePOEntry(const CPOEntry &currEntry)
 {
   m_bhasLFWritten = false;
-  int id = currEntry.numID;
-  if (!m_bIsForeignLang)
+
+  if (!m_bIsForeignLang && currEntry.Type == ID_FOUND)
   {
+    int id = currEntry.numID;
     WriteMultilineComment(currEntry.interlineComm, "#");
     if (id-m_previd >= 2 && m_previd > -1)
     {
@@ -497,6 +498,7 @@ void CPODocument::WritePOEntry(const CPOEntry &currEntry)
       if (id-m_previd > 2)
         m_strOutBuffer += "#empty strings from id " + IntToStr(m_previd+1) + " to " + IntToStr(id-1) + "\n";
     }
+    m_previd =id;
   }
   m_bhasLFWritten = false;
 
@@ -509,7 +511,7 @@ void CPODocument::WritePOEntry(const CPOEntry &currEntry)
 
   WriteLF();
   if (currEntry.Type == ID_FOUND)
-    m_strOutBuffer += "msgctxt \"#" + IntToStr(id) + "\"\n";
+    m_strOutBuffer += "msgctxt \"#" + IntToStr(currEntry.numID) + "\"\n";
   else if (!currEntry.msgCtxt.empty())
     m_strOutBuffer += "msgctxt \"" + currEntry.msgCtxt + "\"\n";
 
@@ -521,7 +523,6 @@ void CPODocument::WritePOEntry(const CPOEntry &currEntry)
     m_strOutBuffer += "msgstr \"\"\n";
 
   m_writtenEntry++;
-  m_previd =id;
 };
 
 void CPODocument::WriteLF()

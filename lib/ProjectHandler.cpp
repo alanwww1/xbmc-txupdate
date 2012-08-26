@@ -245,7 +245,8 @@ bool CProjectHandler::CreateMergedResources()
 
       if (*itResAvail != "xbmc-core")
       {
-        mergedPOHandler.SetAddonMetaData(MergedAddonXMLEntry, *pENAddonXMLEntry);
+        if (strLangCode == "en")
+          mergedPOHandler.SetAddonMetaData(MergedAddonXMLEntry, *pENAddonXMLEntry);
         mergedResHandler.GetXMLHandler()->GetMapAddonXMLData()->operator[](*itlang) = MergedAddonXMLEntry;
       }
 
@@ -283,18 +284,27 @@ bool CProjectHandler::CreateMergedResources()
           pPOHandlerComp = pPOHandlerTX;
 
         if (ComparePOFiles(mergedPOHandler, *pPOHandlerComp))
-          mergedPOHandler.SetHeader(pPOHandlerComp->GetHeader());
+        {
+//        mergedPOHandler.SetHeader(pPOHandlerComp->GetHeader());
+          mergedPOHandler = *pPOHandlerComp;
+        }
         else if (pPOHandlerTX)
-          mergedPOHandler.SetHeader(pPOHandlerTX->GetHeader());
+        {
+          if (strLangCode == "en")
+            mergedPOHandler.SetHeader(pPOHandlerComp->GetHeader());
+          else
+            mergedPOHandler.SetHeader(pPOHandlerTX->GetHeader());
+        }
         else if (pPOHandlerLoc)
           mergedPOHandler.SetHeader(pPOHandlerLoc->GetHeader());
+
         mergedPOHandler.SetPreHeader(strResPreHeader);
 
 //        else if (pPOHandlerTX)
 //          printf("NEM EGYEZIKK!!!!!!!!!!!!!!!!!!!!!:%s\n", pPOHandlerTX->GetHeader().c_str());
 
         mergedResHandler.AddPOData(mergedPOHandler, strLangCode);
-        CLog::Log(logINFO, "MegredPOHandler: %s\t\t%i\t\t%i\t\t%i", strLangCode.c_str(), mergedPOHandler.GetNumEntriesCount(),
+        CLog::Log(logINFO, "MergedPOHandler: %s\t\t%i\t\t%i\t\t%i", strLangCode.c_str(), mergedPOHandler.GetNumEntriesCount(),
                   mergedPOHandler.GetClassEntriesCount(), mergedPOHandler.GetCommntEntriesCount());
       }
     }
@@ -424,15 +434,27 @@ CPOHandler * CProjectHandler::SafeGetPOHandler(std::map<std::string, CResourceHa
 
 bool CProjectHandler::ComparePOFiles(CPOHandler &POHandler1,CPOHandler &POHandler2) const
 {
-  if (POHandler1.GetNumEntriesCount() != POHandler2.GetNumEntriesCount())
-    return false;
-  if (POHandler1.GetClassEntriesCount() != POHandler2.GetClassEntriesCount())
-    return false;
+//  if (POHandler1.GetNumEntriesCount() != POHandler2.GetNumEntriesCount())
+//    return false;
+//  if (POHandler1.GetClassEntriesCount() != POHandler2.GetClassEntriesCount())
+//    return false;
 
   for (size_t POEntryIdx = 0; POEntryIdx != POHandler1.GetNumEntriesCount(); POEntryIdx++)
   {
     const CPOEntry * POEntry1 = POHandler1.GetNumPOEntryByIdx(POEntryIdx);
     const CPOEntry * POEntry2 = POHandler2.GetNumPOEntryByID(POEntry1->numID);
+
+    if (!POEntry2)
+    {
+      if (POEntry1->msgStr.empty())
+        continue;
+      else
+        return false;
+    }
+
+    if(POEntry1->msgID != POEntry2->msgID && POEntry1->msgStr.empty())
+      continue;
+
     if (!(*POEntry1 == *POEntry2))
       return false;
   }

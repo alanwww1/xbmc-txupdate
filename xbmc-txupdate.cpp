@@ -110,7 +110,7 @@ int main(int argc, char* argv[])
   TXProject.FetchResourcesFromTransifex(WorkingDir);
   TXProject.FetchResourcesFromUpstream(WorkingDir);
   TXProject.CreateMergedResources();
-  TXProject.WriteResourcesToFile(WorkingDir, ".tx0");
+  TXProject.WriteResourcesToFile(WorkingDir, "");
   TXProject.SaveUpdateXML(WorkingDir);
 
   printf("Warnings: %i\n", CLog::GetWarnCount());

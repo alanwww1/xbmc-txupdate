@@ -101,45 +101,45 @@ bool CAddonXMLHandler::ProcessAddonXMLFile (std::string AddonXMLFilename, TiXmlD
   }
   const char* pMainAttrId = NULL;
 
-  pMainAttrId=pRootElement->Attribute("id");
+  pMainAttrId=pRootElement->Attribute("name");
   m_strResourceData += "# Addon Name: ";
   if (!pMainAttrId)
   {
     CLog::Log(logWARNING, "AddonXMLHandler: No addon name was available in addon.xml file: %s\n", AddonXMLFilename.c_str());
-    m_strResourceData += "\"xbmc-unnamed\"\n";
+    m_strResourceData += "xbmc-unnamed\n";
   }
   else
-    m_strResourceData += "\"" + ToUTF8(addonXMLEncoding, EscapeLF(pMainAttrId)) + "\"\n";
+    m_strResourceData += ToUTF8(addonXMLEncoding, EscapeLF(pMainAttrId)) + "\n";
 
-  pMainAttrId=pRootElement->Attribute("name");
-  m_strResourceData = "# Addon id: ";
+  pMainAttrId=pRootElement->Attribute("id");
+  m_strResourceData += "# Addon id: ";
   if (!pMainAttrId)
   {
     CLog::Log(logWARNING, "AddonXMLHandler: No addon name was available in addon.xml file: %s\n", AddonXMLFilename.c_str());
-    m_strResourceData +=  "\"unknown\"\n";
+    m_strResourceData +=  "unknown\n";
   }
   else
-    m_strResourceData += "\"" + ToUTF8(addonXMLEncoding, EscapeLF(pMainAttrId)) + "\"\n";
+    m_strResourceData += ToUTF8(addonXMLEncoding, EscapeLF(pMainAttrId)) + "\n";
 
   pMainAttrId=pRootElement->Attribute("version");
   m_strResourceData += "# Addon version: ";
   if (!pMainAttrId)
   {
     CLog::Log(logWARNING, "AddonXMLHandler: No version name was available in addon.xml file: %s\n", AddonXMLFilename.c_str());
-    m_strResourceData += "\"rev_unknown\"\n";
+    m_strResourceData += "rev_unknown\n";
   }
   else
-    m_strResourceData += "\"" + ToUTF8(addonXMLEncoding, EscapeLF(pMainAttrId)) + "\"\n";
+    m_strResourceData += ToUTF8(addonXMLEncoding, EscapeLF(pMainAttrId)) + "\n";
 
   pMainAttrId=pRootElement->Attribute("provider-name");
   m_strResourceData += "# Addon Provider: ";
   if (!pMainAttrId)
   {
     CLog::Log(logWARNING, "AddonXMLHandler: Warning: No addon provider was available in addon.xml file: %s\n", AddonXMLFilename.c_str());
-    m_strResourceData += "\"unknown\"\n";
+    m_strResourceData += "unknown\n";
   }
   else
-    m_strResourceData += "\"" + ToUTF8(addonXMLEncoding, EscapeLF(pMainAttrId)) + "\"\n";
+    m_strResourceData += ToUTF8(addonXMLEncoding, EscapeLF(pMainAttrId)) + "\n";
 
   std::string strAttrToSearch = "xbmc.addon.metadata";
 
@@ -385,7 +385,7 @@ bool CAddonXMLHandler::ProcessCoreVersion(std::string filename, std::string &str
   m_strResourceData.clear();
   size_t startpos = strBuffer.find("#define VERSION_MAJOR ") + 22;
   size_t endpos = strBuffer.find_first_of(" \n\r", startpos);
-  m_strResourceData += strBuffer.substr(startpos, endpos-startpos);
+  m_strResourceData += "# XBMC-core v" + strBuffer.substr(startpos, endpos-startpos);
   m_strResourceData += ".";
 
   startpos = strBuffer.find("#define VERSION_MINOR ") + 22;
@@ -394,7 +394,7 @@ bool CAddonXMLHandler::ProcessCoreVersion(std::string filename, std::string &str
 
   startpos = strBuffer.find("#define VERSION_TAG \"") + 21;
   endpos = strBuffer.find_first_of(" \n\r\"", startpos);
-  m_strResourceData += strBuffer.substr(startpos, endpos-startpos);
+  m_strResourceData += strBuffer.substr(startpos, endpos-startpos) + "\n";
 
   return true;
 }
