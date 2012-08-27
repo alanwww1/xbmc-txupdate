@@ -176,7 +176,6 @@ bool CProjectHandler::CreateMergedResources()
 
     CResourceHandler mergedResHandler;
     mergedResHandler.SetResType(pcurrResHandler->GetResType());
-//    mergedResHandler.SetXMLHandler(pcurrResHandler->GetXMLHandler());
     mergedResHandler.SetLangDir(pcurrResHandler->GetLangDir());
 
     // Get available pretext for Resource Header. First use the upstream one, if not avail. the local one
@@ -205,8 +204,6 @@ bool CProjectHandler::CreateMergedResources()
     else if (*itResAvail != "xbmc-core")
       CLog::Log(logERROR, "CreateMergedResources: No Local or Upstream AddonXML file found as source for merging");
 
-//    printf("ENEntry%s\n", pENAddonXMLEntry->strSummary.c_str());
-
     for (std::list<std::string>::iterator itlang = listMergedLangs.begin(); itlang != listMergedLangs.end(); itlang++)
     {
       std::string strLangCode = *itlang;
@@ -216,7 +213,6 @@ bool CProjectHandler::CreateMergedResources()
       const CPOEntry* pPOEntryLocal;
 
       mergedPOHandler.SetIfIsEnglish(strLangCode == "en");
-//      mergedPOHandler.SetAddonMetaData(pcurrResHandler->GetXMLHandler().);
       CAddonXMLEntry MergedAddonXMLEntry;
       CAddonXMLEntry * pAddonXMLEntry;
       if (m_mapResourcesTX.find(*itResAvail) != m_mapResourcesTX.end() && m_mapResourcesTX[*itResAvail].GetPOData(*itlang))
@@ -224,30 +220,18 @@ bool CProjectHandler::CreateMergedResources()
         CAddonXMLEntry AddonXMLEntryInPO, AddonENXMLEntryInPO;
         m_mapResourcesTX[*itResAvail].GetPOData(*itlang)->GetAddonMetaData(AddonXMLEntryInPO, AddonENXMLEntryInPO);
         MergeAddonXMLEntry(AddonXMLEntryInPO, MergedAddonXMLEntry, *pENAddonXMLEntry, AddonENXMLEntryInPO);
-//        printf("tx_header:%s", m_mapResourcesTX[*itResAvail].GetPOData(*itlang)->GetHeader().c_str());
       }
-//      printf("ENEntry2:%s\n", pENAddonXMLEntry->strSummary.c_str());
       if ((pAddonXMLEntry = GetAddonDataFromXML(&m_mapResourcesUpstr, *itResAvail, *itlang)) != NULL)
         MergeAddonXMLEntry(*pAddonXMLEntry, MergedAddonXMLEntry, *pENAddonXMLEntry,
                            *GetAddonDataFromXML(&m_mapResourcesUpstr, *itResAvail, "en"));
       else if ((pAddonXMLEntry = GetAddonDataFromXML(&m_mapResourcesLocal, *itResAvail, *itlang)) != NULL)
         MergeAddonXMLEntry(*pAddonXMLEntry, MergedAddonXMLEntry, *pENAddonXMLEntry,
                            *GetAddonDataFromXML(&m_mapResourcesLocal, *itResAvail, "en"));
-//      else
-//        CLog::Log(logERROR, "CreateMergedResources: No Local or Upstream AddonXML file found as source for merging");
-
-//      printf("%s:%s\n", itlang->c_str(), MergedAddonXMLEntry.strSummary.c_str());
-
-//      if (*itResAvail == "xbmc-core")
-//      {
-//        sleep(2);
-//        printf("");
-//      }
 
       if (*itResAvail != "xbmc-core")
       {
-        if (strLangCode == "en")
-          mergedPOHandler.SetAddonMetaData(MergedAddonXMLEntry, *pENAddonXMLEntry);
+//        if (strLangCode == "en")
+//          mergedPOHandler.SetAddonMetaData(MergedAddonXMLEntry, *pENAddonXMLEntry);
         mergedResHandler.GetXMLHandler()->GetMapAddonXMLData()->operator[](*itlang) = MergedAddonXMLEntry;
       }
 
@@ -300,9 +284,6 @@ bool CProjectHandler::CreateMergedResources()
           mergedPOHandler.SetHeader(pPOHandlerLoc->GetHeader());
 
         mergedPOHandler.SetPreHeader(strResPreHeader);
-
-//        else if (pPOHandlerTX)
-//          printf("NEM EGYEZIKK!!!!!!!!!!!!!!!!!!!!!:%s\n", pPOHandlerTX->GetHeader().c_str());
 
         mergedResHandler.AddPOData(mergedPOHandler, strLangCode);
         CLog::Log(logINFO, "MergedPOHandler: %s\t\t%i\t\t%i\t\t%i", strLangCode.c_str(), mergedPOHandler.GetNumEntriesCount(),
@@ -382,19 +363,16 @@ std::map<std::string, CResourceHandler> * CProjectHandler::ChoosePrefResMap(std:
   {
     pmapRes = &m_mapResourcesUpstr;
     CLog::Log(logINFO, "CreateMergedResources: Using upstream English file as source for merging");
-//    printf("upstr pretext:%s", m_mapResourcesUpstr[strResname].GetXMLHandler()->GetResHeaderPretext().c_str());
   }
   else if (m_mapResourcesTX.find(strResname) != m_mapResourcesTX.end())
   {
     pmapRes = &m_mapResourcesTX;
     CLog::Log(logINFO, "CreateMergedResources: Using Transifex English file as source for merging");
-//    printf("local pretext:%s", m_mapResourcesLocal[strResname].GetXMLHandler()->GetResHeaderPretext().c_str());
   }
   else if (m_mapResourcesLocal.find(strResname) != m_mapResourcesLocal.end())
   {
     pmapRes = &m_mapResourcesLocal;
     CLog::Log(logINFO, "CreateMergedResources: Using Local English file as source for merging");
-//    printf("local pretext:%s", m_mapResourcesLocal[strResname].GetXMLHandler()->GetResHeaderPretext().c_str());
   }
   else
     CLog::Log(logERROR, "CreateMergedResources: Resource %s was not found in any sources", strResname.c_str());
