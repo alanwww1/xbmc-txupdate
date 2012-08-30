@@ -257,21 +257,21 @@ bool CProjectHandler::CreateMergedResources()
       }
       if (mergedPOHandler.GetNumEntriesCount() !=0 || mergedPOHandler.GetClassEntriesCount() !=0)
       {
-        CPOHandler * pPOHandlerTX, * pPOHandlerLoc, * pPOHandlerUpst, *pPOHandlerComp;
+        CPOHandler * pPOHandlerTX, * pPOHandlerLoc, * pPOHandlerUpst;
         pPOHandlerTX = SafeGetPOHandler(m_mapResourcesTX, *itResAvail, strLangCode);
         pPOHandlerLoc = SafeGetPOHandler(m_mapResourcesLocal, *itResAvail, strLangCode);
         pPOHandlerUpst = SafeGetPOHandler(m_mapResourcesUpstr, *itResAvail, strLangCode);
-        if (pPOHandlerUpst)
-          pPOHandlerComp = pPOHandlerUpst;
+        if (pPOHandlerTX)
+          mergedPOHandler.SetHeader(pPOHandlerTX->GetHeader());
+        else if (pPOHandlerUpst)
+          mergedPOHandler.SetHeader(pPOHandlerUpst->GetHeader());
         else if (pPOHandlerLoc)
-          pPOHandlerComp = pPOHandlerLoc;
-        else if (pPOHandlerTX)
-          pPOHandlerComp = pPOHandlerTX;
-
+          mergedPOHandler.SetHeader(pPOHandlerLoc->GetHeader());;
+/*
         if (ComparePOFiles(mergedPOHandler, *pPOHandlerComp))
         {
-//        mergedPOHandler.SetHeader(pPOHandlerComp->GetHeader());
-          mergedPOHandler = *pPOHandlerComp;
+        mergedPOHandler.SetHeader(pPOHandlerComp->GetHeader());
+//          mergedPOHandler = *pPOHandlerComp;
         }
         else if (pPOHandlerTX)
         {
@@ -282,6 +282,7 @@ bool CProjectHandler::CreateMergedResources()
         }
         else if (pPOHandlerLoc)
           mergedPOHandler.SetHeader(pPOHandlerLoc->GetHeader());
+*/
 
         mergedPOHandler.SetPreHeader(strResPreHeader);
 
@@ -290,7 +291,7 @@ bool CProjectHandler::CreateMergedResources()
                   mergedPOHandler.GetClassEntriesCount(), mergedPOHandler.GetCommntEntriesCount());
       }
     }
-    if (mergedResHandler.GetLangsCount() != 0)
+    if (mergedResHandler.GetLangsCount() != 0 || !mergedResHandler.GetXMLHandler()->GetMapAddonXMLData()->empty())
       m_mapResMerged[*itResAvail] = mergedResHandler;
   }
   return true;

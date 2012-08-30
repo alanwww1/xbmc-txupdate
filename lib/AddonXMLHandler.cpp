@@ -260,17 +260,20 @@ bool CAddonXMLHandler::UpdateAddonXMLFile (std::string strAddonXMLFilename)
   for (std::list<std::string>::iterator it = listAddonDataLangs.begin(); it != listAddonDataLangs.end(); it++)
   {
     if (!m_mapAddonXMLData[*it].strSummary.empty())
-      strNewMetadata += strAllign + "<summary lang=\"" + *it + "\">" + m_mapAddonXMLData[*it].strSummary + "</summary>\n";
+      strNewMetadata += strAllign + "<summary lang=\"" + *it + "\">" + XMLEscapeString(m_mapAddonXMLData[*it].strSummary)
+                        + "</summary>\n";
   }
   for (std::list<std::string>::iterator it = listAddonDataLangs.begin(); it != listAddonDataLangs.end(); it++)
   {
     if (!m_mapAddonXMLData[*it].strDescription.empty())
-      strNewMetadata += strAllign + "<description lang=\"" + *it + "\">" + m_mapAddonXMLData[*it].strDescription + "</description>\n";
+      strNewMetadata += strAllign + "<description lang=\"" + *it + "\">" + XMLEscapeString(m_mapAddonXMLData[*it].strDescription)
+                        + "</description>\n";
   }
   for (std::list<std::string>::iterator it = listAddonDataLangs.begin(); it != listAddonDataLangs.end(); it++)
   {
     if (!m_mapAddonXMLData[*it].strDisclaimer.empty())
-      strNewMetadata += strAllign + "<disclaimer lang=\"" + *it + "\">" + m_mapAddonXMLData[*it].strDisclaimer + "</disclaimer>\n";
+      strNewMetadata += strAllign + "<disclaimer lang=\"" + *it + "\">" + XMLEscapeString(m_mapAddonXMLData[*it].strDisclaimer)
+                        + "</disclaimer>\n";
   }
 
   for (std::vector<std::string>::iterator itvec = vecEntryToKeep.begin(); itvec != vecEntryToKeep.end();itvec++)
@@ -398,3 +401,57 @@ bool CAddonXMLHandler::ProcessCoreVersion(std::string filename, std::string &str
 
   return true;
 }
+
+std::string CAddonXMLHandler::XMLEscapeString(const std::string &strInput)
+{
+  std::string strOutput;
+  if (strInput.empty())
+    return strOutput;
+
+  std::string oescstring;
+  strOutput.reserve(strInput.size());
+  std::string::const_iterator it = strInput.begin();
+  while (it < strInput.end())
+  {
+    oescstring = *it++;
+    if (oescstring == "\\")
+    {
+      if (it == strInput.end())
+      {
+        CLog::Log(logWARNING, "XMLEscapeString: Unhandled escape character at line-end. Problematic string: %s", strInput.c_str());
+        continue;
+      }
+      switch (*it++)
+      {
+        case 'a':  oescstring = "\a"; break;
+        case 'b':  oescstring = "\b"; break;
+        case 'v':  oescstring = "\v"; break;
+        case 'n':  oescstring = "&#10;"; break;
+        case 't':  oescstring = "\t"; break;
+        case 'r':  oescstring = "\r"; break;
+        case '"':  oescstring = "&quot;" ; break;
+        case '0':  oescstring = "\0"; break;
+        case 'f':  oescstring = "\f"; break;
+        case '?':  oescstring = "\?"; break;
+        case '\'': oescstring = "\'"; break;
+        case '\\': oescstring = "\\"; break;
+
+        default: 
+        {
+          CLog::Log(logWARNING, "XMLEscapeString: Unhandled escape character. Problematic string: %s", strInput.c_str());
+          continue;
+        }
+      }
+    }
+    else if (oescstring == "\"")
+      oescstring = "&quot;";
+    else if (oescstring == "<")
+      oescstring = "&lt;";
+    else if (oescstring == ">")
+      oescstring = "&gt;";
+
+    strOutput += oescstring;
+  }
+  return strOutput;
+};
+

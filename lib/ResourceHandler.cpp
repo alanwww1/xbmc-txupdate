@@ -292,7 +292,9 @@ bool CResourceHandler::WritePOToFiles(std::string strResourceDir, std::string st
 {
   CLog::Log(logINFO, "ResHandler: Starting to write resource from memory to directory: %s",strResourceDir.c_str());
 
-  CreateMissingDirs(strResourceDir);
+  if (!m_mapPOFiles.empty())
+    CreateMissingDirs(strResourceDir);
+
   std::string strListNewDirs;
 
   for (T_itmapPOFiles itmapPOFiles = m_mapPOFiles.begin(); itmapPOFiles != m_mapPOFiles.end(); itmapPOFiles++)
