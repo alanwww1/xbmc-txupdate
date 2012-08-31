@@ -244,14 +244,19 @@ bool CProjectHandler::CreateMergedResources()
         pPOEntryUpstr = SafeGetPOEntry(m_mapResourcesUpstr, *itResAvail, strLangCode, numID);
         pPOEntryLocal = SafeGetPOEntry(m_mapResourcesLocal, *itResAvail, strLangCode, numID);
 
+        if (strLangCode == "en")
+        {
+          mergedPOHandler.AddNumPOEntryByID(numID, *pcurrPOEntryEN);
+          printf("%i", pcurrPOEntryEN->interlineComm.size());
+        }
 
         if (strLangCode != "en" && pPOEntryTX && pPOEntryTX->msgID == pcurrPOEntryEN->msgID && !pPOEntryTX->msgStr.empty())
           mergedPOHandler.AddNumPOEntryByID(numID, *pPOEntryTX);
-        else if (pPOEntryUpstr && pPOEntryUpstr->msgID == pcurrPOEntryEN->msgID && !pPOEntryUpstr->msgStr.empty())
+        else if (strLangCode != "en" && pPOEntryUpstr && pPOEntryUpstr->msgID == pcurrPOEntryEN->msgID && !pPOEntryUpstr->msgStr.empty())
           mergedPOHandler.AddNumPOEntryByID(numID, *pPOEntryUpstr);
-        else if (pPOEntryLocal && pPOEntryLocal->msgID == pcurrPOEntryEN->msgID && !pPOEntryLocal->msgStr.empty())
+        else if (strLangCode != "en" && pPOEntryLocal && pPOEntryLocal->msgID == pcurrPOEntryEN->msgID && !pPOEntryLocal->msgStr.empty())
           mergedPOHandler.AddNumPOEntryByID(numID, *pPOEntryLocal);
-        else
+        else if (strLangCode != "en")
           mergedPOHandler.AddNumPOEntryByID(numID, *pcurrPOEntryEN);
 
       }
@@ -261,7 +266,7 @@ bool CProjectHandler::CreateMergedResources()
         pPOHandlerTX = SafeGetPOHandler(m_mapResourcesTX, *itResAvail, strLangCode);
         pPOHandlerLoc = SafeGetPOHandler(m_mapResourcesLocal, *itResAvail, strLangCode);
         pPOHandlerUpst = SafeGetPOHandler(m_mapResourcesUpstr, *itResAvail, strLangCode);
-        if (pPOHandlerTX)
+        if (pPOHandlerTX && strLangCode != "en")
           mergedPOHandler.SetHeader(pPOHandlerTX->GetHeader());
         else if (pPOHandlerUpst)
           mergedPOHandler.SetHeader(pPOHandlerUpst->GetHeader());
@@ -283,8 +288,8 @@ bool CProjectHandler::CreateMergedResources()
         else if (pPOHandlerLoc)
           mergedPOHandler.SetHeader(pPOHandlerLoc->GetHeader());
 */
-
-        mergedPOHandler.SetPreHeader(strResPreHeader);
+        if (strLangCode != "en")
+          mergedPOHandler.SetPreHeader(strResPreHeader);
 
         mergedResHandler.AddPOData(mergedPOHandler, strLangCode);
         CLog::Log(logINFO, "MergedPOHandler: %s\t\t%i\t\t%i\t\t%i", strLangCode.c_str(), mergedPOHandler.GetNumEntriesCount(),
@@ -360,17 +365,17 @@ std::list<std::string> CProjectHandler::CreateResourceList()
 std::map<std::string, CResourceHandler> * CProjectHandler::ChoosePrefResMap(std::string strResname)
 {
   std::map<std::string, CResourceHandler> * pmapRes;
-  if (m_mapResourcesUpstr.find(strResname) != m_mapResourcesUpstr.end())
+  if (m_mapResourcesUpstr.find(strResname) != m_mapResourcesUpstr.end() && m_mapResourcesUpstr[strResname].GetLangsCount() !=0)
   {
     pmapRes = &m_mapResourcesUpstr;
     CLog::Log(logINFO, "CreateMergedResources: Using upstream English file as source for merging");
   }
-  else if (m_mapResourcesTX.find(strResname) != m_mapResourcesTX.end())
+  else if (m_mapResourcesTX.find(strResname) != m_mapResourcesTX.end() && m_mapResourcesTX[strResname].GetLangsCount() !=0)
   {
     pmapRes = &m_mapResourcesTX;
     CLog::Log(logINFO, "CreateMergedResources: Using Transifex English file as source for merging");
   }
-  else if (m_mapResourcesLocal.find(strResname) != m_mapResourcesLocal.end())
+  else if (m_mapResourcesLocal.find(strResname) != m_mapResourcesLocal.end() && m_mapResourcesLocal[strResname].GetLangsCount() !=0)
   {
     pmapRes = &m_mapResourcesLocal;
     CLog::Log(logINFO, "CreateMergedResources: Using Local English file as source for merging");
