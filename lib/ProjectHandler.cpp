@@ -245,10 +245,7 @@ bool CProjectHandler::CreateMergedResources()
         pPOEntryLocal = SafeGetPOEntry(m_mapResourcesLocal, *itResAvail, strLangCode, numID);
 
         if (strLangCode == "en")
-        {
           mergedPOHandler.AddNumPOEntryByID(numID, *pcurrPOEntryEN);
-          printf("%i", pcurrPOEntryEN->interlineComm.size());
-        }
 
         if (strLangCode != "en" && pPOEntryTX && pPOEntryTX->msgID == pcurrPOEntryEN->msgID && !pPOEntryTX->msgStr.empty())
           mergedPOHandler.AddNumPOEntryByID(numID, *pPOEntryTX);
