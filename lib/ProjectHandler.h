@@ -36,7 +36,6 @@ class CProjectHandler
 public:
   CProjectHandler();
   ~CProjectHandler();
-  bool LoadProject(std::string strProjRootDir);
   bool FetchResourcesFromTransifex(std::string strProjRootDir);
   bool FetchResourcesFromUpstream(std::string strProjRootDir);
   bool CreateMergedResources();
@@ -45,7 +44,6 @@ public:
   void SaveUpdateXML(std::string strProjRootDir);
 
 protected:
-  bool GetResourcesFromDir(std::string strProjRootDir);
   const CPOEntry * SafeGetPOEntry(std::map<std::string, CResourceHandler> &mapResHandl, const std::string &strResname,
                             std::string &strLangCode, size_t numID);
   CPOHandler * SafeGetPOHandler(std::map<std::string, CResourceHandler> &mapResHandl, const std::string &strResname,
@@ -57,9 +55,7 @@ protected:
                                              const std::string &strResname, const std::string &strLangCode) const;
   void MergeAddonXMLEntry(CAddonXMLEntry const &EntryToMerge, CAddonXMLEntry &MergedAddonXMLEntry,
                                            CAddonXMLEntry const &SourceENEntry, CAddonXMLEntry const &CurrENEntry);
-  bool ComparePOFiles(CPOHandler &POHandler1, CPOHandler &POHandler2) const;
 
-  std::map<std::string, CResourceHandler> m_mapResourcesLocal;
   std::map<std::string, CResourceHandler> m_mapResourcesTX;
   std::map<std::string, CResourceHandler> m_mapResourcesUpstr;
 
