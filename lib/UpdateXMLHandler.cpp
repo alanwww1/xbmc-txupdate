@@ -28,6 +28,14 @@
 
 using namespace std;
 
+CXMLResdata::CXMLResdata()
+{
+  Restype = UNKNOWN;
+}
+
+CXMLResdata::~CXMLResdata()
+{}
+
 CUpdateXMLHandler::CUpdateXMLHandler()
 {};
 
@@ -93,9 +101,13 @@ bool CUpdateXMLHandler::LoadXMLToMem (std::string rootDir)
       const TiXmlElement *pChildURLElement = pChildResElement->FirstChildElement("upstreamURL");
       if (pChildURLElement && pChildURLElement->FirstChild())
         currResData.strUptreamURL = pChildURLElement->FirstChild()->Value();
+      if (currResData.strUptreamURL.empty())
+        CLog::Log(logERROR, "UpdXMLHandler: UpstreamURL entry is empty for resource %s", strResName.c_str());
+
       const TiXmlElement *pChildUpstrLElement = pChildResElement->FirstChildElement("upstreamLangs");
       if (pChildUpstrLElement && pChildUpstrLElement->FirstChild())
         currResData.strLangsFromUpstream = pChildUpstrLElement->FirstChild()->Value();
+
       const TiXmlElement *pChildResTypeElement = pChildResElement->FirstChildElement("resourceType");
       if (pChildResTypeElement && pChildResTypeElement->FirstChild())
       {
@@ -108,15 +120,17 @@ bool CUpdateXMLHandler::LoadXMLToMem (std::string rootDir)
           currResData.Restype = SKIN;
         else if (strType == "xbmc_core")
           currResData.Restype = CORE;
-        else
-          CLog::Log(logERROR, "UpdXMLHandler: Unknown resource type string found in xbmc-txupdate.xml file. Problematic string: %s", strType.c_str());
       }
+      if (currResData.Restype == UNKNOWN)
+        CLog::Log(logERROR, "UpdXMLHandler: Unknown type found for resource %s", strResName.c_str());
+
       const TiXmlElement *pChildResDirElement = pChildResElement->FirstChildElement("resourceSubdir");
       if (pChildResDirElement && pChildResDirElement->FirstChild())
         currResData.strResDirectory = pChildResDirElement->FirstChild()->Value();
 
       m_mapXMLResdata[strResName] = currResData;
-      CLog::Log(logINFO, "UpdXMLHandler: found resource in update.xml file: %s, Type: %s", strResName.c_str(), strType.c_str());
+      CLog::Log(logINFO, "UpdXMLHandler: found resource in update.xml file: %s, Type: %s, SubDir: %s",
+                strResName.c_str(), strType.c_str(), currResData.strResDirectory.c_str());
     }
     pChildResElement = pChildResElement->NextSiblingElement("resource");
   }

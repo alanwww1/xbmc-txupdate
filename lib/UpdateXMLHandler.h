@@ -24,8 +24,11 @@
 #include "POUtils/POUtils.h"
 #include <string>
 
-struct CXMLResdata
+class CXMLResdata
 {
+public:
+  CXMLResdata();
+  ~CXMLResdata();
   std::string strUptreamURL;
   std::string strLangsFromUpstream;
   int Restype;
