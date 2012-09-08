@@ -27,14 +27,6 @@ CPOHandler::CPOHandler()
 CPOHandler::~CPOHandler()
 {};
 
-bool CPOHandler::LoadPOFile(std::string strPOFileName)
-{
-  CPODocument PODoc;
-  if (!PODoc.LoadFile(strPOFileName))
-    return false;
-  return ProcessPOFile(PODoc);
-};
-
 bool CPOHandler::FetchPOURLToMem (std::string strURL, bool bSkipError)
 {
   CPODocument PODoc;

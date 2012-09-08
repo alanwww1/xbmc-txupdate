@@ -79,65 +79,6 @@ std::string CPODocument::IntToStr(int number)
   return ss.str();//return a string with the contents of the stream
 };
 
-bool CPODocument::LoadFile(const std::string &pofilename)
-{
-  FILE * file;
-  file = fopen(pofilename.c_str(), "rb");
-  if (!file)
-  {
-    CLog::Log(logDEBUG, "POParser: No PO file exists called: %s", pofilename.c_str());
-    return false;
-  }
-
-  fseek(file, 0, SEEK_END);
-  int64_t fileLength = ftell(file);
-  fseek(file, 0, SEEK_SET);
-
-  if (fileLength < 18) // at least a size of a minimalistic header
-  {
-    fclose(file);
-    CLog::Log(logERROR, "POParser: non valid length found for string file: %s", pofilename.c_str());
-    return false;
-  }
-
-  m_POfilelength = static_cast<size_t> (fileLength);
-
-  m_strBuffer.resize(m_POfilelength+1);
-
-  unsigned int readBytes =  fread(&m_strBuffer[1], 1, m_POfilelength, file);
-  fclose(file);
-
-  if (readBytes != m_POfilelength)
-  {
-    CLog::Log(logERROR, "POParser: actual read data differs from file size, for string file: %s",
-           pofilename.c_str());
-    return false;
-  }
-
-  m_POfilelength++;
-
-  ConvertLineEnds(pofilename);
-
-  // we make sure, to have an LF at beginning and at end of buffer
-  m_strBuffer[0] = '\n';
-  if (*m_strBuffer.rbegin() != '\n')
-  {
-    m_strBuffer += "\n";
-    m_POfilelength++;
-  }
-
-  if (GetNextEntry(false) && m_Entry.Type == MSGID_FOUND &&
-    m_Entry.Content.find("msgid \"\"")  != std::string::npos &&
-    m_Entry.Content.find("msgstr \"\"") != std::string::npos)
-  {
-    m_Entry.Type = HEADER_FOUND;
-    return true;
-  }
-
-  CLog::Log(logERROR, "POParser: unable to read PO file header from file: %s", pofilename.c_str());
-  return false;
-};
-
 bool CPODocument::FetchURLToMem(const std::string &strURL, bool bSkipError)
 {
   m_strBuffer.clear();

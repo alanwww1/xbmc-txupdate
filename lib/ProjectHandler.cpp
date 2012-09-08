@@ -42,24 +42,22 @@ bool CProjectHandler::FetchResourcesFromTransifex(std::string strProjRootDir)
   strcpy(cstrtemp, strtemp.c_str());
 
   CJSONHandler JSONHandler;
-  m_mapResourceNamesTX.clear();
-  m_mapResourceNamesTX = JSONHandler.ParseResources(strtemp);
+  std::list<std::string> listResourceNamesTX = JSONHandler.ParseResources(strtemp);
 
   CResourceHandler ResourceHandler;
 
-  for (std::map<std::string, std::string>::iterator it = m_mapResourceNamesTX.begin(); it != m_mapResourceNamesTX.end(); it++)
+  for (std::list<std::string>::iterator it = listResourceNamesTX.begin(); it != listResourceNamesTX.end(); it++)
   {
     CLog::Log(logLINEFEED, "");
-    CLog::Log(logINFO, "ProjHandler: *** Fetch Resource: %s ***", it->first.c_str());
-    if (!DirExists(strProjRootDir + it->first))
+    CLog::Log(logINFO, "ProjHandler: *** Fetch Resource: %s ***", it->c_str());
+    if (!DirExists(strProjRootDir + *it))
     {
-      CLog::Log(logERROR, "ProjHandler: Creating local directory for new resource on Transifex: %s", it->first.c_str());
-      MakeDir(strProjRootDir + it->first);
+      CLog::Log(logERROR, "ProjHandler: Creating local directory for new resource on Transifex: %s", it->c_str());
+      MakeDir(strProjRootDir + *it);
     }
-    m_UpdateXMLHandler.AddResourceToXMLFile(it->first);
-    m_mapResourcesTX[it->first] = ResourceHandler;
-    m_mapResourcesTX[it->first].FetchPOFilesTXToMem("https://www.transifex.com/api/2/project/" + g_Settings.GetProjectname()
-                                              + "/resource/" + it->first + "/", it->second);
+    m_mapResourcesTX[*it] = ResourceHandler;
+    m_mapResourcesTX[*it].FetchPOFilesTXToMem("https://www.transifex.com/api/2/project/" + g_Settings.GetProjectname() +
+                                              "/resource/" + *it + "/");
   }
   return true;
 };
@@ -88,8 +86,7 @@ bool CProjectHandler::FetchResourcesFromUpstream(std::string strProjRootDir)
       MakeDir(strProjRootDir + it->first);
     }
     m_mapResourcesUpstr[it->first] = ResourceHandler;
-    m_mapResourcesUpstr[it->first].FetchPOFilesUpstreamToMem(it->second, m_mapResourcesLocal[it->first].GetCurrResType(),
-                                                             CreateLanguageList(it->first));
+    m_mapResourcesUpstr[it->first].FetchPOFilesUpstreamToMem(it->second, CreateLanguageList(it->first));
   }
   return true;
 };

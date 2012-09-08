@@ -33,60 +33,33 @@ CJSONHandler::CJSONHandler()
 CJSONHandler::~CJSONHandler()
 {};
 
-std::map<std::string, std::string> CJSONHandler::ParseResources(std::string strJSON)
+std::list<std::string> CJSONHandler::ParseResources(std::string strJSON)
 {
   Json::Value root;   // will contains the root value after parsing.
   Json::Reader reader;
-  std::string resName, resType;
-  std::map<std::string, std::string> mapResources;
+  std::string resName;
+  std::list<std::string> listResources;
 
   bool parsingSuccessful = reader.parse(strJSON, root );
   if ( !parsingSuccessful )
   {
     CLog::Log(logERROR, "JSONHandler: Parse resource: no valid JSON data");
-    return mapResources;
+    return listResources;
   }
 
   for(Json::ValueIterator itr = root.begin() ; itr != root.end() ; itr++)
   {
-//    printf("key:%i\n", itr.key().asUInt());
     Json::Value valu = *itr;
     resName = valu.get("slug", "unknown").asString();
-    resType = valu.get("category", "unknown").asString();
-    if (resType == "")
-    {
-      if (resName.substr(0,4) == "skin")
-      {
-        CLog::Log(logINFO, "JSONHandler: no category was filled for resource %s on Transifex server, but from resourcename"
-                  " this resource was declared as skin", resName.c_str());
-        resType = "skin";
-      }
-      else if (resName == "xbmc-core")
-      {
-        CLog::Log(logINFO, "JSONHandler: no category was filled for resource %s on Transifex server, but from resourcename"
-                  " this resource was declared as xbmc-core", resName.c_str());
-        resType = "xbmc-core";
-      }
-      else
-      {
-        CLog::Log(logINFO, "JSONHandler: no category was filled for resource %s on Transifex server, but from resourcename"
-        " this resource was declared as normal addon", resName.c_str());
-        resType = "addon";
-      }
-    }
 
-    if (resName.size() == 0 || resName == "unknown" ||
-        resType == "unknown")
+    if (resName.size() == 0 || resName == "unknown")
       CLog::Log(logERROR, "JSONHandler: Parse resource: no valid JSON data while iterating");
-    mapResources[resName] = resType;
-    CLog::Log(logINFO, "JSONHandler: found resource on Transifex server: %s, Type: %s", resName.c_str(), resType.c_str());
+    listResources.push_back(resName);
+    CLog::Log(logINFO, "JSONHandler: found resource on Transifex server: %s", resName.c_str());
   };
-  CLog::Log(logINFO, "JSONHandler: Found %i resources at Transifex server", mapResources.size());
-  return mapResources;
+  CLog::Log(logINFO, "JSONHandler: Found %i resources at Transifex server", listResources.size());
+  return listResources;
 };
-
-
-
 
 std::list<std::string> CJSONHandler::ParseAvailLanguages(std::string strJSON)
 {

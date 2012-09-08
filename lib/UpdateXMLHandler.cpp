@@ -83,6 +83,7 @@ bool CUpdateXMLHandler::LoadXMLToMem (std::string rootDir)
   }
 
   const TiXmlElement *pChildResElement = pRootElement->FirstChildElement("resource");
+  std::string strType;
   while (pChildResElement && pChildResElement->FirstChild())
   {
     CXMLResdata currResData;
@@ -95,61 +96,32 @@ bool CUpdateXMLHandler::LoadXMLToMem (std::string rootDir)
       const TiXmlElement *pChildUpstrLElement = pChildResElement->FirstChildElement("upstreamLangs");
       if (pChildUpstrLElement && pChildUpstrLElement->FirstChild())
         currResData.strLangsFromUpstream = pChildUpstrLElement->FirstChild()->Value();
+      const TiXmlElement *pChildResTypeElement = pChildResElement->FirstChildElement("resourceType");
+      if (pChildResTypeElement && pChildResTypeElement->FirstChild())
+      {
+        strType = pChildResTypeElement->FirstChild()->Value();
+        if (strType == "addon")
+         currResData.Restype = ADDON;
+        else if (strType == "addon_nostrings")
+          currResData.Restype = ADDON_NOSTRINGS;
+        else if (strType == "skin")
+          currResData.Restype = SKIN;
+        else if (strType == "xbmc_core")
+          currResData.Restype = CORE;
+        else
+          CLog::Log(logERROR, "UpdXMLHandler: Unknown resource type string found in xbmc-txupdate.xml file. Problematic string: %s", strType.c_str());
+      }
+      const TiXmlElement *pChildResDirElement = pChildResElement->FirstChildElement("resourceSubdir");
+      if (pChildResDirElement && pChildResDirElement->FirstChild())
+        currResData.strResDirectory = pChildResDirElement->FirstChild()->Value();
+
       m_mapXMLResdata[strResName] = currResData;
-      CLog::Log(logINFO, "UpdXMLHandler: found resource in update.xml file: %s", strResName.c_str());
+      CLog::Log(logINFO, "UpdXMLHandler: found resource in update.xml file: %s, Type: %s", strResName.c_str(), strType.c_str());
     }
     pChildResElement = pChildResElement->NextSiblingElement("resource");
   }
 
   return true;
-};
-
-/*int CUpdateXMLHandler::GetResType(std::string ResRootDir)
-{
-  if ((FileExist(ResRootDir + "addon.xml")) && (FileExist(ResRootDir + "resources" + DirSepChar + "language" +
-      DirSepChar + "English" + DirSepChar + "strings.po")))
-    return ADDON;
-  else if ((FileExist(ResRootDir + "addon.xml")) && (FileExist(ResRootDir + "language" + DirSepChar + "English" +
-           DirSepChar + "strings.po")))
-    return SKIN;
-  else if (FileExist(ResRootDir + "addon.xml"))
-    return ADDON_NOSTRINGS;
-  else if (FileExist(ResRootDir + "xbmc" + DirSepChar + "GUIInfoManager.h"))
-    return CORE;
-  else
-    return UNKNOWN;
-};
-*/
-
-/*void CUpdateXMLHandler::GetResourcesFromDir(std::string strProjRootDir)
-{
-  CXMLResdata emptyResData;
-  DIR* Dir;
-  struct dirent *DirEntry;
-  Dir = opendir(strProjRootDir.c_str());
-
-  while((DirEntry=readdir(Dir)))
-  {
-    if (DirEntry->d_type != DT_DIR || DirEntry->d_name[0] == '.')
-      continue;
-    if (m_mapXMLResdata.find(DirEntry->d_name) == m_mapXMLResdata.end())
-    {
-      CLog::Log(logINFO, "UpdXMLHandler: New resource detected: %s", DirEntry->d_name);
-      m_mapXMLResdata[DirEntry->d_name] = emptyResData;
-    }
-  }
-};
-
-*/
-
-void CUpdateXMLHandler::AddResourceToXMLFile(std::string strResName)
-{
-  CXMLResdata emptyResData;
-  if (m_mapXMLResdata.find(strResName) == m_mapXMLResdata.end())
-  {
-    m_mapXMLResdata[strResName] = emptyResData;
-    CLog::Log(logINFO, "UpdXMLHandler: added new resource to xml file: %s", strResName.c_str());
-  }
 };
 
 void CUpdateXMLHandler::SaveMemToXML(std::string rootDir)
@@ -199,4 +171,3 @@ CXMLResdata CUpdateXMLHandler::GetResData(string strResName)
 {
   return m_mapXMLResdata[strResName];
 }
-
