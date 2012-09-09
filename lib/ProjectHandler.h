@@ -36,12 +36,11 @@ class CProjectHandler
 public:
   CProjectHandler();
   ~CProjectHandler();
-  bool FetchResourcesFromTransifex(std::string strProjRootDir);
-  bool FetchResourcesFromUpstream(std::string strProjRootDir);
+  bool FetchResourcesFromTransifex();
+  bool FetchResourcesFromUpstream();
   bool CreateMergedResources();
   bool WriteResourcesToFile(std::string strProjRootDir, std::string strPOSuffix);
   void InitUpdateXMLHandler(std::string strProjRootDir);
-  void SaveUpdateXML(std::string strProjRootDir);
 
 protected:
   const CPOEntry * SafeGetPOEntry(std::map<std::string, CResourceHandler> &mapResHandl, const std::string &strResname,

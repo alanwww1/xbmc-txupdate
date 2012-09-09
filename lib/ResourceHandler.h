@@ -34,27 +34,18 @@ public:
   ~CResourceHandler();
   bool FetchPOFilesTXToMem(std::string strURL);
   bool FetchPOFilesUpstreamToMem(CXMLResdata XMLResdata, std::list<std::string> listLangsAll);
-  bool WritePOToFiles(std::string strResourceDir, std::string strPOsuffix, std::string strResName);
-  int GetCurrResType() const {return m_resType;}
+  bool WritePOToFiles(std::string strProjRootDir, std::string strPOsuffix, std::string strResName, CXMLResdata XMLResdata);
   size_t GetLangsCount() const {return m_mapPOFiles.size();}
   std::string GetLangCodeFromPos(size_t pos) {T_itmapPOFiles it = IterateToMapIndex (m_mapPOFiles.begin(), pos); return it->first;}
   CPOHandler* GetPOData(std::string strLang);
   void AddPOData(CPOHandler &POHandler, std::string strLang) {m_mapPOFiles[strLang] = POHandler;}
-  std::string GetLangDir () const {return m_langDir;}
-  void SetLangDir (std::string langDir) {m_langDir = langDir;}
   CAddonXMLHandler * GetXMLHandler () {return &m_AddonXMLHandler;}
   void SetXMLHandler (CAddonXMLHandler XMLHandler) {m_AddonXMLHandler = XMLHandler;}
-  int GetResType () const {return m_resType;}
-  void SetResType (int resType) {m_resType = resType;}
 
 protected:
   void CreateMissingDirs(std::string strResRootDir, int resType);
   T_itmapPOFiles IterateToMapIndex(T_itmapPOFiles it, size_t index);
 
   std::map<std::string, CPOHandler> m_mapPOFiles;
-  std::string m_langDir;
   CAddonXMLHandler m_AddonXMLHandler;
-  int m_resType;
-  std::string m_strResdir;
-//  std::string m_strTXCategory;
 };

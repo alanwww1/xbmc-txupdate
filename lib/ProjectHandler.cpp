@@ -32,7 +32,7 @@ CProjectHandler::CProjectHandler()
 CProjectHandler::~CProjectHandler()
 {};
 
-bool CProjectHandler::FetchResourcesFromTransifex(std::string strProjRootDir)
+bool CProjectHandler::FetchResourcesFromTransifex()
 {
 
   std::string strtemp = g_HTTPHandler.GetURLToSTR("https://www.transifex.com/api/2/project/" + g_Settings.GetProjectname()
@@ -50,41 +50,33 @@ bool CProjectHandler::FetchResourcesFromTransifex(std::string strProjRootDir)
   {
     CLog::Log(logLINEFEED, "");
     CLog::Log(logINFO, "ProjHandler: *** Fetch Resource: %s ***", it->c_str());
-    if (!DirExists(strProjRootDir + *it))
+
+    std::string strResname = m_UpdateXMLHandler.GetResNameFromTXResName(*it);
+    if (strResname.empty())
     {
-      CLog::Log(logERROR, "ProjHandler: Creating local directory for new resource on Transifex: %s", it->c_str());
-      MakeDir(strProjRootDir + *it);
+      CLog::Log(logWARNING, "ProjHandler: found resource on Transifex which is not in xbmc-txupdate.xml: %s", it->c_str());
+      continue;
     }
-    m_mapResourcesTX[*it] = ResourceHandler;
-    m_mapResourcesTX[*it].FetchPOFilesTXToMem("https://www.transifex.com/api/2/project/" + g_Settings.GetProjectname() +
+
+    m_mapResourcesTX[strResname]=ResourceHandler;
+    m_mapResourcesTX[strResname].FetchPOFilesTXToMem("https://www.transifex.com/api/2/project/" + g_Settings.GetProjectname() +
                                               "/resource/" + *it + "/");
   }
   return true;
 };
 
-bool CProjectHandler::FetchResourcesFromUpstream(std::string strProjRootDir)
+bool CProjectHandler::FetchResourcesFromUpstream()
 {
 
   std::map<std::string, CXMLResdata> mapRes = m_UpdateXMLHandler.GetResMap();
-  std::map<std::string, CXMLResdata> mapResWithUpstream;
-
-  for (std::map<std::string, CXMLResdata>::iterator it = mapRes.begin(); it != mapRes.end(); it++)
-  {
-    if (!it->second.strUptreamURL.empty())
-      mapResWithUpstream[it->first] = it->second;
-  }
 
   CResourceHandler ResourceHandler;
 
-  for (std::map<std::string, CXMLResdata>::iterator it = mapResWithUpstream.begin(); it != mapResWithUpstream.end(); it++)
+  for (std::map<std::string, CXMLResdata>::iterator it = mapRes.begin(); it != mapRes.end(); it++)
   {
     CLog::Log(logLINEFEED, "");
     CLog::Log(logINFO, "ProjHandler: *** Fetch Resource from upstream: %s ***", it->first.c_str());
-    if (!DirExists(strProjRootDir + it->first))
-    {
-      CLog::Log(logERROR, "ProjHandler: Creating local directory for new resource in update.xml: %s", it->first.c_str());
-      MakeDir(strProjRootDir + it->first);
-    }
+
     m_mapResourcesUpstr[it->first] = ResourceHandler;
     m_mapResourcesUpstr[it->first].FetchPOFilesUpstreamToMem(it->second, CreateLanguageList(it->first));
   }
@@ -97,13 +89,9 @@ bool CProjectHandler::WriteResourcesToFile(std::string strProjRootDir, std::stri
   {
     CLog::Log(logLINEFEED, "");
     CLog::Log(logINFO, "ProjHandler: *** Write Resource: %s ***", itmapResources->first.c_str());
-    if (!DirExists(strProjRootDir + itmapResources->first))
-    {
-      CLog::Log(logERROR, "ProjHandler: Creating local directory for new resource on Transifex: %s", itmapResources->first.c_str());
-      MakeDir(strProjRootDir + itmapResources->first + DirSepChar);
-    }
-    m_mapResMerged[itmapResources->first].WritePOToFiles (strProjRootDir + itmapResources->first + DirSepChar, strPOSuffix,
-                                                          itmapResources->first);
+    CXMLResdata XMLResdata = m_UpdateXMLHandler.GetResData(itmapResources->first);
+
+    m_mapResMerged[itmapResources->first].WritePOToFiles (strProjRootDir, strPOSuffix, itmapResources->first, XMLResdata);
   }
   return true;
 };
@@ -118,15 +106,13 @@ bool CProjectHandler::CreateMergedResources()
 
   for (std::list<std::string>::iterator itResAvail = listMergedResource.begin(); itResAvail != listMergedResource.end(); itResAvail++)
   {
-    printf("\nMerging resource: %s\n", itResAvail->c_str());
+    printf("Merging resource: %s\n", itResAvail->c_str());
     CLog::Log(logINFO, "CreateMergedResources: Merging resource:%s", itResAvail->c_str());
 
     CResourceHandler * pcurrResHandler;
     pcurrResHandler = &(ChoosePrefResMap(*itResAvail)->operator[](*itResAvail));
 
     CResourceHandler mergedResHandler;
-    mergedResHandler.SetResType(pcurrResHandler->GetResType());
-    mergedResHandler.SetLangDir(pcurrResHandler->GetLangDir());
 
     // Get available pretext for Resource Header. First use the upstream one, if not avail. the local one
     std::string strResPreHeader;
@@ -144,7 +130,7 @@ bool CProjectHandler::CreateMergedResources()
       CLog::Log(logINFO, "CreateMergedResources: Using Upstream AddonXML file as source for merging");
       mergedResHandler.GetXMLHandler()->SetStrAddonXMLFile(m_mapResourcesUpstr[*itResAvail].GetXMLHandler()->GetStrAddonXMLFile());
     }
-    else if (*itResAvail != "xbmc-core")
+    else if (*itResAvail != "xbmc.core")
       CLog::Log(logERROR, "CreateMergedResources: No Local or Upstream AddonXML file found as source for merging");
 
     for (std::list<std::string>::iterator itlang = listMergedLangs.begin(); itlang != listMergedLangs.end(); itlang++)
@@ -167,7 +153,7 @@ bool CProjectHandler::CreateMergedResources()
         MergeAddonXMLEntry(*pAddonXMLEntry, MergedAddonXMLEntry, *pENAddonXMLEntry,
                            *GetAddonDataFromXML(&m_mapResourcesUpstr, *itResAvail, "en"));
 
-      if (*itResAvail != "xbmc-core")
+      if (*itResAvail != "xbmc.core")
         mergedResHandler.GetXMLHandler()->GetMapAddonXMLData()->operator[](*itlang) = MergedAddonXMLEntry;
 
       for (size_t POEntryIdx = 0; POEntryIdx != pcurrResHandler->GetPOData("en")->GetNumEntriesCount(); POEntryIdx++)
@@ -329,7 +315,3 @@ void CProjectHandler::InitUpdateXMLHandler(std::string strProjRootDir)
 m_UpdateXMLHandler.LoadXMLToMem(strProjRootDir);
 }
 
-void CProjectHandler::SaveUpdateXML(std::string strProjRootDir)
-{
-m_UpdateXMLHandler.SaveMemToXML(strProjRootDir);
-}

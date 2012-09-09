@@ -128,6 +128,12 @@ bool CUpdateXMLHandler::LoadXMLToMem (std::string rootDir)
       if (pChildResDirElement && pChildResDirElement->FirstChild())
         currResData.strResDirectory = pChildResDirElement->FirstChild()->Value();
 
+      const TiXmlElement *pChildTXNameElement = pChildResElement->FirstChildElement("TXname");
+      if (pChildTXNameElement && pChildTXNameElement->FirstChild())
+        currResData.strTXResName = pChildTXNameElement->FirstChild()->Value();
+      if (currResData.strTXResName.empty())
+        CLog::Log(logERROR, "UpdXMLHandler: Transifex resource name is empty for resource %s", strResName.c_str());
+
       m_mapXMLResdata[strResName] = currResData;
       CLog::Log(logINFO, "UpdXMLHandler: found resource in update.xml file: %s, Type: %s, SubDir: %s",
                 strResName.c_str(), strType.c_str(), currResData.strResDirectory.c_str());
@@ -138,41 +144,15 @@ bool CUpdateXMLHandler::LoadXMLToMem (std::string rootDir)
   return true;
 };
 
-void CUpdateXMLHandler::SaveMemToXML(std::string rootDir)
+std::string CUpdateXMLHandler::GetResNameFromTXResName(std::string const &strTXResName)
 {
-  std::string UpdateXMLFilename = rootDir  + DirSepChar + "xbmc-txupdate.xml";
-  TiXmlDocument doc;
-  TiXmlDeclaration * decl = new TiXmlDeclaration( "1.0", "", "" );
-  TiXmlElement * pRootElement = new TiXmlElement( "resources" );
-  pRootElement->SetAttribute("projectname", g_Settings.GetProjectname().c_str());
-  std::string strExptime = IntToStr(g_Settings.GetHTTPCacheExpire());
-  pRootElement->SetAttribute("http_cache_expire", strExptime.c_str());
-  std::string strMinCompl = IntToStr(g_Settings.GetMinCompletion()) + "%";
-  pRootElement->SetAttribute("min_completion", strMinCompl.c_str());
-
   for (itXMLResdata = m_mapXMLResdata.begin(); itXMLResdata != m_mapXMLResdata.end(); itXMLResdata++)
   {
-    TiXmlElement * pChildResElement = new TiXmlElement( "resource" );
-    pChildResElement->SetAttribute("name", itXMLResdata->first.c_str());
-
-    TiXmlElement * pChildURLElement = new TiXmlElement( "upstreamURL" );
-    TiXmlText * textURL = new TiXmlText( itXMLResdata->second.strUptreamURL.c_str() );
-    pChildURLElement->LinkEndChild(textURL);
-    pChildResElement->LinkEndChild(pChildURLElement);
-
-    TiXmlElement * pChildUpstrLElement = new TiXmlElement( "upstreamLangs" );
-    TiXmlText * textUpsLang = new TiXmlText( itXMLResdata->second.strLangsFromUpstream.c_str());
-    pChildUpstrLElement->LinkEndChild(textUpsLang);
-    pChildResElement->LinkEndChild(pChildUpstrLElement);
-
-    pRootElement->LinkEndChild(pChildResElement);
+    if (itXMLResdata->second.strTXResName == strTXResName)
+      return itXMLResdata->first;
   }
-
-  doc.LinkEndChild( decl );
-  doc.LinkEndChild( pRootElement );
-  doc.SaveFile(UpdateXMLFilename.c_str());
-  CLog::Log(logINFO, "UpdXMLHandler: succesfully saved update xml data from memory to file");
-};
+  return "";
+}
 
 std::string CUpdateXMLHandler::IntToStr(int number)
 {
@@ -183,5 +163,9 @@ std::string CUpdateXMLHandler::IntToStr(int number)
 
 CXMLResdata CUpdateXMLHandler::GetResData(string strResName)
 {
-  return m_mapXMLResdata[strResName];
+  CXMLResdata EmptyXMLResdata;
+  if (m_mapXMLResdata.find(strResName) != m_mapXMLResdata.end())
+    return m_mapXMLResdata[strResName];
+  CLog::Log(logINFO, "UpdXMLHandler::GetResData: unknown resource to find: %s", strResName.c_str());
+  return EmptyXMLResdata;
 }

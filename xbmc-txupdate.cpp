@@ -106,11 +106,10 @@ int main(int argc, char* argv[])
 
   CProjectHandler TXProject, TXProject1;
   TXProject.InitUpdateXMLHandler(WorkingDir);
-  TXProject.FetchResourcesFromTransifex(WorkingDir);
-  TXProject.FetchResourcesFromUpstream(WorkingDir);
+  TXProject.FetchResourcesFromTransifex();
+  TXProject.FetchResourcesFromUpstream();
   TXProject.CreateMergedResources();
   TXProject.WriteResourcesToFile(WorkingDir, "");
-  TXProject.SaveUpdateXML(WorkingDir);
 
   printf("Warnings: %i\n", CLog::GetWarnCount());
 //  if (bUnknownLangFound)

@@ -33,6 +33,7 @@ public:
   std::string strLangsFromUpstream;
   int Restype;
   std::string strResDirectory;
+  std::string strTXResName;
 };
 
 class CUpdateXMLHandler
@@ -41,9 +42,9 @@ public:
   CUpdateXMLHandler();
   ~CUpdateXMLHandler();
   bool LoadXMLToMem(std::string rootDir);
-  void SaveMemToXML(std::string rootDir);
   CXMLResdata GetResData(std::string strResName);
   const std::map<std::string, CXMLResdata> &GetResMap() const {return m_mapXMLResdata;}
+  std::string GetResNameFromTXResName(std::string const &strTXResName);
 private:
   int GetResType(std::string const &ResRootDir) const {return m_resType;}
   std::string IntToStr(int number);
