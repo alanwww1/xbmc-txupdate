@@ -61,7 +61,7 @@ std::list<std::string> CJSONHandler::ParseResources(std::string strJSON)
   return listResources;
 };
 
-std::list<std::string> CJSONHandler::ParseAvailLanguages(std::string strJSON)
+std::list<std::string> CJSONHandler::ParseAvailLanguagesTX(std::string strJSON)
 {
   Json::Value root;   // will contains the root value after parsing.
   Json::Reader reader;
@@ -71,7 +71,7 @@ std::list<std::string> CJSONHandler::ParseAvailLanguages(std::string strJSON)
   bool parsingSuccessful = reader.parse(strJSON, root );
   if ( !parsingSuccessful )
   {
-    CLog::Log(logERROR, "JSONHandler: ParseAvailLanguages: no valid JSON data");
+    CLog::Log(logERROR, "CJSONHandler::ParseAvailLanguagesTX: no valid JSON data");
     return listLangs;
   }
 
@@ -102,6 +102,38 @@ std::list<std::string> CJSONHandler::ParseAvailLanguages(std::string strJSON)
   return listLangs;
 };
 
+std::list<std::string> CJSONHandler::ParseAvailLanguagesGITHUB(std::string strJSON)
+{
+  Json::Value root;   // will contains the root value after parsing.
+  Json::Reader reader;
+  std::string lang;
+  std::list<std::string> listLangs;
+
+  bool parsingSuccessful = reader.parse(strJSON, root );
+  if ( !parsingSuccessful )
+    CLog::Log(logERROR, "CJSONHandler::ParseAvailLanguagesGITHUB: no valid JSON data downloaded from Github");
+
+  const Json::Value JLangs = root;
+
+  for(Json::ValueIterator itr = JLangs.begin() ; itr !=JLangs.end() ; itr++)
+  {
+    Json::Value JValu = *itr;
+    std::string strType =JValu.get("type", "unknown").asString();
+    if (strType == "unknown")
+      CLog::Log(logERROR, "CJSONHandler::ParseAvailLanguagesGITHUB: no valid JSON data downloaded from Github");
+    else if (strType != "dir")
+    {
+      CLog::Log(logWARNING, "CJSONHandler::ParseAvailLanguagesGITHUB: unknown file found in language directory");
+      continue;
+    }
+    lang =JValu.get("name", "unknown").asString();
+    if (strType == "unknown")
+      CLog::Log(logERROR, "CJSONHandler::ParseAvailLanguagesGITHUB: no valid JSON data downloaded from Github");
+    listLangs.push_back(g_LCodeHandler.FindLangCode(lang));
+  };
+
+  return listLangs;
+};
 
 std::map<std::string, CLangcodes> CJSONHandler::ParseTransifexLanguageDatabase(std::string strJSON)
 {
@@ -136,8 +168,6 @@ std::map<std::string, CLangcodes> CJSONHandler::ParseTransifexLanguageDatabase(s
   };
   return mapTXLangs;
 };
-
-
 
 void CJSONHandler::PrintJSONValue( Json::Value val )
 {

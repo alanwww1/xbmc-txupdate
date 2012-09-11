@@ -82,8 +82,16 @@ std::string CPODocument::IntToStr(int number)
 bool CPODocument::FetchURLToMem(const std::string &strURL, bool bSkipError)
 {
   m_strBuffer.clear();
-  m_strBuffer = "\n" + g_HTTPHandler.GetURLToSTR(strURL);
+  m_strBuffer = g_HTTPHandler.GetURLToSTR(strURL);
+  if (m_strBuffer.empty())
+  {
+    if (bSkipError)
+      return false;
+    else
+      CLog::Log(logERROR, "CPODocument::FetchURLToMem: http error reading po file from url: %s", strURL.c_str());
+  }
 
+  m_strBuffer = "\n" + m_strBuffer;
   ConvertLineEnds(strURL);
 
   // we make sure, to have an LF at beginning and at end of buffer

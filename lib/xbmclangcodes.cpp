@@ -54,7 +54,12 @@ CLCodeHandler::~CLCodeHandler()
 
 void CLCodeHandler::Init(std::string strURL)
 {
+  g_HTTPHandler.Cleanup();
+  g_HTTPHandler.ReInit();
   std::string strtemp = g_HTTPHandler.GetURLToSTR(strURL);
+  if (strtemp.empty())
+    CLog::Log(logERROR, "XBMCLangCode::Init: error getting available language list from transifex.net");
+
   CJSONHandler JSONHandler;
   m_mapLCodes = JSONHandler.ParseTransifexLanguageDatabase(strtemp);
 

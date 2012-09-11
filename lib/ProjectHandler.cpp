@@ -34,9 +34,12 @@ CProjectHandler::~CProjectHandler()
 
 bool CProjectHandler::FetchResourcesFromTransifex()
 {
-
+  g_HTTPHandler.Cleanup();
+  g_HTTPHandler.ReInit();
   std::string strtemp = g_HTTPHandler.GetURLToSTR("https://www.transifex.com/api/2/project/" + g_Settings.GetProjectname()
                                                   + "/resources/");
+  if (strtemp.empty())
+    CLog::Log(logERROR, "ProjectHandler::FetchResourcesFromTransifex: error getting resources from transifex.net");
 
   char cstrtemp[strtemp.size()];
   strcpy(cstrtemp, strtemp.c_str());
@@ -78,7 +81,7 @@ bool CProjectHandler::FetchResourcesFromUpstream()
     CLog::Log(logINFO, "ProjHandler: *** Fetch Resource from upstream: %s ***", it->first.c_str());
 
     m_mapResourcesUpstr[it->first] = ResourceHandler;
-    m_mapResourcesUpstr[it->first].FetchPOFilesUpstreamToMem(it->second, CreateLanguageList(it->first));
+    m_mapResourcesUpstr[it->first].FetchPOFilesUpstreamToMem(it->second, CreateMergedLanguageList(it->first, true));
   }
   return true;
 };
@@ -121,7 +124,7 @@ bool CProjectHandler::CreateMergedResources()
 
     CLog::Log(logINFO, "MergedPOHandl:\tLanguage\t\t\tID entries\tnon-ID entries\tInterline-comments");
 
-    std::list<std::string> listMergedLangs = CreateLanguageList(*itResAvail);
+    std::list<std::string> listMergedLangs = CreateMergedLanguageList(*itResAvail, false);
 
     CAddonXMLEntry * pENAddonXMLEntry;
 
@@ -199,7 +202,7 @@ bool CProjectHandler::CreateMergedResources()
   return true;
 }
 
-std::list<std::string> CProjectHandler::CreateLanguageList(std::string strResname)
+std::list<std::string> CProjectHandler::CreateMergedLanguageList(std::string strResname, bool bOnlyTX)
 {
   std::list<std::string> listMergedLangs;
 
@@ -212,6 +215,8 @@ std::list<std::string> CProjectHandler::CreateLanguageList(std::string strResnam
         listMergedLangs.push_back(strMLCode);
     }
   }
+  if (bOnlyTX)
+    return listMergedLangs;
 
   if (m_mapResourcesUpstr.find(strResname) != m_mapResourcesUpstr.end())
   {

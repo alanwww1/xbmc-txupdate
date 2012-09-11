@@ -47,7 +47,7 @@ protected:
                             std::string &strLangCode, size_t numID);
   CPOHandler * SafeGetPOHandler(std::map<std::string, CResourceHandler> &mapResHandl, const std::string &strResname,
                                       std::string &strLangCode);
-  std::list<std::string> CreateLanguageList(std::string strResname);
+  std::list<std::string> CreateMergedLanguageList(std::string strResname, bool bOnlyTX);
   std::map<std::string, CResourceHandler> * ChoosePrefResMap(std::string strResname);
   std::list<std::string> CreateResourceList();
   CAddonXMLEntry * const GetAddonDataFromXML(std::map<std::string, CResourceHandler> * pmapRes,

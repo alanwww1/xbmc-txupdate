@@ -111,10 +111,7 @@ int main(int argc, char* argv[])
   TXProject.CreateMergedResources();
   TXProject.WriteResourcesToFile(WorkingDir, "");
 
+  g_HTTPHandler.Cleanup();
   printf("Warnings: %i\n", CLog::GetWarnCount());
-//  if (bUnknownLangFound)
-//    printf("\nWarning: At least one language found with unpaired language code !\n"
-//      "Please edit the .po file manually and correct the language code, plurals !\n"
-//      "Also please report this to alanwww1@xbmc.org if possible !\n\n");
   return 0;
 }

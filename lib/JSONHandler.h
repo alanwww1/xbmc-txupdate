@@ -33,7 +33,8 @@ public:
   CJSONHandler();
   ~CJSONHandler();
   std::list<std::string> ParseResources(std::string strJSON);
-  std::list<std::string> ParseAvailLanguages(std::string strJSON);
+  std::list<std::string> ParseAvailLanguagesTX(std::string strJSON);
+  std::list<std::string> ParseAvailLanguagesGITHUB(std::string strJSON);
   std::map<std::string, CLangcodes> ParseTransifexLanguageDatabase(std::string strJSON);
   bool PrintJSONTree( Json::Value root, unsigned short depth = 0);
   void PrintJSONValue( Json::Value val );
