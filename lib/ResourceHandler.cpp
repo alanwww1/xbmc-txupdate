@@ -36,6 +36,8 @@ CResourceHandler::~CResourceHandler()
 
 CPOHandler* CResourceHandler::GetPOData(std::string strLang)
 {
+  if (m_mapPOFiles.empty())
+    return NULL;
   if (m_mapPOFiles.find(strLang) != m_mapPOFiles.end())
     return &m_mapPOFiles[strLang];
   return NULL;
@@ -160,13 +162,19 @@ bool CResourceHandler::FetchPOFilesUpstreamToMem(CXMLResdata XMLResdata, std::li
     }
     while (posEnd != std::string::npos);
   }
+  bool bResult;
 
   for (std::list<std::string>::iterator it = listLangs.begin(); it != listLangs.end(); it++)
   {
     CPOHandler POHandler;
-    if (POHandler.FetchPOURLToMem(XMLResdata.strUptreamURL + strLangdirPrefix + g_LCodeHandler.FindLang(*it) + DirSepChar + "strings.po",true))
+    POHandler.SetIfIsEnglish(*it == "en");
+
+    if (XMLResdata.strLangFileType == "xml")
+      bResult = POHandler.FetchXMLURLToMem(XMLResdata.strUptreamURL + strLangdirPrefix + g_LCodeHandler.FindLang(*it) + DirSepChar + "strings.xml");
+    else
+      bResult = POHandler.FetchPOURLToMem(XMLResdata.strUptreamURL + strLangdirPrefix + g_LCodeHandler.FindLang(*it) + DirSepChar + "strings.po",true);
+    if (bResult)
     {
-      POHandler.SetIfIsEnglish(*it == "en");
       m_mapPOFiles[*it] = POHandler;
       std::string strLang = *it;
       strLang.resize(20, ' ');

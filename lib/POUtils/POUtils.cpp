@@ -386,10 +386,10 @@ void CPODocument::ConvertLineEnds(const std::string &filename)
     return; // We have only Linux style line endings in the file, nothing to do
 
   if (foundPos+1 >= m_strBuffer.size() || m_strBuffer[foundPos+1] != '\n')
-    CLog::Log(logWARNING, "POParser: PO file has Mac Style Line Endings. "
+    CLog::Log(logINFO, "POParser: PO file has Mac Style Line Endings. "
            "Converted in memory to Linux LF for file: %s", filename.c_str());
   else
-    CLog::Log(logWARNING, "POParser: PO file has Win Style Line Endings. "
+    CLog::Log(logINFO, "POParser: PO file has Win Style Line Endings. "
            "Converted in memory to Linux LF for file: %s", filename.c_str());
 
   std::string strTemp;

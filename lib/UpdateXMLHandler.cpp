@@ -103,6 +103,8 @@ bool CUpdateXMLHandler::LoadXMLToMem (std::string rootDir)
         currResData.strUptreamURL = pChildURLElement->FirstChild()->Value();
       if (currResData.strUptreamURL.empty())
         CLog::Log(logERROR, "UpdXMLHandler: UpstreamURL entry is empty for resource %s", strResName.c_str());
+      if (pChildURLElement->Attribute("filetype"))
+        currResData.strLangFileType = pChildURLElement->Attribute("filetype");
 
       const TiXmlElement *pChildUpstrLElement = pChildResElement->FirstChildElement("upstreamLangs");
       if (pChildUpstrLElement && pChildUpstrLElement->FirstChild())

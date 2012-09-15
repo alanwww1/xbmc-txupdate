@@ -68,21 +68,12 @@ bool CAddonXMLHandler::FetchAddonXMLFileUpstr (std::string strURL)
   m_strAddonXMLFile = strXMLFile;
   ConvertStrLineEnds(m_strAddonXMLFile);
 
-//  printf("%s", m_strAddonXMLFile.c_str());
-
-
   if (!xmlAddonXML.Parse(strXMLFile.c_str(), 0, TIXML_DEFAULT_ENCODING))
   {
     CLog::Log(logERROR, "AddonXMLHandler: AddonXML file problem: %s %s\n", xmlAddonXML.ErrorDesc(), strURL.c_str());
     return false;
   }
-/*  TiXmlPrinter printer;
-  printer.SetIndent( "    " );
 
-  xmlAddonXML.Accept( &printer );
-  std::string xmltext = printer.CStr();
-  printf("%s", xmltext.c_str());
-*/
 return   ProcessAddonXMLFile(strURL, xmlAddonXML);
 }
 

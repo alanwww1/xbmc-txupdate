@@ -97,7 +97,8 @@ std::string GetCurrTime()
     sprintf(&strTime[0], "%04i-%02i-%02i %02i:%02i+0000", gmtm->tm_year + 1900, gmtm->tm_mon + 1,
             gmtm->tm_mday, gmtm->tm_hour, gmtm->tm_min);
   }
-  return strTime;
+  std::string strTimeCleaned = strTime.c_str();
+  return strTimeCleaned;
 };
 
 void CopyFile(std::string strSourceFileName, std::string strDestFileName)
@@ -174,9 +175,9 @@ void ConvertStrLineEnds(std::string &strToConvert)
     return; // We have only Linux style line endings in the file, nothing to do
 
   if (foundPos+1 >= strToConvert.size() || strToConvert[foundPos+1] != '\n')
-    CLog::Log(logWARNING, "FileUtils: string has Mac Style Line Endings. Converted in memory to Linux LF");
+    CLog::Log(logINFO, "FileUtils: string has Mac Style Line Endings. Converted in memory to Linux LF");
   else
-    CLog::Log(logWARNING, "FileUtils: string has Win Style Line Endings. Converted in memory to Linux LF.");
+    CLog::Log(logINFO, "FileUtils: string has Win Style Line Endings. Converted in memory to Linux LF.");
 
   std::string strTemp;
   strTemp.reserve(strToConvert.size());

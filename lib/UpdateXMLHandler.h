@@ -34,6 +34,7 @@ public:
   int Restype;
   std::string strResDirectory;
   std::string strTXResName;
+  std::string strLangFileType;
 };
 
 class CUpdateXMLHandler
