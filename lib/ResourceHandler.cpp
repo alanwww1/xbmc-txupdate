@@ -129,7 +129,6 @@ bool CResourceHandler::FetchPOFilesUpstreamToMem(CXMLResdata XMLResdata, std::li
       strGitHubURL += "/resources/language";
     strGitHubURL += "?ref=" + strGitBranch;
 
-    printf ("%s", strGitHubURL.c_str());
     std::string strtemp = g_HTTPHandler.GetURLToSTR(strGitHubURL);
     if (strtemp.empty())
       CLog::Log(logERROR, "ResHandler::FetchPOFilesTXToMem: error getting po file list from transifex.net");

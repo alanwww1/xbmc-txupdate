@@ -60,6 +60,7 @@ return;
 int main(int argc, char* argv[])
 {
   char* pSourceDirectory = NULL;
+  char* pcstrMode = NULL;
 
   // Basic syntax checking for "-x name" format
   while ((argc > 2) && (argv[1][0] == '-') && (argv[1][1] != '\x00') &&
@@ -68,18 +69,22 @@ int main(int argc, char* argv[])
     switch (argv[1][1])
     {
       case 's':
-	if ((argv[2][0] == '\x00') || (argv[2][0] == '-'))
-	  break;
+        if ((argv[2][0] == '\x00') || (argv[2][0] == '-'))
+          break;
         --argc; ++argv;
         pSourceDirectory = argv[1];
         break;
-//      case 't':
-//        --argc; ++argv;
-//        bFetchMissingLanguagesFromTX = true;
-//        break;
+      case 'm':
+        --argc; ++argv;
+        pcstrMode = argv[1];
+        break;
     }
     ++argv; --argc;
   }
+
+  std::string strMode;
+  if (pcstrMode)
+    strMode = pcstrMode;
 
   if (pSourceDirectory == NULL)
   {
@@ -87,31 +92,72 @@ int main(int argc, char* argv[])
     return 1;
   }
 
-  printf("\nXBMC-TXUPDATE v%s by Team XBMC\n\n", VERSION.c_str());
-//  printf("\nResults:\n\n");
-//  printf("Langcode\tString match\tAuto contexts\tOutput file\n");
-//  printf("--------------------------------------------------------------\n");
+  printf("\nXBMC-TXUPDATE v%s by Team XBMC\n", VERSION.c_str());
 
-  std::string WorkingDir = pSourceDirectory;
-  if (WorkingDir[WorkingDir.length()-1] != DirSepChar)
-    WorkingDir.append(&DirSepChar);
+  if (strMode == "upload")
+    printf("Upload mode\n\n");
+  else
+    printf("Download and merge mode\n\n");
 
-  CLog::Init(WorkingDir + "xbmc-txupdate.log");
-  CLog::Log(logINFO, "Root Directory: %s", WorkingDir.c_str());
+  try
+  {
+    std::string WorkingDir = pSourceDirectory;
+    if (WorkingDir[WorkingDir.length()-1] != DirSepChar)
+      WorkingDir.append(&DirSepChar);
 
-  g_HTTPHandler.LoadCredentials(WorkingDir + ".passwords.xml");
-  g_HTTPHandler.SetCacheDir(WorkingDir + ".httpcache");
+    CLog::Init(WorkingDir + "xbmc-txupdate.log");
+    CLog::Log(logINFO, "Root Directory: %s", WorkingDir.c_str());
 
-  g_LCodeHandler.Init("https://raw.github.com/transifex/transifex/master/transifex/languages/fixtures/all_languages.json");
+    g_HTTPHandler.LoadCredentials(WorkingDir + ".passwords.xml");
+    g_HTTPHandler.SetCacheDir(WorkingDir + ".httpcache");
 
-  CProjectHandler TXProject, TXProject1;
-  TXProject.InitUpdateXMLHandler(WorkingDir);
-  TXProject.FetchResourcesFromTransifex();
-  TXProject.FetchResourcesFromUpstream();
-  TXProject.CreateMergedResources();
-  TXProject.WriteResourcesToFile(WorkingDir, "");
+    g_LCodeHandler.Init("https://raw.github.com/transifex/transifex/master/transifex/languages/fixtures/all_languages.json");
 
-  g_HTTPHandler.Cleanup();
-  printf("Warnings: %i\n", CLog::GetWarnCount());
-  return 0;
+    CProjectHandler TXProject, TXProject1;
+    TXProject.InitUpdateXMLHandler(WorkingDir);
+    printf("-----------------------------------\n");
+    printf("DOWNLOADING RESOURCES FROM TRANSIFEX.NET\n");
+    printf("-----------------------------------\n");
+
+    TXProject.FetchResourcesFromTransifex();
+
+    printf("-----------------------------------\n");
+    printf("DOWNLOADING RESOURCES FROM UPSTREAM\n");
+    printf("-----------------------------------\n");
+
+    TXProject.FetchResourcesFromUpstream();
+
+    printf("-----------------\n");
+    printf("MERGING RESOURCES\n");
+    printf("-----------------\n");
+
+    TXProject.CreateMergedResources();
+
+    printf("-------------------------------\n");
+    printf("WRITING MERGED RESOURCES TO HDD\n");
+    printf("-------------------------------\n");
+
+    TXProject.WriteResourcesToFile(WorkingDir, "");
+
+    if (CLog::GetWarnCount() ==0)
+    {
+      printf("--------------------------------------------\n");
+      printf("PROCESS FINISHED SUCCESFULLY WITHOUT WARNINGS\n");
+      printf("--------------------------------------------\n");
+    }
+    else
+    {
+      printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+      printf("PROCESS FINISHED WITH %i WARNINGS\n", CLog::GetWarnCount());
+      printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+    }
+
+    g_HTTPHandler.Cleanup();
+    return 0;
+  }
+  catch (const int calcError)
+  {
+    g_HTTPHandler.Cleanup();
+    return 0;
+  }
 }

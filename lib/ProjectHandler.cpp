@@ -51,6 +51,7 @@ bool CProjectHandler::FetchResourcesFromTransifex()
 
   for (std::list<std::string>::iterator it = listResourceNamesTX.begin(); it != listResourceNamesTX.end(); it++)
   {
+    printf("Downloading resource from TX: %s\n", it->c_str());
     CLog::Log(logLINEFEED, "");
     CLog::Log(logINFO, "ProjHandler: *** Fetch Resource: %s ***", it->c_str());
 
@@ -77,6 +78,7 @@ bool CProjectHandler::FetchResourcesFromUpstream()
 
   for (std::map<std::string, CXMLResdata>::iterator it = mapRes.begin(); it != mapRes.end(); it++)
   {
+    printf("Downloading resource from Upstream: %s\n", it->first.c_str());
     CLog::Log(logLINEFEED, "");
     CLog::Log(logINFO, "ProjHandler: *** Fetch Resource from upstream: %s ***", it->first.c_str());
 
@@ -90,6 +92,7 @@ bool CProjectHandler::WriteResourcesToFile(std::string strProjRootDir, std::stri
 {
   for (T_itmapRes itmapResources = m_mapResMerged.begin(); itmapResources != m_mapResMerged.end(); itmapResources++)
   {
+    printf("Writing resource to HDD: %s\n", itmapResources->first.c_str());
     CLog::Log(logLINEFEED, "");
     CLog::Log(logINFO, "ProjHandler: *** Write Resource: %s ***", itmapResources->first.c_str());
     CXMLResdata XMLResdata = m_UpdateXMLHandler.GetResData(itmapResources->first);
