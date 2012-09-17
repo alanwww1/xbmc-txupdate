@@ -39,7 +39,7 @@ public:
   bool FetchResourcesFromTransifex();
   bool FetchResourcesFromUpstream();
   bool CreateMergedResources();
-  bool WriteResourcesToFile(std::string strProjRootDir, std::string strPOSuffix);
+  bool WriteResourcesToFile(std::string strProjRootDir);
   void InitUpdateXMLHandler(std::string strProjRootDir);
 
 protected:

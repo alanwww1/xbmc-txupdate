@@ -137,7 +137,7 @@ int main(int argc, char* argv[])
     printf("WRITING MERGED RESOURCES TO HDD\n");
     printf("-------------------------------\n");
 
-    TXProject.WriteResourcesToFile(WorkingDir, "");
+    TXProject.WriteResourcesToFile(WorkingDir);
 
     if (CLog::GetWarnCount() ==0)
     {

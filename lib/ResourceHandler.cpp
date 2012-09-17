@@ -184,21 +184,21 @@ bool CResourceHandler::FetchPOFilesUpstreamToMem(CXMLResdata XMLResdata, std::li
   return true;
 }
 
-bool CResourceHandler::WritePOToFiles(std::string strProjRootDir, std::string strPOsuffix, std::string strResname, CXMLResdata XMLResdata)
+bool CResourceHandler::WritePOToFiles(std::string strProjRootDir, std::string strPrefixDir, std::string strResname, CXMLResdata XMLResdata)
 {
   std::string strResourceDir, strLangDir;
   switch (XMLResdata.Restype)
   {
     case ADDON: case ADDON_NOSTRINGS:
-      strResourceDir = strProjRootDir + XMLResdata.strResDirectory + DirSepChar + strResname +DirSepChar;
+      strResourceDir = strProjRootDir + strPrefixDir + XMLResdata.strResDirectory + DirSepChar + strResname +DirSepChar;
       strLangDir = strResourceDir + "resources" + DirSepChar + "language" + DirSepChar;
       break;
     case SKIN:
-      strResourceDir = strProjRootDir + XMLResdata.strResDirectory + DirSepChar + strResname +DirSepChar;
+      strResourceDir = strProjRootDir + strPrefixDir + XMLResdata.strResDirectory + DirSepChar + strResname +DirSepChar;
       strLangDir = strResourceDir + "language" + DirSepChar;
       break;
     case CORE:
-      strResourceDir = strProjRootDir + XMLResdata.strResDirectory + DirSepChar;
+      strResourceDir = strProjRootDir + strPrefixDir + XMLResdata.strResDirectory + DirSepChar;
       strLangDir = strResourceDir + "language" + DirSepChar;
       break;
     default:
@@ -211,7 +211,7 @@ bool CResourceHandler::WritePOToFiles(std::string strProjRootDir, std::string st
     std::string strPODir = strLangDir + strLang;
 
     CPOHandler * pPOHandler = &m_mapPOFiles[itmapPOFiles->first];
-    pPOHandler->WritePOFile(strPODir + DirSepChar + "strings.po" + strPOsuffix);
+    pPOHandler->WritePOFile(strPODir + DirSepChar + "strings.po");
 
     strLang.resize(20, ' ');
     CLog::Log(logINFO, "POHandler: %s\t\t%i\t\t%i\t\t%i", strLang.c_str(), pPOHandler->GetNumEntriesCount(),
@@ -219,7 +219,7 @@ bool CResourceHandler::WritePOToFiles(std::string strProjRootDir, std::string st
   }
 
   // update local addon.xml file
-  if (strResname != "xbmc.core")
+  if (strResname != "xbmc.core" && strPrefixDir.empty())
     m_AddonXMLHandler.UpdateAddonXMLFile(strResourceDir + "addon.xml");
 
   return true;

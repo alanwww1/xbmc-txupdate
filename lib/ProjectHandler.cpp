@@ -88,7 +88,7 @@ bool CProjectHandler::FetchResourcesFromUpstream()
   return true;
 };
 
-bool CProjectHandler::WriteResourcesToFile(std::string strProjRootDir, std::string strPOSuffix)
+bool CProjectHandler::WriteResourcesToFile(std::string strProjRootDir)
 {
   for (T_itmapRes itmapResources = m_mapResMerged.begin(); itmapResources != m_mapResMerged.end(); itmapResources++)
   {
@@ -97,8 +97,28 @@ bool CProjectHandler::WriteResourcesToFile(std::string strProjRootDir, std::stri
     CLog::Log(logINFO, "ProjHandler: *** Write Resource: %s ***", itmapResources->first.c_str());
     CXMLResdata XMLResdata = m_UpdateXMLHandler.GetResData(itmapResources->first);
 
-    m_mapResMerged[itmapResources->first].WritePOToFiles (strProjRootDir, strPOSuffix, itmapResources->first, XMLResdata);
+    m_mapResMerged[itmapResources->first].WritePOToFiles (strProjRootDir, "", itmapResources->first, XMLResdata);
   }
+
+  for (T_itmapRes itmapResources = m_mapResUpdateTX.begin(); itmapResources != m_mapResUpdateTX.end(); itmapResources++)
+  {
+    
+    
+    if (itmapResources->first == "skin.touched")
+      sleep(3);
+    
+    
+    
+    printf("Writing update TX resource to HDD: %s\n", itmapResources->first.c_str());
+    CLog::Log(logLINEFEED, "");
+    CLog::Log(logINFO, "ProjHandler: *** Write UpdTX Resource: %s ***", itmapResources->first.c_str());
+    CXMLResdata XMLResdata = m_UpdateXMLHandler.GetResData(itmapResources->first);
+
+    std::string strPrefixDir = "temp_txupdate";
+    strPrefixDir += DirSepChar;
+    m_mapResUpdateTX[itmapResources->first].WritePOToFiles (strProjRootDir, strPrefixDir, itmapResources->first, XMLResdata);
+  }
+
   return true;
 };
 
@@ -109,13 +129,14 @@ bool CProjectHandler::CreateMergedResources()
   std::list<std::string> listMergedResource = CreateResourceList();
 
   m_mapResMerged.clear();
+  m_mapResUpdateTX.clear();
 
   for (std::list<std::string>::iterator itResAvail = listMergedResource.begin(); itResAvail != listMergedResource.end(); itResAvail++)
   {
     printf("Merging resource: %s\n", itResAvail->c_str());
     CLog::Log(logINFO, "CreateMergedResources: Merging resource:%s", itResAvail->c_str());
 
-    CResourceHandler mergedResHandler;
+    CResourceHandler mergedResHandler, updTXResHandler;
 
     // Get available pretext for Resource Header. First use the upstream one, if not avail. the TX one
     std::string strResPreHeader;
@@ -134,20 +155,22 @@ bool CProjectHandler::CreateMergedResources()
     {
       CLog::Log(logINFO, "CreateMergedResources: Using Upstream AddonXML file as source for merging");
       mergedResHandler.GetXMLHandler()->SetStrAddonXMLFile(m_mapResourcesUpstr[*itResAvail].GetXMLHandler()->GetStrAddonXMLFile());
+      updTXResHandler.GetXMLHandler()->SetStrAddonXMLFile(m_mapResourcesUpstr[*itResAvail].GetXMLHandler()->GetStrAddonXMLFile());
     }
     else if (*itResAvail != "xbmc.core")
-      CLog::Log(logERROR, "CreateMergedResources: No Local or Upstream AddonXML file found as source for merging");
+      CLog::Log(logERROR, "CreateMergedResources: No Upstream AddonXML file found as source for merging");
 
     CPOHandler * pcurrPOHandlerEN = m_mapResourcesUpstr[*itResAvail].GetPOData("en");
 
     for (std::list<std::string>::iterator itlang = listMergedLangs.begin(); itlang != listMergedLangs.end(); itlang++)
     {
       std::string strLangCode = *itlang;
-      CPOHandler mergedPOHandler;
+      CPOHandler mergedPOHandler, updTXPOHandler;
       const CPOEntry* pPOEntryTX;
       const CPOEntry* pPOEntryUpstr;
 
       mergedPOHandler.SetIfIsEnglish(strLangCode == "en");
+      updTXPOHandler.SetIfIsEnglish(strLangCode == "en");
       CAddonXMLEntry MergedAddonXMLEntry;
       CAddonXMLEntry * pAddonXMLEntry;
       if (m_mapResourcesTX.find(*itResAvail) != m_mapResourcesTX.end() && m_mapResourcesTX[*itResAvail].GetPOData(*itlang))
@@ -161,7 +184,10 @@ bool CProjectHandler::CreateMergedResources()
                            *GetAddonDataFromXML(&m_mapResourcesUpstr, *itResAvail, "en"));
 
       if (*itResAvail != "xbmc.core")
+      {
         mergedResHandler.GetXMLHandler()->GetMapAddonXMLData()->operator[](*itlang) = MergedAddonXMLEntry;
+        updTXResHandler.GetXMLHandler()->GetMapAddonXMLData()->operator[](*itlang) = MergedAddonXMLEntry;
+      }
 
       for (size_t POEntryIdx = 0; pcurrPOHandlerEN && POEntryIdx != pcurrPOHandlerEN->GetNumEntriesCount(); POEntryIdx++)
       {
@@ -172,14 +198,23 @@ bool CProjectHandler::CreateMergedResources()
         pPOEntryUpstr = SafeGetPOEntry(m_mapResourcesUpstr, *itResAvail, strLangCode, numID);
 
         if (strLangCode == "en")
+        {
           mergedPOHandler.AddNumPOEntryByID(numID, *pcurrPOEntryEN);
+          updTXPOHandler.AddNumPOEntryByID(numID, *pcurrPOEntryEN);
+        }
 
         if (strLangCode != "en" && pPOEntryTX && pPOEntryTX->msgID == pcurrPOEntryEN->msgID && !pPOEntryTX->msgStr.empty())
           mergedPOHandler.AddNumPOEntryByID(numID, *pPOEntryTX);
         else if (strLangCode != "en" && pPOEntryUpstr && (pPOEntryUpstr->msgID == pcurrPOEntryEN->msgID) && !pPOEntryUpstr->msgStr.empty())
+        {
           mergedPOHandler.AddNumPOEntryByID(numID, *pPOEntryUpstr);
+          updTXPOHandler.AddNumPOEntryByID(numID, *pPOEntryUpstr);
+        }
         else if (strLangCode != "en" && pPOEntryUpstr && pPOEntryUpstr->msgID.empty() && !pPOEntryUpstr->msgStr.empty())
+        {
           mergedPOHandler.AddNumPOEntryByID(numID, *pPOEntryUpstr, pcurrPOEntryEN->msgID); // we got this entry from a strings.xml file
+          updTXPOHandler.AddNumPOEntryByID(numID, *pPOEntryUpstr, pcurrPOEntryEN->msgID);
+        }
         else if (strLangCode != "en")
           mergedPOHandler.AddNumPOEntryByID(numID, *pcurrPOEntryEN);
       }
@@ -190,22 +225,39 @@ bool CProjectHandler::CreateMergedResources()
         pPOHandlerTX = SafeGetPOHandler(m_mapResourcesTX, *itResAvail, strLangCode);
         pPOHandlerUpst = SafeGetPOHandler(m_mapResourcesUpstr, *itResAvail, strLangCode);
         if (pPOHandlerTX && strLangCode != "en")
+        {
           mergedPOHandler.SetHeader(pPOHandlerTX->GetHeader());
+          updTXPOHandler.SetHeader(pPOHandlerTX->GetHeader());
+        }
         else if (pPOHandlerUpst && !pcurrPOHandlerEN->GetIfSourceIsXML())
+        {
           mergedPOHandler.SetHeader(pPOHandlerUpst->GetHeader());
+          updTXPOHandler.SetHeader(pPOHandlerUpst->GetHeader());
+        }
         else if (pcurrPOHandlerEN->GetIfSourceIsXML())
+        {
           mergedPOHandler.SetHeaderXML(*itlang);
+          updTXPOHandler.SetHeaderXML(*itlang);
+        }
 
         if (strLangCode != "en" || pcurrPOHandlerEN->GetIfSourceIsXML())
+        {
           mergedPOHandler.SetPreHeader(strResPreHeader);
+          updTXPOHandler.SetPreHeader(strResPreHeader);
+        }
 
-        mergedResHandler.AddPOData(mergedPOHandler, strLangCode);
+        if (mergedPOHandler.GetClassEntriesCount() != 0 || mergedPOHandler.GetNumEntriesCount() != 0)
+          mergedResHandler.AddPOData(mergedPOHandler, strLangCode);
+        if (updTXPOHandler.GetClassEntriesCount() != 0 || updTXPOHandler.GetNumEntriesCount() != 0)
+          updTXResHandler.AddPOData(updTXPOHandler, strLangCode);
         CLog::Log(logINFO, "MergedPOHandler: %s\t\t%i\t\t%i\t\t%i", strLangCode.c_str(), mergedPOHandler.GetNumEntriesCount(),
                   mergedPOHandler.GetClassEntriesCount(), mergedPOHandler.GetCommntEntriesCount());
       }
     }
     if (mergedResHandler.GetLangsCount() != 0 || !mergedResHandler.GetXMLHandler()->GetMapAddonXMLData()->empty())
       m_mapResMerged[*itResAvail] = mergedResHandler;
+    if (updTXResHandler.GetLangsCount() != 0 || !updTXResHandler.GetXMLHandler()->GetMapAddonXMLData()->empty())
+      m_mapResUpdateTX[*itResAvail] = updTXResHandler;
   }
   return true;
 }

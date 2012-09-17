@@ -203,10 +203,12 @@ bool CPOHandler::FetchXMLURLToMem (std::string strURL)
         pValue = pChildElement->FirstChild()->Value();
         valueString = EscapeLF(pValue);
         currEntry.numID = id;
+        std::string strUtf8 = ToUTF8(strXMLEncoding, valueString).c_str();
+
         if (m_bPOIsEnglish)
-          currEntry.msgID = valueString;
+          currEntry.msgID = strUtf8;
         else
-          currEntry.msgStr = valueString;
+          currEntry.msgStr = strUtf8;
 
         if (m_bPOIsEnglish)
           GetXMLComment(pChildElement->NextSibling(), currEntry);
