@@ -102,13 +102,6 @@ bool CProjectHandler::WriteResourcesToFile(std::string strProjRootDir)
 
   for (T_itmapRes itmapResources = m_mapResUpdateTX.begin(); itmapResources != m_mapResUpdateTX.end(); itmapResources++)
   {
-    
-    
-    if (itmapResources->first == "skin.touched")
-      sleep(3);
-    
-    
-    
     printf("Writing update TX resource to HDD: %s\n", itmapResources->first.c_str());
     CLog::Log(logLINEFEED, "");
     CLog::Log(logINFO, "ProjHandler: *** Write UpdTX Resource: %s ***", itmapResources->first.c_str());
@@ -171,7 +164,8 @@ bool CProjectHandler::CreateMergedResources()
 
       mergedPOHandler.SetIfIsEnglish(strLangCode == "en");
       updTXPOHandler.SetIfIsEnglish(strLangCode == "en");
-      CAddonXMLEntry MergedAddonXMLEntry;
+
+      CAddonXMLEntry MergedAddonXMLEntry, MergedAddonXMLEntryTX;
       CAddonXMLEntry * pAddonXMLEntry;
       if (m_mapResourcesTX.find(*itResAvail) != m_mapResourcesTX.end() && m_mapResourcesTX[*itResAvail].GetPOData(*itlang))
       {
@@ -179,6 +173,7 @@ bool CProjectHandler::CreateMergedResources()
         m_mapResourcesTX[*itResAvail].GetPOData(*itlang)->GetAddonMetaData(AddonXMLEntryInPO, AddonENXMLEntryInPO);
         MergeAddonXMLEntry(AddonXMLEntryInPO, MergedAddonXMLEntry, *pENAddonXMLEntry, AddonENXMLEntryInPO);
       }
+      MergedAddonXMLEntryTX = MergedAddonXMLEntry;
       if ((pAddonXMLEntry = GetAddonDataFromXML(&m_mapResourcesUpstr, *itResAvail, *itlang)) != NULL)
         MergeAddonXMLEntry(*pAddonXMLEntry, MergedAddonXMLEntry, *pENAddonXMLEntry,
                            *GetAddonDataFromXML(&m_mapResourcesUpstr, *itResAvail, "en"));
@@ -187,6 +182,7 @@ bool CProjectHandler::CreateMergedResources()
       {
         mergedResHandler.GetXMLHandler()->GetMapAddonXMLData()->operator[](*itlang) = MergedAddonXMLEntry;
         updTXResHandler.GetXMLHandler()->GetMapAddonXMLData()->operator[](*itlang) = MergedAddonXMLEntry;
+        updTXPOHandler.SetAddonMetaData(MergedAddonXMLEntry, MergedAddonXMLEntryTX, *pENAddonXMLEntry, *itlang); // add addonxml data as PO  classic entries
       }
 
       for (size_t POEntryIdx = 0; pcurrPOHandlerEN && POEntryIdx != pcurrPOHandlerEN->GetNumEntriesCount(); POEntryIdx++)
@@ -240,11 +236,11 @@ bool CProjectHandler::CreateMergedResources()
           updTXPOHandler.SetHeaderXML(*itlang);
         }
 
-        if (strLangCode != "en" || pcurrPOHandlerEN->GetIfSourceIsXML())
-        {
+//        if (strLangCode != "en" || pcurrPOHandlerEN->GetIfSourceIsXML())
+//        {
           mergedPOHandler.SetPreHeader(strResPreHeader);
           updTXPOHandler.SetPreHeader(strResPreHeader);
-        }
+//        }
 
         if (mergedPOHandler.GetClassEntriesCount() != 0 || mergedPOHandler.GetNumEntriesCount() != 0)
           mergedResHandler.AddPOData(mergedPOHandler, strLangCode);

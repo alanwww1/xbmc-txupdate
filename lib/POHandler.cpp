@@ -308,7 +308,8 @@ bool CPOHandler::DeleteClassicEntry (CPOEntry &EntryToFind)
   return false;
 }
 
-void CPOHandler::SetAddonMetaData (CAddonXMLEntry const &AddonXMLEntry, CAddonXMLEntry const &AddonXMLEntryEN)
+void CPOHandler::SetAddonMetaData (CAddonXMLEntry const &AddonXMLEntry, CAddonXMLEntry const &PrevAddonXMLEntry,
+                                   CAddonXMLEntry const &AddonXMLEntryEN, std::string const &strLang)
 {
   CPOEntry POEntryDesc, POEntryDiscl, POEntrySumm;
   POEntryDesc.Type = MSGID_FOUND;
@@ -326,16 +327,22 @@ void CPOHandler::SetAddonMetaData (CAddonXMLEntry const &AddonXMLEntry, CAddonXM
   newPOEntryDisc.msgID = AddonXMLEntryEN.strDisclaimer;
   newPOEntrySumm.msgID = AddonXMLEntryEN.strSummary;
 
-  if (!AddonXMLEntry.strDescription.empty() || !AddonXMLEntry.strDisclaimer.empty() || !AddonXMLEntry.strSummary.empty())
+  if (strLang != "en")
   {
-    newPOEntryDesc.msgStr = AddonXMLEntry.strDescription;
-    newPOEntryDisc.msgStr = AddonXMLEntry.strDisclaimer;
-    newPOEntrySumm.msgStr = AddonXMLEntry.strSummary;
+    if (!AddonXMLEntry.strDescription.empty() && AddonXMLEntry.strDescription != PrevAddonXMLEntry.strDescription)
+      newPOEntryDesc.msgStr = AddonXMLEntry.strDescription;
+    if (!AddonXMLEntry.strDisclaimer.empty() && AddonXMLEntry.strDisclaimer != PrevAddonXMLEntry.strDisclaimer)
+      newPOEntryDisc.msgStr = AddonXMLEntry.strDisclaimer;
+    if (!AddonXMLEntry.strSummary.empty() && AddonXMLEntry.strSummary != PrevAddonXMLEntry.strSummary)
+      newPOEntrySumm.msgStr = AddonXMLEntry.strSummary;
   }
 
-  ModifyClassicEntry(POEntryDesc, newPOEntryDesc);
-  ModifyClassicEntry(POEntryDiscl, newPOEntryDisc);
-  ModifyClassicEntry(POEntrySumm, newPOEntrySumm);
+  if (!newPOEntryDesc.msgID.empty() && (strLang == "en" || !newPOEntryDesc.msgStr.empty()))
+    ModifyClassicEntry(POEntryDesc, newPOEntryDesc);
+  if (!newPOEntryDisc.msgID.empty() && (strLang == "en" || !newPOEntryDisc.msgStr.empty()))
+    ModifyClassicEntry(POEntryDiscl, newPOEntryDisc);
+  if (!newPOEntrySumm.msgID.empty() && (strLang == "en" || !newPOEntrySumm.msgStr.empty()))
+    ModifyClassicEntry(POEntrySumm, newPOEntrySumm);
   return;
 }
 

@@ -51,7 +51,8 @@ public:
   void SetHeaderXML (std::string strLangCode);
   std::string GetHeader () {return m_strHeader;}
 
-  void SetAddonMetaData (CAddonXMLEntry const &AddonXMLEntry, CAddonXMLEntry const &AddonXMLEntryEN);
+  void SetAddonMetaData (CAddonXMLEntry const &AddonXMLEntry, CAddonXMLEntry const &PrevAddonXMLEntry,
+                         CAddonXMLEntry const &AddonXMLEntryEN, std::string const &strLang);
   void GetAddonMetaData (CAddonXMLEntry &AddonXMLEntry, CAddonXMLEntry &AddonXMLEntryEN);
   void SetPreHeader (std::string &strPreText);
   size_t const GetNumEntriesCount() {return m_mapStrings.size();}
