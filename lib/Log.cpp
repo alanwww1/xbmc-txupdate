@@ -91,8 +91,22 @@ void CLog::Log(TLogLevel loglevel, const char *format, ... )
   fprintf(m_pLogFile, "\n");
   va_end(va);
 
-  if (loglevel == logERROR)
-    throw 1;
+  if (loglevel == logERROR || loglevel == logWARNING)
+  {
+    va_list va1;
+    va_start(va1, format);
+    char cstrLogMessage[1024];
+    vsprintf(cstrLogMessage, format, va1);
+    va_end(va1);
+    if (loglevel == logERROR)
+    {
+      printf ("\nError message thrown: %s\n\n", cstrLogMessage);
+      throw 1;
+    }
+    else
+      printf ("\nWarning log message: %s\n\n", cstrLogMessage);
+  }
+
   return;
 };
 

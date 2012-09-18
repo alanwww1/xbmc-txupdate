@@ -36,30 +36,25 @@ class CProjectHandler
 public:
   CProjectHandler();
   ~CProjectHandler();
-  bool LoadProject(std::string strProjRootDir);
-  bool FetchResourcesFromTransifex(std::string strProjRootDir);
-  bool FetchResourcesFromUpstream(std::string strProjRootDir);
+  bool FetchResourcesFromTransifex();
+  bool FetchResourcesFromUpstream();
   bool CreateMergedResources();
-  bool WriteResourcesToFile(std::string strProjRootDir, std::string strPOSuffix);
+  bool WriteResourcesToFile(std::string strProjRootDir);
   void InitUpdateXMLHandler(std::string strProjRootDir);
-  void SaveUpdateXML(std::string strProjRootDir);
 
 protected:
-  bool GetResourcesFromDir(std::string strProjRootDir);
   const CPOEntry * SafeGetPOEntry(std::map<std::string, CResourceHandler> &mapResHandl, const std::string &strResname,
                             std::string &strLangCode, size_t numID);
   CPOHandler * SafeGetPOHandler(std::map<std::string, CResourceHandler> &mapResHandl, const std::string &strResname,
                                       std::string &strLangCode);
-  std::list<std::string> CreateLanguageList(std::string strResname);
+  std::list<std::string> CreateMergedLanguageList(std::string strResname, bool bOnlyTX);
   std::map<std::string, CResourceHandler> * ChoosePrefResMap(std::string strResname);
   std::list<std::string> CreateResourceList();
   CAddonXMLEntry * const GetAddonDataFromXML(std::map<std::string, CResourceHandler> * pmapRes,
                                              const std::string &strResname, const std::string &strLangCode) const;
   void MergeAddonXMLEntry(CAddonXMLEntry const &EntryToMerge, CAddonXMLEntry &MergedAddonXMLEntry,
                                            CAddonXMLEntry const &SourceENEntry, CAddonXMLEntry const &CurrENEntry);
-  bool ComparePOFiles(CPOHandler &POHandler1, CPOHandler &POHandler2) const;
 
-  std::map<std::string, CResourceHandler> m_mapResourcesLocal;
   std::map<std::string, CResourceHandler> m_mapResourcesTX;
   std::map<std::string, CResourceHandler> m_mapResourcesUpstr;
 

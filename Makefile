@@ -34,7 +34,6 @@ lib/xbmclangcodes.cpp \
 lib/Settings.h \
 lib/CharsetUtils/CharsetUtils.cpp \
 lib/POUtils/POUtils.cpp \
-lib/vJSON/json.cpp lib/vJSON/block_allocator.cpp \
 lib/FileUtils/FileUtils.cpp \
 lib/Log.cpp \
 lib/POHandler.cpp \
@@ -65,7 +64,6 @@ tinyxmlerror.o: tinyxmlerror.cpp tinyxmlerror.h
 tinystr.o: tinystr.cpp tinystr.h
 POUtils.o: POUtils.h POUtils.cpp Log.cpp Log.h
 CharsteUtils.o: CharsetUtils.h CharsetUtils.cpp Log.cpp Log.h
-json.o: json.cpp json.h block_allocator.o Log.cpp Log.h
 block_allocator.o: block_allocator.cpp block_allocator.h Log.cpp Log.h
 FileUtils.o: FileUtils.h FileUtils.cpp Log.cpp Log.h
 POHandler.o: POHandler.h POHandler.cpp POUtils.h POUtils.cpp Log.cpp Log.h

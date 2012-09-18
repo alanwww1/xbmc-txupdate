@@ -62,25 +62,18 @@ bool CAddonXMLHandler::FetchAddonXMLFileUpstr (std::string strURL)
   TiXmlDocument xmlAddonXML;
 
   std::string strXMLFile = g_HTTPHandler.GetURLToSTR(strURL);
+  if (strXMLFile.empty())
+    CLog::Log(logERROR, "CAddonXMLHandler::FetchAddonXMLFileUpstr: http error getting XML file from upstream url: %s", strURL.c_str());
 
   m_strAddonXMLFile = strXMLFile;
   ConvertStrLineEnds(m_strAddonXMLFile);
-
-//  printf("%s", m_strAddonXMLFile.c_str());
-
 
   if (!xmlAddonXML.Parse(strXMLFile.c_str(), 0, TIXML_DEFAULT_ENCODING))
   {
     CLog::Log(logERROR, "AddonXMLHandler: AddonXML file problem: %s %s\n", xmlAddonXML.ErrorDesc(), strURL.c_str());
     return false;
   }
-/*  TiXmlPrinter printer;
-  printer.SetIndent( "    " );
 
-  xmlAddonXML.Accept( &printer );
-  std::string xmltext = printer.CStr();
-  printf("%s", xmltext.c_str());
-*/
 return   ProcessAddonXMLFile(strURL, xmlAddonXML);
 }
 
@@ -346,6 +339,8 @@ std::string CAddonXMLHandler::EscapeLF(const char * StrToEscape)
 bool CAddonXMLHandler::FetchCoreVersionUpstr(std::string strURL)
 {
   std::string strGuiInfoFile = g_HTTPHandler.GetURLToSTR(strURL);
+  if (strGuiInfoFile.empty())
+    CLog::Log(logERROR, "CAddonXMLHandler::FetchCoreVersionUpstr: http error getting xbmc version file from upstream url: %s", strURL.c_str());
   return ProcessCoreVersion(strURL, strGuiInfoFile);
 }
 

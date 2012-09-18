@@ -87,7 +87,6 @@ public:
   CPODocument();
   ~CPODocument();
 
-  bool LoadFile(const std::string &pofilename);
   bool SaveFile(const std::string &pofilename);
   bool GetNextEntry(bool bSkipError);
   int GetEntryType() const {return m_Entry.Type;}

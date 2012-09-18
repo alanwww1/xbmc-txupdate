@@ -41,7 +41,6 @@ public:
   CHTTPHandler();
   ~CHTTPHandler();
   void ReInit();
-  void GetURLToFILE(std::string strFilename, std::string strURL);
   std::string GetURLToSTR(std::string strURL);
   void Cleanup();
   void SetCacheDir(std::string strCacheDir);
@@ -50,7 +49,7 @@ private:
   CURL *m_curlHandle;
   std::string m_strCacheDir;
   std::string CacheFileNameFromURL(std::string strURL);
-  void curlURLToCache(std::string strCacheFile, std::string strURL);
+  long curlURLToCache(std::string strCacheFile, std::string strURL);
   CLoginData GetCredentials (std::string strURL);
   std::string URLEncode (std::string strURL);
   std::map<std::string, CLoginData> m_mapLoginData;

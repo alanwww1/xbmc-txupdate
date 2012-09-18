@@ -33,7 +33,9 @@
 #define ICONV_PREPARE(iconv) iconv=(iconv_t)-1
 #define UTF8_DEST_MULTIPLIER 6
 
+std::string EscapeLF(const char * StrToEscape);
 std::string ToUTF8(const std::string& strEncoding, const std::string& str);
+std::string UnWhitespace(std::string strInput);
 
 void stringCharsetToUtf8(const std::string& strSourceCharset, const std::string& strSource,
                           std::string& strDest);
