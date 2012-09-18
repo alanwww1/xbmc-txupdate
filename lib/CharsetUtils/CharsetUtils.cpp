@@ -23,6 +23,39 @@
 #include "CharsetUtils.h"
 #include <errno.h>
 
+std::string EscapeLF(const char * StrToEscape)
+{
+  std::string strIN(StrToEscape);
+  std::string strOut;
+  std::string::iterator it;
+  for (it = strIN.begin(); it != strIN.end(); it++)
+  {
+    if (*it == '\n')
+    {
+      strOut.append("\\n");
+      continue;
+    }
+    if (*it == '\r')
+      continue;
+    strOut += *it;
+  }
+  return strOut;
+}
+
+// remove trailing and leading whitespaces
+std::string UnWhitespace(std::string strInput)
+{
+  int offset_end = strInput.size();
+  int offset_start = 0;
+
+  while (strInput[offset_start] == ' ')
+    offset_start++; // check first non-whitespace char
+    while (strInput[offset_end-1] == ' ')
+      offset_end--; // check last non whitespace char
+
+      strInput = strInput.substr(offset_start, offset_end - offset_start);
+    return strInput;
+}
 
 std::string ToUTF8(const std::string& strEncoding, const std::string& str)
 {

@@ -33,62 +33,35 @@ CJSONHandler::CJSONHandler()
 CJSONHandler::~CJSONHandler()
 {};
 
-std::map<std::string, std::string> CJSONHandler::ParseResources(std::string strJSON)
+std::list<std::string> CJSONHandler::ParseResources(std::string strJSON)
 {
   Json::Value root;   // will contains the root value after parsing.
   Json::Reader reader;
-  std::string resName, resType;
-  std::map<std::string, std::string> mapResources;
+  std::string resName;
+  std::list<std::string> listResources;
 
   bool parsingSuccessful = reader.parse(strJSON, root );
   if ( !parsingSuccessful )
   {
     CLog::Log(logERROR, "JSONHandler: Parse resource: no valid JSON data");
-    return mapResources;
+    return listResources;
   }
 
   for(Json::ValueIterator itr = root.begin() ; itr != root.end() ; itr++)
   {
-//    printf("key:%i\n", itr.key().asUInt());
     Json::Value valu = *itr;
     resName = valu.get("slug", "unknown").asString();
-    resType = valu.get("category", "unknown").asString();
-    if (resType == "")
-    {
-      if (resName.substr(0,4) == "skin")
-      {
-        CLog::Log(logINFO, "JSONHandler: no category was filled for resource %s on Transifex server, but from resourcename"
-                  " this resource was declared as skin", resName.c_str());
-        resType = "skin";
-      }
-      else if (resName == "xbmc-core")
-      {
-        CLog::Log(logINFO, "JSONHandler: no category was filled for resource %s on Transifex server, but from resourcename"
-                  " this resource was declared as xbmc-core", resName.c_str());
-        resType = "xbmc-core";
-      }
-      else
-      {
-        CLog::Log(logINFO, "JSONHandler: no category was filled for resource %s on Transifex server, but from resourcename"
-        " this resource was declared as normal addon", resName.c_str());
-        resType = "addon";
-      }
-    }
 
-    if (resName.size() == 0 || resName == "unknown" ||
-        resType == "unknown")
+    if (resName.size() == 0 || resName == "unknown")
       CLog::Log(logERROR, "JSONHandler: Parse resource: no valid JSON data while iterating");
-    mapResources[resName] = resType;
-    CLog::Log(logINFO, "JSONHandler: found resource on Transifex server: %s, Type: %s", resName.c_str(), resType.c_str());
+    listResources.push_back(resName);
+    CLog::Log(logINFO, "JSONHandler: found resource on Transifex server: %s", resName.c_str());
   };
-  CLog::Log(logINFO, "JSONHandler: Found %i resources at Transifex server", mapResources.size());
-  return mapResources;
+  CLog::Log(logINFO, "JSONHandler: Found %i resources at Transifex server", listResources.size());
+  return listResources;
 };
 
-
-
-
-std::list<std::string> CJSONHandler::ParseAvailLanguages(std::string strJSON)
+std::list<std::string> CJSONHandler::ParseAvailLanguagesTX(std::string strJSON)
 {
   Json::Value root;   // will contains the root value after parsing.
   Json::Reader reader;
@@ -98,7 +71,7 @@ std::list<std::string> CJSONHandler::ParseAvailLanguages(std::string strJSON)
   bool parsingSuccessful = reader.parse(strJSON, root );
   if ( !parsingSuccessful )
   {
-    CLog::Log(logERROR, "JSONHandler: ParseAvailLanguages: no valid JSON data");
+    CLog::Log(logERROR, "CJSONHandler::ParseAvailLanguagesTX: no valid JSON data");
     return listLangs;
   }
 
@@ -129,6 +102,38 @@ std::list<std::string> CJSONHandler::ParseAvailLanguages(std::string strJSON)
   return listLangs;
 };
 
+std::list<std::string> CJSONHandler::ParseAvailLanguagesGITHUB(std::string strJSON)
+{
+  Json::Value root;   // will contains the root value after parsing.
+  Json::Reader reader;
+  std::string lang;
+  std::list<std::string> listLangs;
+
+  bool parsingSuccessful = reader.parse(strJSON, root );
+  if ( !parsingSuccessful )
+    CLog::Log(logERROR, "CJSONHandler::ParseAvailLanguagesGITHUB: no valid JSON data downloaded from Github");
+
+  const Json::Value JLangs = root;
+
+  for(Json::ValueIterator itr = JLangs.begin() ; itr !=JLangs.end() ; itr++)
+  {
+    Json::Value JValu = *itr;
+    std::string strType =JValu.get("type", "unknown").asString();
+    if (strType == "unknown")
+      CLog::Log(logERROR, "CJSONHandler::ParseAvailLanguagesGITHUB: no valid JSON data downloaded from Github");
+    else if (strType != "dir")
+    {
+      CLog::Log(logWARNING, "CJSONHandler::ParseAvailLanguagesGITHUB: unknown file found in language directory");
+      continue;
+    }
+    lang =JValu.get("name", "unknown").asString();
+    if (strType == "unknown")
+      CLog::Log(logERROR, "CJSONHandler::ParseAvailLanguagesGITHUB: no valid JSON data downloaded from Github");
+    listLangs.push_back(g_LCodeHandler.FindLangCode(lang));
+  };
+
+  return listLangs;
+};
 
 std::map<std::string, CLangcodes> CJSONHandler::ParseTransifexLanguageDatabase(std::string strJSON)
 {
@@ -163,8 +168,6 @@ std::map<std::string, CLangcodes> CJSONHandler::ParseTransifexLanguageDatabase(s
   };
   return mapTXLangs;
 };
-
-
 
 void CJSONHandler::PrintJSONValue( Json::Value val )
 {

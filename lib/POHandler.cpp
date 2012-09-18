@@ -20,20 +20,18 @@
  */
 
 #include "POHandler.h"
+#include "HTTPUtils.h"
+#include <algorithm>
+#include <list>
+#include <sstream>
 
 CPOHandler::CPOHandler()
-{};
+{
+  m_bIsXMLSource = false;
+};
 
 CPOHandler::~CPOHandler()
 {};
-
-bool CPOHandler::LoadPOFile(std::string strPOFileName)
-{
-  CPODocument PODoc;
-  if (!PODoc.LoadFile(strPOFileName))
-    return false;
-  return ProcessPOFile(PODoc);
-};
 
 bool CPOHandler::FetchPOURLToMem (std::string strURL, bool bSkipError)
 {
@@ -115,6 +113,117 @@ void CPOHandler::ClearCPOEntry (CPOEntry &entry)
   entry.Type = UNKNOWN_FOUND;
   entry.Content.clear();
 };
+
+
+bool CPOHandler::GetXMLEncoding(const TiXmlDocument* pDoc, std::string& strEncoding)
+{
+  const TiXmlNode* pNode=NULL;
+  while ((pNode=pDoc->IterateChildren(pNode)) && pNode->Type()!=TiXmlNode::TINYXML_DECLARATION) {}
+  if (!pNode) return false;
+  const TiXmlDeclaration* pDecl=pNode->ToDeclaration();
+  if (!pDecl) return false;
+  strEncoding=pDecl->Encoding();
+  if (strEncoding.compare("UTF-8") ==0 || strEncoding.compare("UTF8") == 0 ||
+    strEncoding.compare("utf-8") ==0 || strEncoding.compare("utf8") == 0)
+    strEncoding.clear();
+  std::transform(strEncoding.begin(), strEncoding.end(), strEncoding.begin(), ::toupper);
+  return !strEncoding.empty(); // Other encoding then UTF8?
+}
+
+void CPOHandler::GetXMLComment(const TiXmlNode *pCommentNode, CPOEntry &currEntry)
+{
+  int nodeType;
+  CPOEntry prevCommEntry;
+  while (pCommentNode)
+  {
+    nodeType = pCommentNode->Type();
+    if (nodeType == TiXmlNode::TINYXML_ELEMENT)
+      break;
+    if (nodeType == TiXmlNode::TINYXML_COMMENT)
+    {
+      if (pCommentNode->m_CommentLFPassed)
+        prevCommEntry.interlineComm.push_back(UnWhitespace(pCommentNode->Value()));
+      else
+        currEntry.extractedComm.push_back(UnWhitespace(pCommentNode->Value()));
+    }
+    pCommentNode = pCommentNode->NextSibling();
+  }
+  currEntry.interlineComm = m_prevCommEntry.interlineComm;
+  m_prevCommEntry.interlineComm = prevCommEntry.interlineComm;
+}
+
+bool CPOHandler::FetchXMLURLToMem (std::string strURL)
+{
+  std::string strXMLBuffer = g_HTTPHandler.GetURLToSTR(strURL);
+  if (strXMLBuffer.empty())
+    CLog::Log(logERROR, "CPOHandler::FetchXMLURLToMem: http error reading XML file from url: %s", strURL.c_str());
+
+  m_bIsXMLSource = true;
+  TiXmlDocument XMLDoc;
+
+  ConvertStrLineEnds(strXMLBuffer);
+  strXMLBuffer += "\n";
+
+  if (!XMLDoc.Parse(strXMLBuffer.c_str(), 0, TIXML_DEFAULT_ENCODING))
+  {
+    CLog::Log(logERROR, "CPOHandler::FetchXMLURLToMem: AddonXML file problem: %s %s\n", XMLDoc.ErrorDesc(), strURL.c_str());
+    return false;
+  }
+
+  std::string strXMLEncoding;
+  GetXMLEncoding(&XMLDoc, strXMLEncoding);
+
+  TiXmlElement* pRootElement = XMLDoc.RootElement();
+  if (!pRootElement || pRootElement->NoChildren() || pRootElement->ValueTStr()!="strings")
+  {
+    CLog::Log(logERROR, "CPOHandler::FetchXMLURLToMem: No root element called: \"strings\" or no child found in input XML file: %s", strURL.c_str());
+    return false;
+  }
+
+  CPOEntry currEntry, commHolder, prevcommHolder;
+
+  if (m_bPOIsEnglish)
+    GetXMLComment(pRootElement->FirstChild(), currEntry);
+
+  const TiXmlElement *pChildElement = pRootElement->FirstChildElement("string");
+  const char* pAttrId = NULL;
+  const char* pValue = NULL;
+  std::string valueString;
+  int id;
+
+  while (pChildElement)
+  {
+    pAttrId=pChildElement->Attribute("id");
+    if (pAttrId && !pChildElement->NoChildren())
+    {
+      id = atoi(pAttrId);
+      if (m_mapStrings.find(id) == m_mapStrings.end())
+      {
+        currEntry.Type = ID_FOUND;
+        pValue = pChildElement->FirstChild()->Value();
+        valueString = EscapeLF(pValue);
+        currEntry.numID = id;
+        std::string strUtf8 = ToUTF8(strXMLEncoding, valueString).c_str();
+
+        if (m_bPOIsEnglish)
+          currEntry.msgID = strUtf8;
+        else
+          currEntry.msgStr = strUtf8;
+
+        if (m_bPOIsEnglish)
+          GetXMLComment(pChildElement->NextSibling(), currEntry);
+
+        m_mapStrings[id] = currEntry;
+      }
+    }
+    ClearCPOEntry(currEntry);
+
+    pChildElement = pChildElement->NextSiblingElement("string");
+  }
+  // Free up the allocated memory for the XML file
+  XMLDoc.Clear();
+  return true;
+}
 
 
 bool CPOHandler::WritePOFile(const std::string &strOutputPOFilename)
@@ -199,7 +308,8 @@ bool CPOHandler::DeleteClassicEntry (CPOEntry &EntryToFind)
   return false;
 }
 
-void CPOHandler::SetAddonMetaData (CAddonXMLEntry const &AddonXMLEntry, CAddonXMLEntry const &AddonXMLEntryEN)
+void CPOHandler::SetAddonMetaData (CAddonXMLEntry const &AddonXMLEntry, CAddonXMLEntry const &PrevAddonXMLEntry,
+                                   CAddonXMLEntry const &AddonXMLEntryEN, std::string const &strLang)
 {
   CPOEntry POEntryDesc, POEntryDiscl, POEntrySumm;
   POEntryDesc.Type = MSGID_FOUND;
@@ -217,16 +327,22 @@ void CPOHandler::SetAddonMetaData (CAddonXMLEntry const &AddonXMLEntry, CAddonXM
   newPOEntryDisc.msgID = AddonXMLEntryEN.strDisclaimer;
   newPOEntrySumm.msgID = AddonXMLEntryEN.strSummary;
 
-  if (!AddonXMLEntry.strDescription.empty() || !AddonXMLEntry.strDisclaimer.empty() || !AddonXMLEntry.strSummary.empty())
+  if (strLang != "en")
   {
-    newPOEntryDesc.msgStr = AddonXMLEntry.strDescription;
-    newPOEntryDisc.msgStr = AddonXMLEntry.strDisclaimer;
-    newPOEntrySumm.msgStr = AddonXMLEntry.strSummary;
+    if (!AddonXMLEntry.strDescription.empty() && AddonXMLEntry.strDescription != PrevAddonXMLEntry.strDescription)
+      newPOEntryDesc.msgStr = AddonXMLEntry.strDescription;
+    if (!AddonXMLEntry.strDisclaimer.empty() && AddonXMLEntry.strDisclaimer != PrevAddonXMLEntry.strDisclaimer)
+      newPOEntryDisc.msgStr = AddonXMLEntry.strDisclaimer;
+    if (!AddonXMLEntry.strSummary.empty() && AddonXMLEntry.strSummary != PrevAddonXMLEntry.strSummary)
+      newPOEntrySumm.msgStr = AddonXMLEntry.strSummary;
   }
 
-  ModifyClassicEntry(POEntryDesc, newPOEntryDesc);
-  ModifyClassicEntry(POEntryDiscl, newPOEntryDisc);
-  ModifyClassicEntry(POEntrySumm, newPOEntrySumm);
+  if (!newPOEntryDesc.msgID.empty() && (strLang == "en" || !newPOEntryDesc.msgStr.empty()))
+    ModifyClassicEntry(POEntryDesc, newPOEntryDesc);
+  if (!newPOEntryDisc.msgID.empty() && (strLang == "en" || !newPOEntryDisc.msgStr.empty()))
+    ModifyClassicEntry(POEntryDiscl, newPOEntryDisc);
+  if (!newPOEntrySumm.msgID.empty() && (strLang == "en" || !newPOEntrySumm.msgStr.empty()))
+    ModifyClassicEntry(POEntrySumm, newPOEntrySumm);
   return;
 }
 
@@ -280,11 +396,41 @@ void CPOHandler::SetPreHeader (std::string &strPreText)
   m_strHeader = strOutHeader;
 }
 
+void CPOHandler::SetHeaderXML (std::string strLangCode)
+{
+  std::stringstream ss;//create a stringstream
+  ss << g_LCodeHandler.GetnPlurals(strLangCode);
+  std::string strnplurals = ss.str();
+
+  m_strHeader += "msgid \"\"\n";
+  m_strHeader += "msgstr \"\"\n";
+  m_strHeader += "\"Project-Id-Version: XBMC-Addons\\n\"\n";
+  m_strHeader += "\"Report-Msgid-Bugs-To: alanwww1@xbmc.org\\n\"\n";
+  m_strHeader += "\"POT-Creation-Date: " + GetCurrTime() + "\\n\"\n";
+  m_strHeader += "\"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\\n\"\n";
+  m_strHeader += "\"Last-Translator: FULL NAME <EMAIL@ADDRESS>\\n\"\n";
+  m_strHeader += "\"Language-Team: LANGUAGE\\n\"\n";
+  m_strHeader += "\"MIME-Version: 1.0\\n\"\n";
+  m_strHeader += "\"Content-Type: text/plain; charset=UTF-8\\n\"\n";
+  m_strHeader += "\"Content-Transfer-Encoding: 8bit\\n\"\n";
+  m_strHeader +=  "\"Language: " + strLangCode + "\\n\"\n";
+  m_strHeader +=  "\"Plural-Forms: nplurals=" + strnplurals + "; plural=" + g_LCodeHandler.GetPlurForm(strLangCode) + "\\n\"\n";
+}
+
 bool CPOHandler::AddNumPOEntryByID(uint32_t numid, CPOEntry const &POEntry)
 {
   if (m_mapStrings.find(numid) != m_mapStrings.end())
     return false;
   m_mapStrings[numid] = POEntry;
+  return true;
+}
+
+bool CPOHandler::AddNumPOEntryByID(uint32_t numid, CPOEntry const &POEntry, std::string forceMsgID)
+{
+  if (m_mapStrings.find(numid) != m_mapStrings.end())
+    return false;
+  m_mapStrings[numid] = POEntry;
+  m_mapStrings[numid].msgID = forceMsgID;
   return true;
 }
 

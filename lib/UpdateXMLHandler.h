@@ -24,10 +24,17 @@
 #include "POUtils/POUtils.h"
 #include <string>
 
-struct CXMLResdata
+class CXMLResdata
 {
+public:
+  CXMLResdata();
+  ~CXMLResdata();
   std::string strUptreamURL;
   std::string strLangsFromUpstream;
+  int Restype;
+  std::string strResDirectory;
+  std::string strTXResName;
+  std::string strLangFileType;
 };
 
 class CUpdateXMLHandler
@@ -36,14 +43,13 @@ public:
   CUpdateXMLHandler();
   ~CUpdateXMLHandler();
   bool LoadXMLToMem(std::string rootDir);
-  void AddResourceToXMLFile(std::string strResName);
-  void SaveMemToXML(std::string rootDir);
   CXMLResdata GetResData(std::string strResName);
   const std::map<std::string, CXMLResdata> &GetResMap() const {return m_mapXMLResdata;}
+  std::string GetResNameFromTXResName(std::string const &strTXResName);
 private:
-  int GetResType(std::string ResRootDir);
+  int GetResType(std::string const &ResRootDir) const {return m_resType;}
   std::string IntToStr(int number);
-  std::string m_ProjDir;
+  int m_resType; 
   std::map<std::string, CXMLResdata> m_mapXMLResdata;
   std::map<std::string, CXMLResdata>::iterator itXMLResdata;
 };

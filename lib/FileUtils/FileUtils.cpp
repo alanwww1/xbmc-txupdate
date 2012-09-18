@@ -33,6 +33,20 @@ using namespace std;
 
 bool MakeDir(std::string Path)
 {
+  if (DirExists(Path))
+    return true;
+  size_t pos = 0;
+  while ((pos = Path.find(DirSepChar,pos)) != std::string::npos)
+  {
+   if (!DirExists(Path.substr(0,pos+1)) && !MakeOneDir(Path.substr(0,pos+1)))
+     return false;
+   pos++;
+  }
+  return true;
+}
+
+bool MakeOneDir(std::string Path)
+{
   #ifdef _MSC_VER
   return CreateDirectory (Path.c_str(), NULL) != 0;
   #else
@@ -83,7 +97,8 @@ std::string GetCurrTime()
     sprintf(&strTime[0], "%04i-%02i-%02i %02i:%02i+0000", gmtm->tm_year + 1900, gmtm->tm_mon + 1,
             gmtm->tm_mday, gmtm->tm_hour, gmtm->tm_min);
   }
-  return strTime;
+  std::string strTimeCleaned = strTime.c_str();
+  return strTimeCleaned;
 };
 
 void CopyFile(std::string strSourceFileName, std::string strDestFileName)
@@ -138,6 +153,9 @@ std::string ReadFileToStr(std::string strFileName)
 
 bool WriteFileFromStr(const std::string &pofilename, std::string const &strToWrite)
 {
+  std::string strDir = GetPath(pofilename);
+  MakeDir(strDir);
+
   FILE * pFile = fopen (pofilename.c_str(),"wb");
   if (pFile == NULL)
   {
@@ -157,9 +175,9 @@ void ConvertStrLineEnds(std::string &strToConvert)
     return; // We have only Linux style line endings in the file, nothing to do
 
   if (foundPos+1 >= strToConvert.size() || strToConvert[foundPos+1] != '\n')
-    CLog::Log(logWARNING, "FileUtils: string has Mac Style Line Endings. Converted in memory to Linux LF");
+    CLog::Log(logINFO, "FileUtils: string has Mac Style Line Endings. Converted in memory to Linux LF");
   else
-    CLog::Log(logWARNING, "FileUtils: string has Win Style Line Endings. Converted in memory to Linux LF.");
+    CLog::Log(logINFO, "FileUtils: string has Win Style Line Endings. Converted in memory to Linux LF.");
 
   std::string strTemp;
   strTemp.reserve(strToConvert.size());
@@ -175,3 +193,11 @@ void ConvertStrLineEnds(std::string &strToConvert)
   }
   strToConvert.swap(strTemp);
 };
+
+std::string GetPath(std::string const &strFilename)
+{
+  size_t posLastDirSepChar = strFilename.find_last_of(DirSepChar);
+  if (posLastDirSepChar != std::string::npos)
+    return strFilename.substr(0, posLastDirSepChar+1);
+  return strFilename;
+}
