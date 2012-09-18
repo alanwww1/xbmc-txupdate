@@ -28,6 +28,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include "../Log.h"
+#include <ftw.h>
+#include <unistd.h>
 
 using namespace std;
 
@@ -200,4 +202,19 @@ std::string GetPath(std::string const &strFilename)
   if (posLastDirSepChar != std::string::npos)
     return strFilename.substr(0, posLastDirSepChar+1);
   return strFilename;
+}
+
+int unlink_cb(const char *fpath, const struct stat *sb, int typeflag, struct FTW *ftwbuf)
+{
+  int rv = remove(fpath);
+
+  if (rv)
+    CLog::Log(logWARNING, "FileUtils: unable to delete Directory: %s", fpath);
+
+  return rv;
+}
+
+int DeleteDirectory(std::string strDirPath)
+{
+  return nftw(strDirPath.c_str(), unlink_cb, 64, FTW_DEPTH | FTW_PHYS);
 }

@@ -52,3 +52,5 @@ bool WriteFileFromStr(const std::string &pofilename, std::string const &strToWri
 void ConvertStrLineEnds(std::string &strToConvert);
 std::string AddSlash(std::string strIn);
 std::string GetCurrTime();
+int unlink_cb(const char *fpath, const struct stat *sb, int typeflag, struct FTW *ftwbuf);
+int DeleteDirectory(std::string strDirPath);
