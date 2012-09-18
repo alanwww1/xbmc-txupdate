@@ -396,7 +396,7 @@ void CPOHandler::SetPreHeader (std::string &strPreText)
   m_strHeader = strOutHeader;
 }
 
-void CPOHandler::SetHeaderXML (std::string strLangCode)
+void CPOHandler::SetHeaderNEW (std::string strLangCode)
 {
   std::stringstream ss;//create a stringstream
   ss << g_LCodeHandler.GetnPlurals(strLangCode);

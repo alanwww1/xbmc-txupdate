@@ -25,6 +25,7 @@
 #include "JSONHandler.h"
 #include "HTTPUtils.h"
 #include "xbmclangcodes.h"
+#include "Settings.h"
 
 using namespace std;
 
@@ -190,15 +191,15 @@ bool CResourceHandler::WritePOToFiles(std::string strProjRootDir, std::string st
   switch (XMLResdata.Restype)
   {
     case ADDON: case ADDON_NOSTRINGS:
-      strResourceDir = strProjRootDir + strPrefixDir + XMLResdata.strResDirectory + DirSepChar + strResname +DirSepChar;
+      strResourceDir = strProjRootDir + strPrefixDir + DirSepChar + XMLResdata.strResDirectory + DirSepChar + strResname +DirSepChar;
       strLangDir = strResourceDir + "resources" + DirSepChar + "language" + DirSepChar;
       break;
     case SKIN:
-      strResourceDir = strProjRootDir + strPrefixDir + XMLResdata.strResDirectory + DirSepChar + strResname +DirSepChar;
+      strResourceDir = strProjRootDir + strPrefixDir + DirSepChar  + XMLResdata.strResDirectory + DirSepChar + strResname +DirSepChar;
       strLangDir = strResourceDir + "language" + DirSepChar;
       break;
     case CORE:
-      strResourceDir = strProjRootDir + strPrefixDir + XMLResdata.strResDirectory + DirSepChar;
+      strResourceDir = strProjRootDir + strPrefixDir + DirSepChar + XMLResdata.strResDirectory + DirSepChar;
       strLangDir = strResourceDir + "language" + DirSepChar;
       break;
     default:
@@ -219,7 +220,7 @@ bool CResourceHandler::WritePOToFiles(std::string strProjRootDir, std::string st
   }
 
   // update local addon.xml file
-  if (strResname != "xbmc.core" && strPrefixDir.empty())
+  if (strResname != "xbmc.core" && strPrefixDir == g_Settings.GetMergedLangfilesDir())
     m_AddonXMLHandler.UpdateAddonXMLFile(strResourceDir + "addon.xml");
 
   return true;

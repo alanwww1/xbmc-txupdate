@@ -48,7 +48,7 @@ public:
 
   const CPOEntry* GetNumPOEntryByIdx(size_t pos) const;
   void SetHeader (std::string strHeader) {m_strHeader = strHeader;}
-  void SetHeaderXML (std::string strLangCode);
+  void SetHeaderNEW (std::string strLangCode);
   std::string GetHeader () {return m_strHeader;}
 
   void SetAddonMetaData (CAddonXMLEntry const &AddonXMLEntry, CAddonXMLEntry const &PrevAddonXMLEntry,

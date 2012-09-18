@@ -90,25 +90,25 @@ bool CProjectHandler::FetchResourcesFromUpstream()
 
 bool CProjectHandler::WriteResourcesToFile(std::string strProjRootDir)
 {
+  std::string strPrefixDir;
+
+  strPrefixDir = g_Settings.GetMergedLangfilesDir();
   for (T_itmapRes itmapResources = m_mapResMerged.begin(); itmapResources != m_mapResMerged.end(); itmapResources++)
   {
     printf("Writing resource to HDD: %s\n", itmapResources->first.c_str());
     CLog::Log(logLINEFEED, "");
     CLog::Log(logINFO, "ProjHandler: *** Write Resource: %s ***", itmapResources->first.c_str());
     CXMLResdata XMLResdata = m_UpdateXMLHandler.GetResData(itmapResources->first);
-
-    m_mapResMerged[itmapResources->first].WritePOToFiles (strProjRootDir, "", itmapResources->first, XMLResdata);
+    m_mapResMerged[itmapResources->first].WritePOToFiles (strProjRootDir, strPrefixDir, itmapResources->first, XMLResdata);
   }
 
+  strPrefixDir = g_Settings.GetTXUpdateLangfilesDir();
   for (T_itmapRes itmapResources = m_mapResUpdateTX.begin(); itmapResources != m_mapResUpdateTX.end(); itmapResources++)
   {
     printf("Writing update TX resource to HDD: %s\n", itmapResources->first.c_str());
     CLog::Log(logLINEFEED, "");
     CLog::Log(logINFO, "ProjHandler: *** Write UpdTX Resource: %s ***", itmapResources->first.c_str());
     CXMLResdata XMLResdata = m_UpdateXMLHandler.GetResData(itmapResources->first);
-
-    std::string strPrefixDir = "temp_txupdate";
-    strPrefixDir += DirSepChar;
     m_mapResUpdateTX[itmapResources->first].WritePOToFiles (strProjRootDir, strPrefixDir, itmapResources->first, XMLResdata);
   }
 
@@ -215,39 +215,40 @@ bool CProjectHandler::CreateMergedResources()
           mergedPOHandler.AddNumPOEntryByID(numID, *pcurrPOEntryEN);
       }
 
+      CPOHandler * pPOHandlerTX, * pPOHandlerUpst;
+      pPOHandlerTX = SafeGetPOHandler(m_mapResourcesTX, *itResAvail, strLangCode);
+      pPOHandlerUpst = SafeGetPOHandler(m_mapResourcesUpstr, *itResAvail, strLangCode);
+
       if (mergedPOHandler.GetNumEntriesCount() !=0 || mergedPOHandler.GetClassEntriesCount() !=0)
       {
-        CPOHandler * pPOHandlerTX, * pPOHandlerUpst;
-        pPOHandlerTX = SafeGetPOHandler(m_mapResourcesTX, *itResAvail, strLangCode);
-        pPOHandlerUpst = SafeGetPOHandler(m_mapResourcesUpstr, *itResAvail, strLangCode);
         if (pPOHandlerTX && strLangCode != "en")
-        {
           mergedPOHandler.SetHeader(pPOHandlerTX->GetHeader());
-          updTXPOHandler.SetHeader(pPOHandlerTX->GetHeader());
-        }
         else if (pPOHandlerUpst && !pcurrPOHandlerEN->GetIfSourceIsXML())
-        {
           mergedPOHandler.SetHeader(pPOHandlerUpst->GetHeader());
-          updTXPOHandler.SetHeader(pPOHandlerUpst->GetHeader());
-        }
-        else if (pcurrPOHandlerEN->GetIfSourceIsXML())
-        {
-          mergedPOHandler.SetHeaderXML(*itlang);
-          updTXPOHandler.SetHeaderXML(*itlang);
-        }
+        else
+          mergedPOHandler.SetHeaderNEW(*itlang);
 
-//        if (strLangCode != "en" || pcurrPOHandlerEN->GetIfSourceIsXML())
-//        {
-          mergedPOHandler.SetPreHeader(strResPreHeader);
-          updTXPOHandler.SetPreHeader(strResPreHeader);
-//        }
+        mergedPOHandler.SetPreHeader(strResPreHeader);
+        mergedResHandler.AddPOData(mergedPOHandler, strLangCode);
 
-        if (mergedPOHandler.GetClassEntriesCount() != 0 || mergedPOHandler.GetNumEntriesCount() != 0)
-          mergedResHandler.AddPOData(mergedPOHandler, strLangCode);
-        if (updTXPOHandler.GetClassEntriesCount() != 0 || updTXPOHandler.GetNumEntriesCount() != 0)
-          updTXResHandler.AddPOData(updTXPOHandler, strLangCode);
         CLog::Log(logINFO, "MergedPOHandler: %s\t\t%i\t\t%i\t\t%i", strLangCode.c_str(), mergedPOHandler.GetNumEntriesCount(),
                   mergedPOHandler.GetClassEntriesCount(), mergedPOHandler.GetCommntEntriesCount());
+      }
+
+      if (updTXPOHandler.GetNumEntriesCount() !=0 || updTXPOHandler.GetClassEntriesCount() !=0)
+      {
+        if (pPOHandlerTX && strLangCode != "en")
+          updTXPOHandler.SetHeader(pPOHandlerTX->GetHeader());
+        else if (pPOHandlerUpst && !pcurrPOHandlerEN->GetIfSourceIsXML())
+          updTXPOHandler.SetHeader(pPOHandlerUpst->GetHeader());
+        else // no upstream nor on tx we have a valid header. Creating a new one
+          updTXPOHandler.SetHeaderNEW(*itlang);
+
+        updTXPOHandler.SetPreHeader(strResPreHeader);
+        updTXResHandler.AddPOData(updTXPOHandler, strLangCode);
+
+        CLog::Log(logINFO, "UpdTXPOHandler: %s\t\t%i\t\t%i\t\t%i", strLangCode.c_str(), updTXPOHandler.GetNumEntriesCount(),
+                  updTXPOHandler.GetClassEntriesCount(), updTXPOHandler.GetCommntEntriesCount());
       }
     }
     if (mergedResHandler.GetLangsCount() != 0 || !mergedResHandler.GetXMLHandler()->GetMapAddonXMLData()->empty())
