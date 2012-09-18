@@ -62,33 +62,54 @@ bool CUpdateXMLHandler::LoadXMLToMem (std::string rootDir)
     return false;
   }
 
-  std::string strProjName = pRootElement->Attribute("projectname");
-  if (strProjName == "" || strProjName == DEFAULTPRPJNAME)
-    CLog::Log(logERROR, "UpdXMLHandler: No projectname found in xbmc-txupdate.xml file. Please specify the Transifex "
-    "projectname in the xml file");
-  else
+  std::string strProjName ;
+  if (pRootElement->Attribute("projectname") && (strProjName = pRootElement->Attribute("projectname")) != "")
   {
     CLog::Log(logINFO, "UpdXMLHandler: Found projectname in xbmc-txupdate.xml file: %s",strProjName.c_str());
     g_Settings.SetProjectname(strProjName);
   }
+  else    
+    CLog::Log(logERROR, "UpdXMLHandler: No projectname specified in xbmc-txupdate.xml file. Please specify the Transifex "
+    "projectname in the xml file");
 
-  std::string strHTTPCacheExp = pRootElement->Attribute("http_cache_expire");
-  if (strHTTPCacheExp == "")
-    CLog::Log(logINFO, "UpdXMLHandler: No http cache expire time found in xbmc-txupdate.xml file. Please specify it!");
-  else
+  std::string strHTTPCacheExp;
+  if (pRootElement->Attribute("http_cache_expire") && (strHTTPCacheExp = pRootElement->Attribute("http_cache_expire")) != "")
   {
     CLog::Log(logINFO, "UpdXMLHandler: Found http cache expire time in xbmc-txupdate.xml file: %s", strHTTPCacheExp.c_str());
     g_Settings.SetHTTPCacheExpire(strtol(&strHTTPCacheExp[0], NULL, 10));
   }
-
-  std::string strMinCompletion = pRootElement->Attribute("min_completion");
-  if (strMinCompletion == "")
-    CLog::Log(logINFO, "UpdXMLHandler: No min completion percentage found in xbmc-txupdate.xml file. Please specify it!");
   else
+    CLog::Log(logINFO, "UpdXMLHandler: No http cache expire time specified in xbmc-txupdate.xml file. Please specify it!");
+
+  std::string strMinCompletion;
+  if (pRootElement->Attribute("min_completion") && (strMinCompletion = pRootElement->Attribute("min_completion")) != "")
   {
     CLog::Log(logINFO, "UpdXMLHandler: Found min completion percentage in xbmc-txupdate.xml file: %s", strMinCompletion.c_str());
     g_Settings.SetMinCompletion(strtol(&strMinCompletion[0], NULL, 10));
   }
+  else
+    CLog::Log(logINFO, "UpdXMLHandler: No min completion percentage specified in xbmc-txupdate.xml file. Please specify it!");
+
+  std::string strMergedLangfileDir;
+  if (pRootElement->Attribute("merged_langfiledir") && (strMergedLangfileDir = pRootElement->Attribute("merged_langfiledir")) != "")
+  {
+    CLog::Log(logINFO, "UpdXMLHandler: Found merged language file directory in xbmc-txupdate.xml file: %s", strMergedLangfileDir.c_str());
+    g_Settings.SetMergedLangfilesDir(strMergedLangfileDir);
+  }
+  else
+    CLog::Log(logINFO, "UpdXMLHandler: No merged language file directory specified in xbmc-txupdate.xml file. Using default value: %s",
+              g_Settings.GetMergedLangfilesDir().c_str());
+
+  std::string strTXUpdatelangfileDir;
+  if (pRootElement->Attribute("temptxupdate_langfiledir") && (strTXUpdatelangfileDir = pRootElement->Attribute("temptxupdate_langfiledir")) != "")
+  {
+    CLog::Log(logINFO, "UpdXMLHandler: Found temp tx update language file directory in xbmc-txupdate.xml file: %s", strTXUpdatelangfileDir.c_str());
+    g_Settings.SetTXUpdateLangfilesDir(strTXUpdatelangfileDir);
+  }
+  else
+    CLog::Log(logINFO, "UpdXMLHandler: No temp tx update language file directory specified in xbmc-txupdate.xml file. Using default value: %s",
+              g_Settings.GetTXUpdateLangfilesDir().c_str());
+
 
   const TiXmlElement *pChildResElement = pRootElement->FirstChildElement("resource");
   std::string strType;

@@ -27,8 +27,10 @@
 #include <string>
 
 const size_t DEFAULTCACHEEXPIRE = 21600; // 6 hours
-const size_t DEFAULTMINCOMPLETION = 75; // %
+const size_t DEFAULTMINCOMPLETION = 10; // %
 const std::string DEFAULTPRPJNAME = "Unknown-XBMC-project";
+const std::string DEFAULTMERGEDLANGDIR = "merged-langfiles";
+const std::string DEFAULTTXUPDLANGDIR = "tempfiles_txupdate";
 
 class CSettings
 {
@@ -41,10 +43,16 @@ public:
   size_t GetHTTPCacheExpire();
   void SetMinCompletion(int complperc);
   int GetMinCompletion();
+  void SetMergedLangfilesDir(std::string const &strMergedLangfilesDir);
+  std::string GetMergedLangfilesDir();
+  void SetTXUpdateLangfilesDir(std::string const &strTXUpdateLangfilesDir);
+  std::string GetTXUpdateLangfilesDir();
 private:
   size_t m_CacheExpire;
   int m_minComplPercentage;
   std::string m_strProjectName;
+  std::string m_strMergedLangfilesDir;
+  std::string m_strTXUpdateLangfilesDir;
 };
 
 extern CSettings g_Settings;

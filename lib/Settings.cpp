@@ -30,6 +30,8 @@ CSettings::CSettings()
   m_CacheExpire = DEFAULTCACHEEXPIRE;
   m_minComplPercentage = DEFAULTMINCOMPLETION;
   m_strProjectName = DEFAULTPRPJNAME;
+  m_strMergedLangfilesDir = DEFAULTMERGEDLANGDIR;
+  m_strTXUpdateLangfilesDir = DEFAULTTXUPDLANGDIR;
 };
 
 CSettings::~CSettings()
@@ -65,3 +67,24 @@ int CSettings::GetMinCompletion()
 {
   return m_minComplPercentage;
 };
+
+void CSettings::SetMergedLangfilesDir(std::string const &strMergedLangfilesDir)
+{
+  m_strMergedLangfilesDir = strMergedLangfilesDir;
+};
+
+std::string CSettings::GetMergedLangfilesDir()
+{
+  return m_strMergedLangfilesDir;
+};
+
+void CSettings::SetTXUpdateLangfilesDir(std::string const &strTXUpdateLangfilesDir)
+{
+  m_strTXUpdateLangfilesDir = strTXUpdateLangfilesDir;
+};
+
+std::string CSettings::GetTXUpdateLangfilesDir()
+{
+  return m_strTXUpdateLangfilesDir;
+};
+
