@@ -41,6 +41,14 @@ bool CPOHandler::FetchPOURLToMem (std::string strURL, bool bSkipError)
   return ProcessPOFile(PODoc);
 };
 
+bool CPOHandler::ParsePOStrToMem (std::string const &strPOData, std::string const &strFilePath)
+{
+  CPODocument PODoc;
+  if (!PODoc.ParseStrToMem(strPOData, strFilePath))
+    return false;
+  return ProcessPOFile(PODoc);
+};
+
 bool CPOHandler::ProcessPOFile(CPODocument &PODoc)
 {
   if (PODoc.GetEntryType() != HEADER_FOUND)

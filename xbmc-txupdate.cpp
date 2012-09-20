@@ -94,70 +94,101 @@ int main(int argc, char* argv[])
 
   printf("\nXBMC-TXUPDATE v%s by Team XBMC\n", VERSION.c_str());
 
-  if (strMode == "upload")
-    printf("Upload mode\n\n");
-  else
+  if (strMode != "upload")
+  {
     printf("Download and merge mode\n\n");
 
-  try
-  {
-    std::string WorkingDir = pSourceDirectory;
-    if (WorkingDir[WorkingDir.length()-1] != DirSepChar)
-      WorkingDir.append(&DirSepChar);
-
-    CLog::Init(WorkingDir + "xbmc-txupdate.log");
-    CLog::Log(logINFO, "Root Directory: %s", WorkingDir.c_str());
-
-    g_HTTPHandler.LoadCredentials(WorkingDir + ".passwords.xml");
-    g_HTTPHandler.SetCacheDir(WorkingDir + ".httpcache");
-
-    g_LCodeHandler.Init("https://raw.github.com/transifex/transifex/master/transifex/languages/fixtures/all_languages.json");
-
-    CProjectHandler TXProject, TXProject1;
-    TXProject.InitUpdateXMLHandler(WorkingDir);
-    printf("-----------------------------------\n");
-    printf("DOWNLOADING RESOURCES FROM TRANSIFEX.NET\n");
-    printf("-----------------------------------\n");
-
-    TXProject.FetchResourcesFromTransifex();
-
-    printf("-----------------------------------\n");
-    printf("DOWNLOADING RESOURCES FROM UPSTREAM\n");
-    printf("-----------------------------------\n");
-
-    TXProject.FetchResourcesFromUpstream();
-
-    printf("-----------------\n");
-    printf("MERGING RESOURCES\n");
-    printf("-----------------\n");
-
-    TXProject.CreateMergedResources();
-
-    printf("-------------------------------\n");
-    printf("WRITING MERGED RESOURCES TO HDD\n");
-    printf("-------------------------------\n");
-
-    TXProject.WriteResourcesToFile(WorkingDir);
-
-    if (CLog::GetWarnCount() ==0)
+    try
     {
-      printf("--------------------------------------------\n");
-      printf("PROCESS FINISHED SUCCESFULLY WITHOUT WARNINGS\n");
-      printf("--------------------------------------------\n");
-    }
-    else
-    {
-      printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-      printf("PROCESS FINISHED WITH %i WARNINGS\n", CLog::GetWarnCount());
-      printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-    }
+      std::string WorkingDir = pSourceDirectory;
+      if (WorkingDir[WorkingDir.length()-1] != DirSepChar)
+        WorkingDir.append(&DirSepChar);
 
-    g_HTTPHandler.Cleanup();
-    return 0;
+      CLog::Init(WorkingDir + "xbmc-txupdate.log");
+      CLog::Log(logINFO, "Root Directory: %s", WorkingDir.c_str());
+
+      g_HTTPHandler.LoadCredentials(WorkingDir + ".passwords.xml");
+      g_HTTPHandler.SetCacheDir(WorkingDir + ".httpcache");
+
+      g_LCodeHandler.Init("https://raw.github.com/transifex/transifex/master/transifex/languages/fixtures/all_languages.json");
+
+      CProjectHandler TXProject, TXProject1;
+      TXProject.InitUpdateXMLHandler(WorkingDir);
+      printf("-----------------------------------\n");
+      printf("DOWNLOADING RESOURCES FROM TRANSIFEX.NET\n");
+      printf("-----------------------------------\n");
+
+      TXProject.FetchResourcesFromTransifex();
+
+      printf("-----------------------------------\n");
+      printf("DOWNLOADING RESOURCES FROM UPSTREAM\n");
+      printf("-----------------------------------\n");
+
+      TXProject.FetchResourcesFromUpstream();
+
+      printf("-----------------\n");
+      printf("MERGING RESOURCES\n");
+      printf("-----------------\n");
+
+      TXProject.CreateMergedResources();
+
+      printf("-------------------------------\n");
+      printf("WRITING MERGED RESOURCES TO HDD\n");
+      printf("-------------------------------\n");
+
+      TXProject.WriteResourcesToFile(WorkingDir);
+
+      if (CLog::GetWarnCount() ==0)
+      {
+        printf("--------------------------------------------\n");
+        printf("PROCESS FINISHED SUCCESFULLY WITHOUT WARNINGS\n");
+        printf("--------------------------------------------\n");
+      }
+      else
+      {
+        printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+        printf("PROCESS FINISHED WITH %i WARNINGS\n", CLog::GetWarnCount());
+        printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+      }
+
+      g_HTTPHandler.Cleanup();
+      return 0;
+    }
+    catch (const int calcError)
+    {
+      g_HTTPHandler.Cleanup();
+      return 0;
+    }
   }
-  catch (const int calcError)
+  else
   {
-    g_HTTPHandler.Cleanup();
-    return 0;
+    printf("Upload mode\n\n");
+    try
+    {
+      std::string WorkingDir = pSourceDirectory;
+      if (WorkingDir[WorkingDir.length()-1] != DirSepChar)
+        WorkingDir.append(&DirSepChar);
+
+      CLog::Init(WorkingDir + "xbmc-txupdate.log");
+      CLog::Log(logINFO, "Root Directory: %s", WorkingDir.c_str());
+
+      g_HTTPHandler.LoadCredentials(WorkingDir + ".passwords.xml");
+      g_HTTPHandler.SetCacheDir(WorkingDir + ".httpcache");
+
+      g_LCodeHandler.Init("https://raw.github.com/transifex/transifex/master/transifex/languages/fixtures/all_languages.json");
+
+      CProjectHandler TXProject, TXProject1;
+      TXProject.InitUpdateXMLHandler(WorkingDir);
+      printf("-----------------------------------------\n");
+      printf("UPLOADING LANGUAGE FILES TO TRANSIFEX.NET\n");
+      printf("-----------------------------------------\n");
+
+      TXProject.UploadTXUpdateFiles(WorkingDir);
+    }
+    catch (const int calcError)
+    {
+      g_HTTPHandler.Cleanup();
+      return 0;
+    }
   }
 }

@@ -117,6 +117,36 @@ bool CPODocument::FetchURLToMem(const std::string &strURL, bool bSkipError)
   return false;
 };
 
+bool CPODocument::ParseStrToMem(const std::string &strPOData, std::string const &strFilePath)
+{
+  m_strBuffer.clear();
+  m_strBuffer = strPOData;
+  if (m_strBuffer.empty())
+      CLog::Log(logERROR, "CPODocument::ParseStrToMem: PO fle to parse has a zero length for file: %s", strFilePath.c_str());
+
+  m_strBuffer = "\n" + m_strBuffer;
+  ConvertLineEnds(strFilePath);
+
+  // we make sure, to have an LF at beginning and at end of buffer
+  m_strBuffer[0] = '\n';
+  if (*m_strBuffer.rbegin() != '\n')
+  {
+    m_strBuffer += "\n";
+  }
+  m_POfilelength = m_strBuffer.size();
+
+  if (GetNextEntry(true) && m_Entry.Type == MSGID_FOUND &&
+    m_Entry.Content.find("msgid \"\"")  != std::string::npos &&
+    m_Entry.Content.find("msgstr \"\"") != std::string::npos)
+  {
+    m_Entry.Type = HEADER_FOUND;
+    return true;
+  }
+
+  CLog::Log(logERROR, "POParser: unable to read PO file header from file: %s", strFilePath.c_str());
+  return false;
+};
+
 bool CPODocument::GetNextEntry(bool bSkipError)
 {
   do

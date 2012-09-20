@@ -45,12 +45,15 @@ public:
   void Cleanup();
   void SetCacheDir(std::string strCacheDir);
   bool LoadCredentials (std::string CredentialsFilename);
+  bool PutFileToURL(std::string strFilePath, std::string strURL);
 private:
   CURL *m_curlHandle;
   std::string m_strCacheDir;
   std::string CacheFileNameFromURL(std::string strURL);
   long curlURLToCache(std::string strCacheFile, std::string strURL);
+  long curlFileToURL(std::string strFilePath, std::string strURL);
   CLoginData GetCredentials (std::string strURL);
+  bool ComparePOFiles(std::string strPOFilePath1, std::string strPOFilePath2) const;
   std::string URLEncode (std::string strURL);
   std::map<std::string, CLoginData> m_mapLoginData;
   std::map<std::string, CLoginData>::iterator itMapLoginData;

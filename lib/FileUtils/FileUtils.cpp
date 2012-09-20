@@ -37,6 +37,9 @@ bool MakeDir(std::string Path)
 {
   if (DirExists(Path))
     return true;
+  if (*Path.rbegin() != DirSepChar)
+    Path += DirSepChar;
+
   size_t pos = 0;
   while ((pos = Path.find(DirSepChar,pos)) != std::string::npos)
   {

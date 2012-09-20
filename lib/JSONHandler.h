@@ -36,8 +36,7 @@ public:
   std::list<std::string> ParseAvailLanguagesTX(std::string strJSON);
   std::list<std::string> ParseAvailLanguagesGITHUB(std::string strJSON);
   std::map<std::string, CLangcodes> ParseTransifexLanguageDatabase(std::string strJSON);
-  bool PrintJSONTree( Json::Value root, unsigned short depth = 0);
-  void PrintJSONValue( Json::Value val );
+  std::string CreateJSONStrFromPOStr(std::string const &strPO);
 private:
   std::string m_strJSON;
 };

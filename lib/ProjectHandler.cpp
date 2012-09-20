@@ -48,7 +48,6 @@ bool CProjectHandler::FetchResourcesFromTransifex()
   std::list<std::string> listResourceNamesTX = JSONHandler.ParseResources(strtemp);
 
   CResourceHandler ResourceHandler;
-
   for (std::list<std::string>::iterator it = listResourceNamesTX.begin(); it != listResourceNamesTX.end(); it++)
   {
     printf("Downloading resource from TX: %s\n", it->c_str());
@@ -93,6 +92,7 @@ bool CProjectHandler::WriteResourcesToFile(std::string strProjRootDir)
   std::string strPrefixDir;
 
   strPrefixDir = g_Settings.GetMergedLangfilesDir();
+  CLog::Log(logINFO, "Deleting merged language file directory");
   DeleteDirectory(strProjRootDir + strPrefixDir);
   for (T_itmapRes itmapResources = m_mapResMerged.begin(); itmapResources != m_mapResMerged.end(); itmapResources++)
   {
@@ -104,6 +104,7 @@ bool CProjectHandler::WriteResourcesToFile(std::string strProjRootDir)
   }
 
   strPrefixDir = g_Settings.GetTXUpdateLangfilesDir();
+  CLog::Log(logINFO, "Deleting tx update language file directory");
   DeleteDirectory(strProjRootDir + strPrefixDir);
   for (T_itmapRes itmapResources = m_mapResUpdateTX.begin(); itmapResources != m_mapResUpdateTX.end(); itmapResources++)
   {
@@ -360,3 +361,100 @@ void CProjectHandler::InitUpdateXMLHandler(std::string strProjRootDir)
 m_UpdateXMLHandler.LoadXMLToMem(strProjRootDir);
 }
 
+void CProjectHandler::UploadTXUpdateFiles(std::string strProjRootDir)
+{
+  g_HTTPHandler.Cleanup();
+  g_HTTPHandler.ReInit();
+  std::string strtemp = g_HTTPHandler.GetURLToSTR("https://www.transifex.com/api/2/project/" + g_Settings.GetProjectname()
+  + "/resources/");
+  if (strtemp.empty())
+    CLog::Log(logERROR, "ProjectHandler::FetchResourcesFromTransifex: error getting resources from transifex.net");
+
+  char cstrtemp[strtemp.size()];
+  strcpy(cstrtemp, strtemp.c_str());
+
+  CJSONHandler JSONHandler;
+  std::list<std::string> listResourceNamesTX = JSONHandler.ParseResources(strtemp);
+
+  std::map<std::string, CXMLResdata> mapUpdateXMLHandler = m_UpdateXMLHandler.GetResMap();
+  std::string strPrefixDir = g_Settings.GetTXUpdateLangfilesDir();
+
+  g_HTTPHandler.Cleanup();
+  g_HTTPHandler.ReInit();
+
+  for (std::map<std::string, CXMLResdata>::iterator itres = mapUpdateXMLHandler.begin(); itres != mapUpdateXMLHandler.end(); itres++)
+  {
+    if (!FindResInList(listResourceNamesTX, itres->second.strTXResName))
+    {
+      CLog::Log(logINFO, "CProjectHandler::UploadTXUpdateFiles: No resource %s exists on Transifex. Creating it now.", itres->first.c_str());
+      continue;
+    }
+
+    std::string strResourceDir, strLangDir;
+    CXMLResdata XMLResdata = itres->second;
+    std::string strResname = itres->first;
+
+    if (!XMLResdata.strResDirectory.empty())
+      XMLResdata.strResDirectory += DirSepChar;
+
+    switch (XMLResdata.Restype)
+    {
+      case ADDON: case ADDON_NOSTRINGS:
+        strResourceDir = strProjRootDir + strPrefixDir + DirSepChar + XMLResdata.strResDirectory + strResname +DirSepChar;
+        strLangDir = strResourceDir + "resources" + DirSepChar + "language" + DirSepChar;
+        break;
+      case SKIN:
+        strResourceDir = strProjRootDir + strPrefixDir + DirSepChar  + XMLResdata.strResDirectory + strResname +DirSepChar;
+        strLangDir = strResourceDir + "language" + DirSepChar;
+        break;
+      case CORE:
+        strResourceDir = strProjRootDir + strPrefixDir + DirSepChar + XMLResdata.strResDirectory;
+        strLangDir = strResourceDir + "language" + DirSepChar;
+        break;
+      default:
+        CLog::Log(logERROR, "ResHandler: No resourcetype defined for resource: %s",strResname.c_str());
+    }
+
+    std::list<std::string> listLangCodes = GetLangsFromDir(strLangDir);
+    CLog::Log(logINFO, "CProjectHandler::UploadTXUpdateFiles: Uploading resource: %s, from langdir: %s",itres->first.c_str(), strLangDir.c_str());
+    printf ("Uploading files for resource: %s\n", itres->first.c_str());
+
+    for (std::list<std::string>::const_iterator it = listLangCodes.begin(); it!=listLangCodes.end(); it++)
+    {
+      std::string strFilePath = strLangDir + g_LCodeHandler.FindLang(*it) + DirSepChar + "strings.po";
+      std::string strLangCode = *it;
+
+      g_HTTPHandler.PutFileToURL(strFilePath, "https://www.transifex.com/api/2/project/" + g_Settings.GetProjectname() +
+                                              "/resource/" + XMLResdata.strTXResName + "/translation/" + strLangCode + "/");
+
+      printf ("\tlangcode: %s, file: %s\n", it->c_str(), strFilePath.c_str());
+    }
+  }
+}
+
+bool CProjectHandler::FindResInList(std::list<std::string> const &listResourceNamesTX, std::string strTXResName)
+{
+  for (std::list<std::string>::const_iterator it = listResourceNamesTX.begin(); it!=listResourceNamesTX.end(); it++)
+  {
+    if (*it == strTXResName)
+      return true;
+  }
+  return false;
+}
+
+std::list<std::string> CProjectHandler::GetLangsFromDir(std::string const &strLangDir)
+{
+  std::list<std::string> listDirs;
+  DIR* Dir;
+  struct dirent *DirEntry;
+  Dir = opendir(strLangDir.c_str());
+
+  while((DirEntry=readdir(Dir)))
+  {
+    if (DirEntry->d_type == DT_DIR && DirEntry->d_name[0] != '.')
+      listDirs.push_back(g_LCodeHandler.FindLangCode(DirEntry->d_name));
+  }
+  listDirs.sort();
+
+  return listDirs;
+};

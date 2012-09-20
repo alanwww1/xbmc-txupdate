@@ -41,6 +41,7 @@ public:
   bool CreateMergedResources();
   bool WriteResourcesToFile(std::string strProjRootDir);
   void InitUpdateXMLHandler(std::string strProjRootDir);
+  void UploadTXUpdateFiles(std::string strProjRootDir);
 
 protected:
   const CPOEntry * SafeGetPOEntry(std::map<std::string, CResourceHandler> &mapResHandl, const std::string &strResname,
@@ -54,6 +55,8 @@ protected:
                                              const std::string &strResname, const std::string &strLangCode) const;
   void MergeAddonXMLEntry(CAddonXMLEntry const &EntryToMerge, CAddonXMLEntry &MergedAddonXMLEntry,
                                            CAddonXMLEntry const &SourceENEntry, CAddonXMLEntry const &CurrENEntry);
+  bool FindResInList(std::list<std::string> const &listResourceNamesTX, std::string strTXResName);
+  std::list<std::string> GetLangsFromDir(std::string const &strLangDir);
 
   std::map<std::string, CResourceHandler> m_mapResourcesTX;
   std::map<std::string, CResourceHandler> m_mapResourcesUpstr;

@@ -96,6 +96,7 @@ public:
   void WritePOEntry(const CPOEntry &currEntry);
   void SetIfIsEnglish(bool bIsENLang) {m_bIsForeignLang = !bIsENLang;}
   bool FetchURLToMem(const std::string &strURL, bool bSkipError);
+  bool ParseStrToMem(const std::string &strPOData, std::string const &strFilePath);
 
 protected:
   std::string IntToStr(int number);
