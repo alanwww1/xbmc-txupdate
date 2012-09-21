@@ -26,9 +26,8 @@
 
 #include <string>
 
-const size_t DEFAULTCACHEEXPIRE = 21600; // 6 hours
+const size_t DEFAULTCACHEEXPIRE = 360; // 6 hours
 const size_t DEFAULTMINCOMPLETION = 10; // %
-const std::string DEFAULTPRPJNAME = "Unknown-XBMC-project";
 const std::string DEFAULTMERGEDLANGDIR = "merged-langfiles";
 const std::string DEFAULTTXUPDLANGDIR = "tempfiles_txupdate";
 

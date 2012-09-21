@@ -49,16 +49,17 @@ bool CUpdateXMLHandler::LoadXMLToMem (std::string rootDir)
 
   if (!xmlUpdateXML.LoadFile(UpdateXMLFilename.c_str()))
   {
-    CLog::Log(logINFO, "UpdXMLHandler: No update.xml file exists, we will create one later");
+    CLog::Log(logERROR, "UpdXMLHandler: No 'xbmc-txupdate.xml' file exists in the specified project dir. Cannot continue. "
+                        "Please create one!");
     return false;
   }
 
-  CLog::Log(logINFO, "UpdXMLHandler: Succesfuly found the update.xml file");
+  CLog::Log(logINFO, "UpdXMLHandler: Succesfuly found the update.xml file in the specified project directory");
 
   TiXmlElement* pRootElement = xmlUpdateXML.RootElement();
   if (!pRootElement || pRootElement->NoChildren() || pRootElement->ValueTStr()!="resources")
   {
-    CLog::Log(logINFO, "UpdXMLHandler: No root element called \"resources\" in xml file. We will create it");
+    CLog::Log(logERROR, "UpdXMLHandler: No root element called \"resources\" in xml file. Cannot continue. Please create it");
     return false;
   }
 
@@ -69,8 +70,8 @@ bool CUpdateXMLHandler::LoadXMLToMem (std::string rootDir)
     g_Settings.SetProjectname(strProjName);
   }
   else    
-    CLog::Log(logERROR, "UpdXMLHandler: No projectname specified in xbmc-txupdate.xml file. Please specify the Transifex "
-    "projectname in the xml file");
+    CLog::Log(logERROR, "UpdXMLHandler: No projectname specified in xbmc-txupdate.xml file. Cannot continue. "
+                        "Please specify the Transifex projectname in the xml file");
 
   std::string strHTTPCacheExp;
   if (pRootElement->Attribute("http_cache_expire") && (strHTTPCacheExp = pRootElement->Attribute("http_cache_expire")) != "")
@@ -79,7 +80,8 @@ bool CUpdateXMLHandler::LoadXMLToMem (std::string rootDir)
     g_Settings.SetHTTPCacheExpire(strtol(&strHTTPCacheExp[0], NULL, 10));
   }
   else
-    CLog::Log(logINFO, "UpdXMLHandler: No http cache expire time specified in xbmc-txupdate.xml file. Please specify it!");
+    CLog::Log(logINFO, "UpdXMLHandler: No http cache expire time specified in xbmc-txupdate.xml file. Using default value: %iminutes",
+              DEFAULTCACHEEXPIRE);
 
   std::string strMinCompletion;
   if (pRootElement->Attribute("min_completion") && (strMinCompletion = pRootElement->Attribute("min_completion")) != "")
@@ -88,7 +90,8 @@ bool CUpdateXMLHandler::LoadXMLToMem (std::string rootDir)
     g_Settings.SetMinCompletion(strtol(&strMinCompletion[0], NULL, 10));
   }
   else
-    CLog::Log(logINFO, "UpdXMLHandler: No min completion percentage specified in xbmc-txupdate.xml file. Please specify it!");
+    CLog::Log(logINFO, "UpdXMLHandler: No min completion percentage specified in xbmc-txupdate.xml file. Using default value: %i%",
+              DEFAULTMINCOMPLETION);
 
   std::string strMergedLangfileDir;
   if (pRootElement->Attribute("merged_langfiledir") && (strMergedLangfileDir = pRootElement->Attribute("merged_langfiledir")) != "")
@@ -112,20 +115,32 @@ bool CUpdateXMLHandler::LoadXMLToMem (std::string rootDir)
 
 
   const TiXmlElement *pChildResElement = pRootElement->FirstChildElement("resource");
+  if (!pChildResElement || pChildResElement->NoChildren())
+  {
+    CLog::Log(logERROR, "UpdXMLHandler: No xml element called \"resource\" exists in the xml file. Cannot continue. Please create at least one");
+    return false;
+  }
+
   std::string strType;
   while (pChildResElement && pChildResElement->FirstChild())
   {
     CXMLResdata currResData;
-    std::string strResName = pChildResElement->Attribute("name");
+    std::string strResName;
+    if (!pChildResElement->Attribute("name") || (strResName = pChildResElement->Attribute("name")) == "")
+    {
+      CLog::Log(logERROR, "UpdXMLHandler: No name specified for resource. Cannot continue. Please specify it.");
+      return false;
+    }
+
     if (pChildResElement->FirstChild())
     {
       const TiXmlElement *pChildURLElement = pChildResElement->FirstChildElement("upstreamURL");
       if (pChildURLElement && pChildURLElement->FirstChild())
         currResData.strUptreamURL = pChildURLElement->FirstChild()->Value();
       if (currResData.strUptreamURL.empty())
-        CLog::Log(logERROR, "UpdXMLHandler: UpstreamURL entry is empty for resource %s", strResName.c_str());
+        CLog::Log(logERROR, "UpdXMLHandler: UpstreamURL entry is empty or missing for resource %s", strResName.c_str());
       if (pChildURLElement->Attribute("filetype"))
-        currResData.strLangFileType = pChildURLElement->Attribute("filetype");
+        currResData.strLangFileType = pChildURLElement->Attribute("filetype"); // For PO no need to explicitly specify. Only for XML.
 
       const TiXmlElement *pChildUpstrLElement = pChildResElement->FirstChildElement("upstreamLangs");
       if (pChildUpstrLElement && pChildUpstrLElement->FirstChild())
@@ -145,7 +160,7 @@ bool CUpdateXMLHandler::LoadXMLToMem (std::string rootDir)
           currResData.Restype = CORE;
       }
       if (currResData.Restype == UNKNOWN)
-        CLog::Log(logERROR, "UpdXMLHandler: Unknown type found for resource %s", strResName.c_str());
+        CLog::Log(logERROR, "UpdXMLHandler: Unknown type found or missing resourceType field for resource %s", strResName.c_str());
 
       const TiXmlElement *pChildResDirElement = pChildResElement->FirstChildElement("resourceSubdir");
       if (pChildResDirElement && pChildResDirElement->FirstChild())
@@ -155,7 +170,7 @@ bool CUpdateXMLHandler::LoadXMLToMem (std::string rootDir)
       if (pChildTXNameElement && pChildTXNameElement->FirstChild())
         currResData.strTXResName = pChildTXNameElement->FirstChild()->Value();
       if (currResData.strTXResName.empty())
-        CLog::Log(logERROR, "UpdXMLHandler: Transifex resource name is empty for resource %s", strResName.c_str());
+        CLog::Log(logERROR, "UpdXMLHandler: Transifex resource name is empty or missing for resource %s", strResName.c_str());
 
       m_mapXMLResdata[strResName] = currResData;
       CLog::Log(logINFO, "UpdXMLHandler: found resource in update.xml file: %s, Type: %s, SubDir: %s",

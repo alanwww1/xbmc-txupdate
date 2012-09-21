@@ -29,7 +29,6 @@ CSettings::CSettings()
 {
   m_CacheExpire = DEFAULTCACHEEXPIRE;
   m_minComplPercentage = DEFAULTMINCOMPLETION;
-  m_strProjectName = DEFAULTPRPJNAME;
   m_strMergedLangfilesDir = DEFAULTMERGEDLANGDIR;
   m_strTXUpdateLangfilesDir = DEFAULTTXUPDLANGDIR;
 };
