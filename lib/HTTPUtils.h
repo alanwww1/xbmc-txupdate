@@ -46,12 +46,13 @@ public:
   void SetCacheDir(std::string strCacheDir);
   bool LoadCredentials (std::string CredentialsFilename);
   bool PutFileToURL(std::string strFilePath, std::string strURL);
+  bool CreateNewResource(std::string strResname, std::string strENPOFilePath, std::string strURL);
 private:
   CURL *m_curlHandle;
   std::string m_strCacheDir;
   std::string CacheFileNameFromURL(std::string strURL);
   long curlURLToCache(std::string strCacheFile, std::string strURL);
-  long curlFileToURL(std::string strFilePath, std::string strURL);
+  long curlPUTPOFileToURL(std::string strFilePath, std::string strURL);
   CLoginData GetCredentials (std::string strURL);
   bool ComparePOFiles(std::string strPOFilePath1, std::string strPOFilePath2) const;
   std::string URLEncode (std::string strURL);

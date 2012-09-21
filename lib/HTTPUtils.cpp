@@ -165,7 +165,6 @@ size_t Read_CurlData_String(void * ptr, size_t size, size_t nmemb, void * stream
 {
   if (stream)
   {
-    printf ("called\n");
     Tputstrdata * pPutStrData = (Tputstrdata*) stream; 
 
     size_t available = (pPutStrData->pPOString->size() - pPutStrData->pos);
@@ -314,7 +313,7 @@ bool CHTTPHandler::PutFileToURL(std::string strFilePath, std::string strURL)
 
   CLog::Log(logINFO, "HTTPHandler::PutFileToURL: Uploading file to Transifex: %s", strFilePath.c_str());
 
-  long result = curlFileToURL(strFilePath, strURL);
+  long result = curlPUTPOFileToURL(strFilePath, strURL);
   if (result < 200 || result >= 400)
   {
     CLog::Log(logERROR, "HTTPHandler::PutFileToURL: File upload was unsuccessful, http errorcode: %i", result);
@@ -327,7 +326,7 @@ bool CHTTPHandler::PutFileToURL(std::string strFilePath, std::string strURL)
   return true;
 };
 
-long CHTTPHandler::curlFileToURL(std::string strFilePath, std::string strURL)
+long CHTTPHandler::curlPUTPOFileToURL(std::string strFilePath, std::string strURL)
 {
   CURLcode curlResult;
 
@@ -354,6 +353,7 @@ long CHTTPHandler::curlFileToURL(std::string strFilePath, std::string strURL)
     curl_easy_setopt(m_curlHandle, CURLOPT_URL, strURL.c_str());
     curl_easy_setopt(m_curlHandle, CURLOPT_UPLOAD, 1L);
     curl_easy_setopt(m_curlHandle, CURLOPT_PUT, 1L);
+    curl_easy_setopt(m_curlHandle, CURLOPT_POST, 0); // disable post, we are doing a PUT not a POST this time
     if (!LoginData.strLogin.empty())
     {
       curl_easy_setopt(m_curlHandle, CURLOPT_USERNAME, LoginData.strLogin.c_str());
@@ -365,7 +365,7 @@ long CHTTPHandler::curlFileToURL(std::string strFilePath, std::string strURL)
     curl_easy_setopt(m_curlHandle, CURLOPT_USERAGENT, "libcurl-agent/1.0");
     curl_easy_setopt(m_curlHandle, CURLOPT_HTTPHEADER, headers);
     curl_easy_setopt(m_curlHandle, CURLOPT_SSL_VERIFYPEER, 0);
-    curl_easy_setopt(m_curlHandle, CURLOPT_VERBOSE, 1L);
+//  curl_easy_setopt(m_curlHandle, CURLOPT_VERBOSE, 1L);
 
     curlResult = curl_easy_perform(m_curlHandle);
 
@@ -416,3 +416,64 @@ bool CHTTPHandler::ComparePOFiles(std::string strPOFilePath1, std::string strPOF
   }
   return true;
 }
+
+bool CHTTPHandler::CreateNewResource(std::string strResname, std::string strENPOFilePath, std::string strURL)
+{
+  CURLcode curlResult;
+
+  strURL = URLEncode(strURL);
+
+  std::string strPO = ReadFileToStr(strENPOFilePath);
+
+  CJSONHandler JSONHandler;
+  std::string strPOJson = JSONHandler.CreateNewresJSONStrFromPOStr(strResname, strPO);
+
+  Tputstrdata PutStrData;
+  PutStrData.pPOString = &strPOJson;
+  PutStrData.pos = 0;
+
+  CLoginData LoginData = GetCredentials(strURL);
+
+  if(m_curlHandle) 
+  {
+    struct curl_slist *headers=NULL;
+    headers = curl_slist_append( headers, "Content-Type: application/json");
+    headers = curl_slist_append( headers, "charsets: utf-8");
+
+    curl_easy_setopt(m_curlHandle, CURLOPT_READFUNCTION, Read_CurlData_String);
+    curl_easy_setopt(m_curlHandle, CURLOPT_URL, strURL.c_str());
+    curl_easy_setopt(m_curlHandle, CURLOPT_POST, 1L);
+    curl_easy_setopt(m_curlHandle, CURLOPT_UPLOAD, 0); // disable upload and put, we are doing a POST not a PUT this time
+    curl_easy_setopt(m_curlHandle, CURLOPT_PUT, 0);
+    if (!LoginData.strLogin.empty())
+    {
+      curl_easy_setopt(m_curlHandle, CURLOPT_USERNAME, LoginData.strLogin.c_str());
+      curl_easy_setopt(m_curlHandle, CURLOPT_PASSWORD, LoginData.strPassword.c_str());
+    }
+    curl_easy_setopt(m_curlHandle, CURLOPT_FAILONERROR, true);
+    curl_easy_setopt(m_curlHandle, CURLOPT_READDATA, &PutStrData);
+    curl_easy_setopt(m_curlHandle, CURLOPT_POSTFIELDSIZE_LARGE, (curl_off_t)strPOJson.size());
+    curl_easy_setopt(m_curlHandle, CURLOPT_USERAGENT, "libcurl-agent/1.0");
+    curl_easy_setopt(m_curlHandle, CURLOPT_HTTPHEADER, headers);
+    curl_easy_setopt(m_curlHandle, CURLOPT_SSL_VERIFYPEER, 0);
+    curl_easy_setopt(m_curlHandle, CURLOPT_VERBOSE, 1L);
+
+    curlResult = curl_easy_perform(m_curlHandle);
+
+    long http_code = 0;
+    curl_easy_getinfo (m_curlHandle, CURLINFO_RESPONSE_CODE, &http_code);
+
+    if (curlResult == 0 && http_code >= 200 && http_code < 400)
+      CLog::Log(logINFO, "CHTTPHandler::CreateNewResource finished with success for resource %s from EN PO file %s to URL %s",
+                strResname.c_str(), strENPOFilePath.c_str(), strURL.c_str());
+      else
+      {
+        CLog::Log(logINFO, "CHTTPHandler::CreateNewResource finished with error code %i, for resource %s from EN PO file %s to URL %s ",
+                  http_code, strResname.c_str(), strENPOFilePath.c_str(), strURL.c_str());
+      }
+      return http_code;
+  }
+  else
+    CLog::Log(logERROR, "CHTTPHandler::CreateNewResource failed because Curl was not initalized");
+  return 700;
+};

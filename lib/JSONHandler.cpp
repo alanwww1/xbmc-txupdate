@@ -178,3 +178,15 @@ std::string CJSONHandler::CreateJSONStrFromPOStr(std::string const &strPO)
   std::string strJSON = writer.write(root);
   return strJSON;
 };
+
+std::string CJSONHandler::CreateNewresJSONStrFromPOStr(std::string strTXResname, std::string const &strPO)
+{
+  Json::Value root;
+  root["content"] = strPO;
+  root["slug"] = std::string(strTXResname);
+  root["name"] = std::string(strTXResname);
+  root["i18n_type"] = std::string("PO");
+  Json::StyledWriter writer;
+  std::string strJSON = writer.write(root);
+  return strJSON;
+};

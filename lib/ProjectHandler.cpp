@@ -384,15 +384,10 @@ void CProjectHandler::UploadTXUpdateFiles(std::string strProjRootDir)
 
   for (std::map<std::string, CXMLResdata>::iterator itres = mapUpdateXMLHandler.begin(); itres != mapUpdateXMLHandler.end(); itres++)
   {
-    if (!FindResInList(listResourceNamesTX, itres->second.strTXResName))
-    {
-      CLog::Log(logINFO, "CProjectHandler::UploadTXUpdateFiles: No resource %s exists on Transifex. Creating it now.", itres->first.c_str());
-      continue;
-    }
-
     std::string strResourceDir, strLangDir;
     CXMLResdata XMLResdata = itres->second;
     std::string strResname = itres->first;
+    bool bNewResource = false;
 
     if (!XMLResdata.strResDirectory.empty())
       XMLResdata.strResDirectory += DirSepChar;
@@ -415,12 +410,24 @@ void CProjectHandler::UploadTXUpdateFiles(std::string strProjRootDir)
         CLog::Log(logERROR, "ResHandler: No resourcetype defined for resource: %s",strResname.c_str());
     }
 
+    if (!FindResInList(listResourceNamesTX, itres->second.strTXResName))
+    {
+      CLog::Log(logINFO, "CProjectHandler::UploadTXUpdateFiles: No resource %s exists on Transifex. Creating it now.", itres->first.c_str());
+      // We create the new resource on transifex and also upload the English source file at once
+      g_HTTPHandler.CreateNewResource(itres->second.strTXResName,
+                                      strLangDir + "English" + DirSepChar + "strings.po",
+                                      "https://www.transifex.com/api/2/project/" + g_Settings.GetProjectname() + "/resources/");
+      bNewResource = true;
+    }
+
     std::list<std::string> listLangCodes = GetLangsFromDir(strLangDir);
     CLog::Log(logINFO, "CProjectHandler::UploadTXUpdateFiles: Uploading resource: %s, from langdir: %s",itres->first.c_str(), strLangDir.c_str());
     printf ("Uploading files for resource: %s\n", itres->first.c_str());
 
     for (std::list<std::string>::const_iterator it = listLangCodes.begin(); it!=listLangCodes.end(); it++)
     {
+      if (bNewResource && *it == "en") // Let's not upload the English file again
+        continue;
       std::string strFilePath = strLangDir + g_LCodeHandler.FindLang(*it) + DirSepChar + "strings.po";
       std::string strLangCode = *it;
 
