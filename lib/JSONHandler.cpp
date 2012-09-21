@@ -90,7 +90,7 @@ std::list<std::string> CJSONHandler::ParseAvailLanguagesTX(std::string strJSON)
 
     // we only add language codes to the list which has a minimum ready percentage defined in the xml file
     // we make an exception with all English derived languages, as they can have only a few srings changed
-    if (lang.find("en_") != lang.end() || strtol(&strCompletedPerc[0], NULL, 10) > g_Settings.GetMinCompletion()-1)
+    if (lang.find("en_") != std::string::npos || strtol(&strCompletedPerc[0], NULL, 10) > g_Settings.GetMinCompletion()-1)
     {
       strLangsToFetch += lang + ": " + strCompletedPerc + ", ";
       listLangs.push_back(lang);
