@@ -110,10 +110,10 @@ int main(int argc, char* argv[])
       g_HTTPHandler.LoadCredentials(WorkingDir + ".passwords.xml");
       g_HTTPHandler.SetCacheDir(WorkingDir + ".httpcache");
 
-      g_LCodeHandler.Init("https://raw.github.com/transifex/transifex/master/transifex/languages/fixtures/all_languages.json");
-
       CProjectHandler TXProject, TXProject1;
       TXProject.InitUpdateXMLHandler(WorkingDir);
+      g_LCodeHandler.Init("https://raw.github.com/transifex/transifex/master/transifex/languages/fixtures/all_languages.json");
+
       printf("-----------------------------------\n");
       printf("DOWNLOADING RESOURCES FROM TRANSIFEX.NET\n");
       printf("-----------------------------------\n");
@@ -146,9 +146,9 @@ int main(int argc, char* argv[])
       }
       else
       {
-        printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+        printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
         printf("PROCESS FINISHED WITH %i WARNINGS\n", CLog::GetWarnCount());
-        printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+        printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
       }
 
       g_HTTPHandler.Cleanup();
@@ -175,10 +175,10 @@ int main(int argc, char* argv[])
       g_HTTPHandler.LoadCredentials(WorkingDir + ".passwords.xml");
       g_HTTPHandler.SetCacheDir(WorkingDir + ".httpcache");
 
-      g_LCodeHandler.Init("https://raw.github.com/transifex/transifex/master/transifex/languages/fixtures/all_languages.json");
-
       CProjectHandler TXProject, TXProject1;
       TXProject.InitUpdateXMLHandler(WorkingDir);
+      g_LCodeHandler.Init("https://raw.github.com/transifex/transifex/master/transifex/languages/fixtures/all_languages.json");
+
       printf("-----------------------------------------\n");
       printf("UPLOADING LANGUAGE FILES TO TRANSIFEX.NET\n");
       printf("-----------------------------------------\n");

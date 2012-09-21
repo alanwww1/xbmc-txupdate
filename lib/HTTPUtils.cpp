@@ -321,7 +321,8 @@ bool CHTTPHandler::PutFileToURL(std::string strFilePath, std::string strURL)
   }
 
   CLog::Log(logINFO, "HTTPHandler::PutFileToURL: File upload was successful so creating a copy at the .httpcache directory");
-  CopyFile(strFilePath, strCacheFile);
+  if (!bIsTooLongUrl)
+    CopyFile(strFilePath, strCacheFile);
 
   return true;
 };
@@ -375,12 +376,12 @@ long CHTTPHandler::curlPUTPOFileToURL(std::string strFilePath, std::string strUR
     if (curlResult == 0 && http_code >= 200 && http_code < 400)
       CLog::Log(logINFO, "HTTPHandler::curlFileToURL finished with success from File %s to URL %s",
                 strFilePath.c_str(), strURL.c_str());
-      else
-      {
-        CLog::Log(logINFO, "HTTPHandler::curlFileToURL finished with error code: %i from file %s to URL %s",
-                  http_code, strFilePath.c_str(), strURL.c_str());
-      }
-      return http_code;
+    else
+    {
+      CLog::Log(logINFO, "HTTPHandler::curlFileToURL finished with error code: %i from file %s to URL %s",
+                http_code, strFilePath.c_str(), strURL.c_str());
+    }
+    return http_code;
   }
   else
     CLog::Log(logERROR, "HTTPHandler::curlFileToURL failed because Curl was not initalized");
@@ -419,6 +420,10 @@ bool CHTTPHandler::ComparePOFiles(std::string strPOFilePath1, std::string strPOF
 
 bool CHTTPHandler::CreateNewResource(std::string strResname, std::string strENPOFilePath, std::string strURL)
 {
+  std::string strCacheFile = CacheFileNameFromURL(strURL);
+  bool bIsTooLongUrl = strCacheFile == "cache_for_long_URL_download";
+  strCacheFile = m_strCacheDir + "PUT" + strCacheFile;
+
   CURLcode curlResult;
 
   strURL = URLEncode(strURL);
@@ -443,8 +448,8 @@ bool CHTTPHandler::CreateNewResource(std::string strResname, std::string strENPO
     curl_easy_setopt(m_curlHandle, CURLOPT_READFUNCTION, Read_CurlData_String);
     curl_easy_setopt(m_curlHandle, CURLOPT_URL, strURL.c_str());
     curl_easy_setopt(m_curlHandle, CURLOPT_POST, 1L);
-    curl_easy_setopt(m_curlHandle, CURLOPT_UPLOAD, 0); // disable upload and put, we are doing a POST not a PUT this time
-    curl_easy_setopt(m_curlHandle, CURLOPT_PUT, 0);
+//    curl_easy_setopt(m_curlHandle, CURLOPT_UPLOAD, 0);
+//    curl_easy_setopt(m_curlHandle, CURLOPT_PUT, 0);
     if (!LoginData.strLogin.empty())
     {
       curl_easy_setopt(m_curlHandle, CURLOPT_USERNAME, LoginData.strLogin.c_str());
@@ -464,14 +469,18 @@ bool CHTTPHandler::CreateNewResource(std::string strResname, std::string strENPO
     curl_easy_getinfo (m_curlHandle, CURLINFO_RESPONSE_CODE, &http_code);
 
     if (curlResult == 0 && http_code >= 200 && http_code < 400)
+    {
       CLog::Log(logINFO, "CHTTPHandler::CreateNewResource finished with success for resource %s from EN PO file %s to URL %s",
                 strResname.c_str(), strENPOFilePath.c_str(), strURL.c_str());
-      else
-      {
-        CLog::Log(logINFO, "CHTTPHandler::CreateNewResource finished with error code %i, for resource %s from EN PO file %s to URL %s ",
-                  http_code, strResname.c_str(), strENPOFilePath.c_str(), strURL.c_str());
-      }
-      return http_code;
+      if (!bIsTooLongUrl)
+        CopyFile(strENPOFilePath, strCacheFile);
+    }
+    else
+    {
+      CLog::Log(logINFO, "CHTTPHandler::CreateNewResource finished with error code %i, for resource %s from EN PO file %s to URL %s ",
+                http_code, strResname.c_str(), strENPOFilePath.c_str(), strURL.c_str());
+    }
+    return http_code;
   }
   else
     CLog::Log(logERROR, "CHTTPHandler::CreateNewResource failed because Curl was not initalized");

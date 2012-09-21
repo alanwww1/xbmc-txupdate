@@ -1,4 +1,5 @@
-xbmc-checkpo
-============
+xbmc-txupdate
+=============
 
-xbmc-checkpo to check, clean format string po files for xbmc
+This utility is suitable for keeping XBMC upstream language files and the labguage files hosted on transifex.net in sync.
+What it does is downloads the fresh files from upstream http URLs specified in the xbmc-txupdate.xml file and also downloads the fresh translations from transifex.net and makes a merge of the files. With this merge process it creates fresh files containing all changes upstream and on transifex. These updated files than can be commited to upstream repositories for end user usage. During the merge process it also creates update files which only contain the new upstream version if the English language files and also contain the new English strings translations introduced for different languagees on the upstream repository. These update PO files than can automatically uploaded to transifex with this utility. Important thing is in case we both have a translation at the upstream repository and we have a translation at transifex.net for the same English string, the utility prefers the one at transifex.net. This means that new translations modifications can only be pulled from ustream into the merged files in case they are for completely newly introduced English strings which do not have translation existing at transifex yet.
