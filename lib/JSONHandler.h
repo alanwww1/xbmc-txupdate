@@ -18,6 +18,10 @@
  *  http://www.gnu.org/copyleft/gpl.html
  *
  */
+
+#ifndef JSONHANDLER_H
+#define JSONHANDLER_H
+
 #pragma once
 
 #include <string>
@@ -38,6 +42,6 @@ public:
   std::map<std::string, CLangcodes> ParseTransifexLanguageDatabase(std::string strJSON);
   std::string CreateJSONStrFromPOStr(std::string const &strPO);
   std::string CreateNewresJSONStrFromPOStr(std::string strTXResname, std::string const &strPO);
-private:
-  std::string m_strJSON;
 };
+extern CJSONHandler g_Json;
+#endif

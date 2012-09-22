@@ -59,8 +59,7 @@ bool CResourceHandler::FetchPOFilesTXToMem(std::string strURL)
   char cstrtemp[strtemp.size()];
   strcpy(cstrtemp, strtemp.c_str());
 
-  CJSONHandler JSONHandler;
-  std::list<std::string> listLangsTX = JSONHandler.ParseAvailLanguagesTX(strtemp);
+  std::list<std::string> listLangsTX = g_Json.ParseAvailLanguagesTX(strtemp);
 
   CPOHandler POHandler;
 
@@ -137,8 +136,7 @@ bool CResourceHandler::FetchPOFilesUpstreamToMem(CXMLResdata XMLResdata, std::li
     char cstrtemp[strtemp.size()];
     strcpy(cstrtemp, strtemp.c_str());
 
-    CJSONHandler JSONHandler;
-    listLangs = JSONHandler.ParseAvailLanguagesGITHUB(strtemp);
+    listLangs = g_Json.ParseAvailLanguagesGITHUB(strtemp);
   }
   else
   {

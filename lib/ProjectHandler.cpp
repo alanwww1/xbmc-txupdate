@@ -44,8 +44,7 @@ bool CProjectHandler::FetchResourcesFromTransifex()
   char cstrtemp[strtemp.size()];
   strcpy(cstrtemp, strtemp.c_str());
 
-  CJSONHandler JSONHandler;
-  std::list<std::string> listResourceNamesTX = JSONHandler.ParseResources(strtemp);
+  std::list<std::string> listResourceNamesTX = g_Json.ParseResources(strtemp);
 
   CResourceHandler ResourceHandler;
   for (std::list<std::string>::iterator it = listResourceNamesTX.begin(); it != listResourceNamesTX.end(); it++)
@@ -373,8 +372,7 @@ void CProjectHandler::UploadTXUpdateFiles(std::string strProjRootDir)
   char cstrtemp[strtemp.size()];
   strcpy(cstrtemp, strtemp.c_str());
 
-  CJSONHandler JSONHandler;
-  std::list<std::string> listResourceNamesTX = JSONHandler.ParseResources(strtemp);
+  std::list<std::string> listResourceNamesTX = g_Json.ParseResources(strtemp);
 
   std::map<std::string, CXMLResdata> mapUpdateXMLHandler = m_UpdateXMLHandler.GetResMap();
   std::string strPrefixDir = g_Settings.GetTXUpdateLangfilesDir();

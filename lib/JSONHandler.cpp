@@ -25,6 +25,8 @@
 #include <stdlib.h>
 #include "Settings.h"
 
+CJSONHandler g_Json;
+
 using namespace std;
 
 CJSONHandler::CJSONHandler()

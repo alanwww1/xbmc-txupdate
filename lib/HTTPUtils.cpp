@@ -335,8 +335,7 @@ long CHTTPHandler::curlPUTPOFileToURL(std::string strFilePath, std::string strUR
 
   std::string strPO = g_File.ReadFileToStr(strFilePath);
 
-  CJSONHandler JSONHandler;
-  std::string strPOJson = JSONHandler.CreateJSONStrFromPOStr(strPO);
+  std::string strPOJson = g_Json.CreateJSONStrFromPOStr(strPO);
 
   Tputstrdata PutStrData;
   PutStrData.pPOString = &strPOJson;
@@ -430,8 +429,7 @@ bool CHTTPHandler::CreateNewResource(std::string strResname, std::string strENPO
 
   std::string strPO = g_File.ReadFileToStr(strENPOFilePath);
 
-  CJSONHandler JSONHandler;
-  std::string strPOJson = JSONHandler.CreateNewresJSONStrFromPOStr(strResname, strPO);
+  std::string strPOJson = g_Json.CreateNewresJSONStrFromPOStr(strResname, strPO);
 
   Tputstrdata PutStrData;
   PutStrData.pPOString = &strPOJson;
