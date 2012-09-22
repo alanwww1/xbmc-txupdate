@@ -150,9 +150,9 @@ void CPOHandler::GetXMLComment(const TiXmlNode *pCommentNode, CPOEntry &currEntr
     if (nodeType == TiXmlNode::TINYXML_COMMENT)
     {
       if (pCommentNode->m_CommentLFPassed)
-        prevCommEntry.interlineComm.push_back(UnWhitespace(pCommentNode->Value()));
+        prevCommEntry.interlineComm.push_back(g_CharsetUtils.UnWhitespace(pCommentNode->Value()));
       else
-        currEntry.extractedComm.push_back(UnWhitespace(pCommentNode->Value()));
+        currEntry.extractedComm.push_back(g_CharsetUtils.UnWhitespace(pCommentNode->Value()));
     }
     pCommentNode = pCommentNode->NextSibling();
   }
@@ -209,9 +209,9 @@ bool CPOHandler::FetchXMLURLToMem (std::string strURL)
       {
         currEntry.Type = ID_FOUND;
         pValue = pChildElement->FirstChild()->Value();
-        valueString = EscapeLF(pValue);
+        valueString = g_CharsetUtils.EscapeLF(pValue);
         currEntry.numID = id;
-        std::string strUtf8 = ToUTF8(strXMLEncoding, valueString).c_str();
+        std::string strUtf8 = g_CharsetUtils.ToUTF8(strXMLEncoding, valueString).c_str();
 
         if (m_bPOIsEnglish)
           currEntry.msgID = strUtf8;

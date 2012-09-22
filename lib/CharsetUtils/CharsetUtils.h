@@ -18,6 +18,10 @@
  *  http://www.gnu.org/copyleft/gpl.html
  *
  */
+
+#ifndef CHARSETUTILS_H
+#define CHARSETUTILS_H
+
 #pragma once
 
 #include <string>
@@ -33,18 +37,24 @@
 #define ICONV_PREPARE(iconv) iconv=(iconv_t)-1
 #define UTF8_DEST_MULTIPLIER 6
 
-std::string EscapeLF(const char * StrToEscape);
-std::string ToUTF8(const std::string& strEncoding, const std::string& str);
-std::string UnWhitespace(std::string strInput);
-
-void stringCharsetToUtf8(const std::string& strSourceCharset, const std::string& strSource,
+class CCharsetUtils
+{
+public:
+  std::string EscapeLF(const char * StrToEscape);
+  std::string ToUTF8(const std::string& strEncoding, const std::string& str);
+  std::string UnWhitespace(std::string strInput);
+  void stringCharsetToUtf8(const std::string& strSourceCharset, const std::string& strSource,
                           std::string& strDest);
 
-void convert(iconv_t& type, int multiplier, const std::string& strFromCharset,
-              const std::string& strToCharset, const std::string& strSource, std::string& strDest);
+private:
+  size_t iconv_const (void* cd, const char** inbuf, size_t *inbytesleft, char* * outbuf, size_t *outbytesleft);
+  void convert(iconv_t& type, int multiplier, const std::string& strFromCharset,
+             const std::string& strToCharset, const std::string& strSource, std::string& strDest);
+  bool convert_checked(iconv_t& type, int multiplier, const std::string& strFromCharset,
+                     const std::string& strToCharset, const std::string& strSource,
+                     std::string& strDest);
+};
 
-bool convert_checked(iconv_t& type, int multiplier, const std::string& strFromCharset,
-                            const std::string& strToCharset, const std::string& strSource,
-                            std::string& strDest);
+extern CCharsetUtils g_CharsetUtils;
 
-size_t iconv_const (void* cd, const char** inbuf, size_t *inbytesleft, char* * outbuf, size_t *outbytesleft);
+#endif

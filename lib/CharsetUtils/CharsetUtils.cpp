@@ -23,7 +23,9 @@
 #include "CharsetUtils.h"
 #include <errno.h>
 
-std::string EscapeLF(const char * StrToEscape)
+CCharsetUtils g_CharsetUtils;
+
+std::string CCharsetUtils::EscapeLF(const char * StrToEscape)
 {
   std::string strIN(StrToEscape);
   std::string strOut;
@@ -43,21 +45,21 @@ std::string EscapeLF(const char * StrToEscape)
 }
 
 // remove trailing and leading whitespaces
-std::string UnWhitespace(std::string strInput)
+std::string CCharsetUtils::UnWhitespace(std::string strInput)
 {
   int offset_end = strInput.size();
   int offset_start = 0;
 
   while (strInput[offset_start] == ' ')
     offset_start++; // check first non-whitespace char
-    while (strInput[offset_end-1] == ' ')
-      offset_end--; // check last non whitespace char
+  while (strInput[offset_end-1] == ' ')
+    offset_end--; // check last non whitespace char
 
-      strInput = strInput.substr(offset_start, offset_end - offset_start);
-    return strInput;
+  strInput = strInput.substr(offset_start, offset_end - offset_start);
+  return strInput;
 }
 
-std::string ToUTF8(const std::string& strEncoding, const std::string& str)
+std::string CCharsetUtils::ToUTF8(const std::string& strEncoding, const std::string& str)
 {
   if (strEncoding.empty())
     return str;
@@ -67,18 +69,16 @@ std::string ToUTF8(const std::string& strEncoding, const std::string& str)
   return ret;
 }
 
-void stringCharsetToUtf8(const std::string& strSourceCharset, const std::string& strSource,
+void CCharsetUtils::stringCharsetToUtf8(const std::string& strSourceCharset, const std::string& strSource,
                          std::string& strDest)
 {
-  {
-    iconv_t iconvString;
-    ICONV_PREPARE(iconvString);
-    convert(iconvString,UTF8_DEST_MULTIPLIER,strSourceCharset,"UTF-8",strSource,strDest);
-    iconv_close(iconvString);
-  }
+  iconv_t iconvString;
+  ICONV_PREPARE(iconvString);
+  convert(iconvString,UTF8_DEST_MULTIPLIER,strSourceCharset,"UTF-8",strSource,strDest);
+  iconv_close(iconvString);
 }
 
-void convert(iconv_t& type, int multiplier, const std::string& strFromCharset,
+void CCharsetUtils::convert(iconv_t& type, int multiplier, const std::string& strFromCharset,
                     const std::string& strToCharset, const std::string& strSource,
                     std::string& strDest)
 {
@@ -86,7 +86,7 @@ void convert(iconv_t& type, int multiplier, const std::string& strFromCharset,
     strDest = strSource;
 }
 
-bool convert_checked(iconv_t& type, int multiplier, const std::string& strFromCharset,
+bool CCharsetUtils::convert_checked(iconv_t& type, int multiplier, const std::string& strFromCharset,
                             const std::string& strToCharset, const std::string& strSource,
                             std::string& strDest)
 {
@@ -192,7 +192,7 @@ bool convert_checked(iconv_t& type, int multiplier, const std::string& strFromCh
   return true;
 }
 
-size_t iconv_const (void* cd, const char** inbuf, size_t *inbytesleft,
+size_t CCharsetUtils::iconv_const (void* cd, const char** inbuf, size_t *inbytesleft,
                     char* * outbuf, size_t *outbytesleft)
 {
   struct iconv_param_adapter

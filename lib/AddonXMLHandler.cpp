@@ -102,7 +102,7 @@ bool CAddonXMLHandler::ProcessAddonXMLFile (std::string AddonXMLFilename, TiXmlD
     m_strResourceData += "xbmc-unnamed\n";
   }
   else
-    m_strResourceData += ToUTF8(addonXMLEncoding, EscapeLF(pMainAttrId)) + "\n";
+    m_strResourceData += g_CharsetUtils.ToUTF8(addonXMLEncoding, EscapeLF(pMainAttrId)) + "\n";
 
   pMainAttrId=pRootElement->Attribute("id");
   m_strResourceData += "# Addon id: ";
@@ -112,7 +112,7 @@ bool CAddonXMLHandler::ProcessAddonXMLFile (std::string AddonXMLFilename, TiXmlD
     m_strResourceData +=  "unknown\n";
   }
   else
-    m_strResourceData += ToUTF8(addonXMLEncoding, EscapeLF(pMainAttrId)) + "\n";
+    m_strResourceData += g_CharsetUtils.ToUTF8(addonXMLEncoding, EscapeLF(pMainAttrId)) + "\n";
 
   pMainAttrId=pRootElement->Attribute("version");
   m_strResourceData += "# Addon version: ";
@@ -122,7 +122,7 @@ bool CAddonXMLHandler::ProcessAddonXMLFile (std::string AddonXMLFilename, TiXmlD
     m_strResourceData += "rev_unknown\n";
   }
   else
-    m_strResourceData += ToUTF8(addonXMLEncoding, EscapeLF(pMainAttrId)) + "\n";
+    m_strResourceData += g_CharsetUtils.ToUTF8(addonXMLEncoding, EscapeLF(pMainAttrId)) + "\n";
 
   pMainAttrId=pRootElement->Attribute("provider-name");
   m_strResourceData += "# Addon Provider: ";
@@ -132,7 +132,7 @@ bool CAddonXMLHandler::ProcessAddonXMLFile (std::string AddonXMLFilename, TiXmlD
     m_strResourceData += "unknown\n";
   }
   else
-    m_strResourceData += ToUTF8(addonXMLEncoding, EscapeLF(pMainAttrId)) + "\n";
+    m_strResourceData += g_CharsetUtils.ToUTF8(addonXMLEncoding, EscapeLF(pMainAttrId)) + "\n";
 
   std::string strAttrToSearch = "xbmc.addon.metadata";
 
@@ -147,7 +147,7 @@ bool CAddonXMLHandler::ProcessAddonXMLFile (std::string AddonXMLFilename, TiXmlD
     if (pChildSummElement->FirstChild())
     {
       std::string strValue = EscapeLF(pChildSummElement->FirstChild()->Value());
-      m_mapAddonXMLData[strLang].strSummary = ToUTF8(addonXMLEncoding, strValue);
+      m_mapAddonXMLData[strLang].strSummary = g_CharsetUtils.ToUTF8(addonXMLEncoding, strValue);
     }
     pChildSummElement = pChildSummElement->NextSiblingElement("summary");
   }
@@ -159,7 +159,7 @@ bool CAddonXMLHandler::ProcessAddonXMLFile (std::string AddonXMLFilename, TiXmlD
     if (pChildDescElement->FirstChild())
     {
       std::string strValue = EscapeLF(pChildDescElement->FirstChild()->Value());
-      m_mapAddonXMLData[strLang].strDescription = ToUTF8(addonXMLEncoding, strValue);
+      m_mapAddonXMLData[strLang].strDescription = g_CharsetUtils.ToUTF8(addonXMLEncoding, strValue);
     }
     pChildDescElement = pChildDescElement->NextSiblingElement("description");
   }
@@ -171,7 +171,7 @@ bool CAddonXMLHandler::ProcessAddonXMLFile (std::string AddonXMLFilename, TiXmlD
     if (pChildDisclElement->FirstChild())
     {
       std::string strValue = EscapeLF(pChildDisclElement->FirstChild()->Value());
-      m_mapAddonXMLData[strLang].strDisclaimer = ToUTF8(addonXMLEncoding, strValue);
+      m_mapAddonXMLData[strLang].strDisclaimer = g_CharsetUtils.ToUTF8(addonXMLEncoding, strValue);
     }
     pChildDisclElement = pChildDisclElement->NextSiblingElement("disclaimer");
   }
