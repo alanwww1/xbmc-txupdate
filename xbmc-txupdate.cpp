@@ -41,154 +41,158 @@ void PrintUsage()
 {
   printf
   (
-  "Usage: xbmc-xml2po -s <sourcedirectoryname> (-p <projectname>) (-v <version>)\n"
-  "parameter -s <name> for source root language directory, which contains the language dirs\n"
-  "parameter -p <name> for project name, eg. xbmc.skin.confluence\n"
-  "parameter -v <name> for project version, eg. FRODO_GIT251373f9c3\n\n"
+  "Usage: xbmc-txpudate PROJECTDIR [working mode]\n\n"
+  "PROJECTDIR: the directory which contains the xbmc-txupdate.xml settings file and the .passwords file.\n"
+  "            This will be the directory where your merged and transifex update files get generated.\n\n"
+  "Working modes:\n"
+  "     -d   Only download to local cache, without performing a merge.\n"
+  "     -dm  Download and create merged and tx update files, but no upload performed.\n"
+  "     -dmu Download, merge and upload the new files to transifex.\n"
+  "     -u   Only upload the previously prepared files. Note that this needs downlad and merge ran before.\n\n"
+  "     No working mode arguments used, performs as -dm\n\n"
   );
-#ifdef _MSC_VER
+  #ifdef _MSC_VER
   printf
   (
   "Note for Windows users: In case you have whitespace or any special character\n"
-  "in any of the arguments, please use apostrophe around them. For example:\n"
-  "xbmc-xml2po.exe -s \"C:\\xbmc dir\\language\" -p xbmc.core -v Frodo_GIT\n"
+  "in the directory argument, please use apostrophe around them. For example:\n"
+  "xbmc-txupdate.exe \"C:\\xbmc dir\\language\"\n"
   );
-#endif
-return;
+  #endif
+  return;
 };
 
 int main(int argc, char* argv[])
 {
-  char* pSourceDirectory = NULL;
-  char* pcstrMode = NULL;
-
-  // Basic syntax checking for "-x name" format
-  while ((argc > 2) && (argv[1][0] == '-') && (argv[1][1] != '\x00') &&
-    (argv[1][2] == '\x00'))
+  if (argc > 3 || argc < 2)
   {
-    switch (argv[1][1])
-    {
-      case 's':
-        if ((argv[2][0] == '\x00') || (argv[2][0] == '-'))
-          break;
-        --argc; ++argv;
-        pSourceDirectory = argv[1];
-        break;
-      case 'm':
-        --argc; ++argv;
-        pcstrMode = argv[1];
-        break;
-    }
-    ++argv; --argc;
-  }
-
-  std::string strMode;
-  if (pcstrMode)
-    strMode = pcstrMode;
-
-  if (pSourceDirectory == NULL)
-  {
-    printf("\nWrong Arguments given !\n");
+    printf ("\nBad arguments given\n\n");
+    PrintUsage();
     return 1;
   }
 
+  std::string WorkingDir, strMode;
+  bool bDownloadNeeded = false;
+  bool bMergeNeeded = false;
+  bool bUploadNeeded = false;
+
+  if (argv[1])
+   WorkingDir = argv[1];
+  if (WorkingDir.empty() || !DirExists(WorkingDir))
+  {
+    printf ("\nMissing or wrong project directory specified: %s, stopping.\n\n", WorkingDir.c_str());
+    PrintUsage();
+    return 1;
+  }
+
+  if (argc == 3)
+  {
+    if (argv[2])
+      strMode = argv[2];
+    if (strMode.empty() && strMode[0] != '-')
+    {
+      printf ("\nMissing or wrong working mode format used. Stopping.\n\n");
+      PrintUsage();
+      return 1;
+    }
+    if (strMode == "-d")
+      bDownloadNeeded = true;
+    else if (strMode == "-dm" || strMode == "-m")
+      {bDownloadNeeded = true; bMergeNeeded = true;}
+    else if (strMode == "-dmu")
+      {bDownloadNeeded = true; bMergeNeeded = true; bUploadNeeded = true;}
+    else if (strMode == "-u")
+      bUploadNeeded = true;
+    else
+    {
+      printf ("\nWrong working mode arguments used. Stopping.\n\n");
+      PrintUsage();
+      return 1;
+    }
+  }
+  if (argc == 2)
+    {bDownloadNeeded = true; bMergeNeeded = true;}
+
   printf("\nXBMC-TXUPDATE v%s by Team XBMC\n", VERSION.c_str());
 
-  if (strMode != "upload")
+  try
   {
-    printf("Download and merge mode\n\n");
+    if (WorkingDir[WorkingDir.length()-1] != DirSepChar)
+      WorkingDir.append(&DirSepChar);
 
-    try
+    CLog::Init(WorkingDir + "xbmc-txupdate.log");
+    CLog::Log(logINFO, "Root Directory: %s", WorkingDir.c_str());
+
+    g_HTTPHandler.LoadCredentials(WorkingDir + ".passwords.xml");
+    g_HTTPHandler.SetCacheDir(WorkingDir + ".httpcache");
+
+    CProjectHandler TXProject;
+    TXProject.InitUpdateXMLHandler(WorkingDir);
+    g_LCodeHandler.Init("https://raw.github.com/transifex/transifex/master/transifex/languages/fixtures/all_languages.json");
+
+    if (bDownloadNeeded)
     {
-      std::string WorkingDir = pSourceDirectory;
-      if (WorkingDir[WorkingDir.length()-1] != DirSepChar)
-        WorkingDir.append(&DirSepChar);
-
-      CLog::Init(WorkingDir + "xbmc-txupdate.log");
-      CLog::Log(logINFO, "Root Directory: %s", WorkingDir.c_str());
-
-      g_HTTPHandler.LoadCredentials(WorkingDir + ".passwords.xml");
-      g_HTTPHandler.SetCacheDir(WorkingDir + ".httpcache");
-
-      CProjectHandler TXProject, TXProject1;
-      TXProject.InitUpdateXMLHandler(WorkingDir);
-      g_LCodeHandler.Init("https://raw.github.com/transifex/transifex/master/transifex/languages/fixtures/all_languages.json");
-
-      printf("-----------------------------------\n");
+      printf("\n");
+      printf("----------------------------------------\n");
       printf("DOWNLOADING RESOURCES FROM TRANSIFEX.NET\n");
-      printf("-----------------------------------\n");
+      printf("----------------------------------------\n");
 
       TXProject.FetchResourcesFromTransifex();
 
+      printf("\n");
       printf("-----------------------------------\n");
       printf("DOWNLOADING RESOURCES FROM UPSTREAM\n");
       printf("-----------------------------------\n");
 
       TXProject.FetchResourcesFromUpstream();
 
-      printf("-----------------\n");
-      printf("MERGING RESOURCES\n");
-      printf("-----------------\n");
-
-      TXProject.CreateMergedResources();
-
-      printf("-------------------------------\n");
-      printf("WRITING MERGED RESOURCES TO HDD\n");
-      printf("-------------------------------\n");
-
-      TXProject.WriteResourcesToFile(WorkingDir);
-
-      if (CLog::GetWarnCount() ==0)
+      if (bMergeNeeded)
       {
-        printf("--------------------------------------------\n");
-        printf("PROCESS FINISHED SUCCESFULLY WITHOUT WARNINGS\n");
-        printf("--------------------------------------------\n");
+        printf("\n");
+        printf("-----------------\n");
+        printf("MERGING RESOURCES\n");
+        printf("-----------------\n");
+
+        TXProject.CreateMergedResources();
+
+        printf("\n");
+        printf("-------------------------------\n");
+        printf("WRITING MERGED RESOURCES TO HDD\n");
+        printf("-------------------------------\n");
+
+        TXProject.WriteResourcesToFile(WorkingDir);
       }
-      else
-      {
-        printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-        printf("PROCESS FINISHED WITH %i WARNINGS\n", CLog::GetWarnCount());
-        printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-      }
-
-      g_HTTPHandler.Cleanup();
-      return 0;
     }
-    catch (const int calcError)
+
+    if (bUploadNeeded)
     {
-      g_HTTPHandler.Cleanup();
-      return 0;
-    }
-  }
-  else
-  {
-    printf("Upload mode\n\n");
-    try
-    {
-      std::string WorkingDir = pSourceDirectory;
-      if (WorkingDir[WorkingDir.length()-1] != DirSepChar)
-        WorkingDir.append(&DirSepChar);
-
-      CLog::Init(WorkingDir + "xbmc-txupdate.log");
-      CLog::Log(logINFO, "Root Directory: %s", WorkingDir.c_str());
-
-      g_HTTPHandler.LoadCredentials(WorkingDir + ".passwords.xml");
-      g_HTTPHandler.SetCacheDir(WorkingDir + ".httpcache");
-
-      CProjectHandler TXProject, TXProject1;
-      TXProject.InitUpdateXMLHandler(WorkingDir);
-      g_LCodeHandler.Init("https://raw.github.com/transifex/transifex/master/transifex/languages/fixtures/all_languages.json");
-
+      printf("\n");
       printf("-----------------------------------------\n");
       printf("UPLOADING LANGUAGE FILES TO TRANSIFEX.NET\n");
       printf("-----------------------------------------\n");
 
       TXProject.UploadTXUpdateFiles(WorkingDir);
     }
-    catch (const int calcError)
+
+    if (CLog::GetWarnCount() ==0)
     {
-      g_HTTPHandler.Cleanup();
-      return 0;
+      printf("\n");
+      printf("--------------------------------------------\n");
+      printf("PROCESS FINISHED SUCCESFULLY WITHOUT WARNINGS\n");
+      printf("--------------------------------------------\n\n");
     }
+    else
+    {
+      printf("\n");
+      printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+      printf("PROCESS FINISHED WITH %i WARNINGS\n", CLog::GetWarnCount());
+      printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n\n");
+    }
+
+  }
+  catch (const int calcError)
+  {
+    g_HTTPHandler.Cleanup();
+    return 0;
   }
 }

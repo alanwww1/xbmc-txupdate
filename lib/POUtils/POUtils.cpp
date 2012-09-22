@@ -158,6 +158,7 @@ bool CPODocument::GetNextEntry(bool bSkipError)
 
     // now we read the actual entry into a temp string for further processing
     m_Entry.Content.assign(m_strBuffer, m_CursorPos, m_nextEntryPos - m_CursorPos +1);
+    size_t oldCursorPos = m_CursorPos;
     m_CursorPos = m_nextEntryPos+1; // jump cursor to the second LF character
 
     if (FindLineStart ("\nmsgid "))
@@ -193,7 +194,13 @@ bool CPODocument::GetNextEntry(bool bSkipError)
       }
     }
     if (m_nextEntryPos != m_POfilelength-1 && !bSkipError)
-      CLog::Log(logWARNING, "POParser: unknown entry found, Failed entry: %s", m_Entry.Content.c_str());
+    {
+      if (m_Entry.Content.find_first_not_of("\n") == std::string::npos)
+        CLog::Log(logINFO, "POParser: Empty line(s) found at position: %i, ignored.", oldCursorPos);
+      else
+        CLog::Log(logWARNING, "POParser: unknown entry found at position %i, Failed entry: %s", oldCursorPos,
+                  m_Entry.Content.substr(0,m_Entry.Content.size()-1).c_str());
+    }
   }
   while (m_nextEntryPos != m_POfilelength-1);
   // we reached the end of buffer AND we have not found a valid entry
