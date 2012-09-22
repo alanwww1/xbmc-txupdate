@@ -93,7 +93,7 @@ bool CProjectHandler::WriteResourcesToFile(std::string strProjRootDir)
 
   strPrefixDir = g_Settings.GetMergedLangfilesDir();
   CLog::Log(logINFO, "Deleting merged language file directory");
-  DeleteDirectory(strProjRootDir + strPrefixDir);
+  g_File.DeleteDirectory(strProjRootDir + strPrefixDir);
   for (T_itmapRes itmapResources = m_mapResMerged.begin(); itmapResources != m_mapResMerged.end(); itmapResources++)
   {
     printf("Writing resource to HDD: %s\n", itmapResources->first.c_str());
@@ -105,7 +105,7 @@ bool CProjectHandler::WriteResourcesToFile(std::string strProjRootDir)
 
   strPrefixDir = g_Settings.GetTXUpdateLangfilesDir();
   CLog::Log(logINFO, "Deleting tx update language file directory");
-  DeleteDirectory(strProjRootDir + strPrefixDir);
+  g_File.DeleteDirectory(strProjRootDir + strPrefixDir);
   for (T_itmapRes itmapResources = m_mapResUpdateTX.begin(); itmapResources != m_mapResUpdateTX.end(); itmapResources++)
   {
     printf("Writing update TX resource to HDD: %s\n", itmapResources->first.c_str());

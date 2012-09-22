@@ -36,14 +36,14 @@ CAddonXMLHandler::~CAddonXMLHandler()
 
 bool CAddonXMLHandler::LoadAddonXMLFile (std::string strAddonXMLFilename)
 {
-  m_strAddonXMLFile = ReadFileToStr(strAddonXMLFilename);
+  m_strAddonXMLFile = g_File.ReadFileToStr(strAddonXMLFilename);
   if (m_strAddonXMLFile.empty())
   {
     CLog::Log(logERROR, "AddonXMLHandler: Load AddonXML file problem for file: %s\n", strAddonXMLFilename.c_str());
     return false;
   }
 
-  ConvertStrLineEnds(m_strAddonXMLFile);
+  g_File.ConvertStrLineEnds(m_strAddonXMLFile);
 
 //  printf("%s", m_strAddonXMLFile.c_str());
 
@@ -66,7 +66,7 @@ bool CAddonXMLHandler::FetchAddonXMLFileUpstr (std::string strURL)
     CLog::Log(logERROR, "CAddonXMLHandler::FetchAddonXMLFileUpstr: http error getting XML file from upstream url: %s", strURL.c_str());
 
   m_strAddonXMLFile = strXMLFile;
-  ConvertStrLineEnds(m_strAddonXMLFile);
+  g_File.ConvertStrLineEnds(m_strAddonXMLFile);
 
   if (!xmlAddonXML.Parse(strXMLFile.c_str(), 0, TIXML_DEFAULT_ENCODING))
   {
@@ -274,7 +274,7 @@ bool CAddonXMLHandler::UpdateAddonXMLFile (std::string strAddonXMLFilename)
 
 
   m_strAddonXMLFile.replace(posMetaDataStart, posMetaDataEnd -posMetaDataStart +1, strNewMetadata);
-  WriteFileFromStr(strAddonXMLFilename, m_strAddonXMLFile.c_str());
+  g_File.WriteFileFromStr(strAddonXMLFilename, m_strAddonXMLFile.c_str());
 
   return true;
 }

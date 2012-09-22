@@ -31,9 +31,11 @@
 #include <ftw.h>
 #include <unistd.h>
 
+CFile g_File;
+
 using namespace std;
 
-bool MakeDir(std::string Path)
+bool CFile::MakeDir(std::string Path)
 {
   if (DirExists(Path))
     return true;
@@ -50,7 +52,7 @@ bool MakeDir(std::string Path)
   return true;
 }
 
-bool MakeOneDir(std::string Path)
+bool CFile::MakeOneDir(std::string Path)
 {
   #ifdef _MSC_VER
   return CreateDirectory (Path.c_str(), NULL) != 0;
@@ -59,7 +61,7 @@ bool MakeOneDir(std::string Path)
   #endif
 };
 
-bool DirExists(std::string Path)
+bool CFile::DirExists(std::string Path)
 {
   #ifdef _MSC_VER
   return !(INVALID_FILE_ATTRIBUTES == GetFileAttributes(Path.c_str()) && GetLastError()==ERROR_FILE_NOT_FOUND);
@@ -69,7 +71,7 @@ bool DirExists(std::string Path)
   #endif
 };
 
-bool FileExist(std::string filename) 
+bool CFile::FileExist(std::string filename) 
 {
   FILE* pfileToTest = fopen (filename.c_str(),"rb");
   if (pfileToTest == NULL)
@@ -78,20 +80,13 @@ bool FileExist(std::string filename)
   return true;
 };
 
-void DeleteFile(std::string filename)
+void CFile::DeleteFile(std::string filename)
 {
   if (remove(filename.c_str()) != 0)
     CLog::Log(logERROR, "FileUtils: DeleteFile: unable to delete file: %s", filename.c_str());
 };
 
-std::string AddSlash(std::string strIn)
-{
-  if (strIn[strIn.size()-1] == DirSepChar)
-    return strIn;
-  return strIn + DirSepChar;
-};
-
-std::string GetCurrTime()
+std::string CFile::GetCurrTime()
 {
   std::string strTime(64, '\0');
   time_t now = std::time(0);
@@ -106,7 +101,7 @@ std::string GetCurrTime()
   return strTimeCleaned;
 };
 
-void CopyFile(std::string strSourceFileName, std::string strDestFileName)
+void CFile::CopyFile(std::string strSourceFileName, std::string strDestFileName)
 {
   ifstream source(strSourceFileName.c_str(), std::ios::binary);
   ofstream dest(strDestFileName.c_str(), std::ios::binary);
@@ -117,7 +112,7 @@ void CopyFile(std::string strSourceFileName, std::string strDestFileName)
   dest.close();
 };
 
-size_t GetFileAge(std::string strFileName)
+size_t CFile::GetFileAge(std::string strFileName)
 {
   struct stat b;
   if (!stat(strFileName.c_str(), &b)) 
@@ -132,7 +127,7 @@ size_t GetFileAge(std::string strFileName)
   }
 };
 
-std::string ReadFileToStr(std::string strFileName)
+std::string CFile::ReadFileToStr(std::string strFileName)
 {
   FILE * file;
   std::string strRead;
@@ -156,7 +151,7 @@ std::string ReadFileToStr(std::string strFileName)
   return strRead;
 };
 
-std::string ReadFileToStrE(std::string const &strFileName)
+std::string CFile::ReadFileToStrE(std::string const &strFileName)
 {
   std::string strEmpty;
   if (!FileExist(strFileName))
@@ -164,7 +159,7 @@ std::string ReadFileToStrE(std::string const &strFileName)
   return ReadFileToStr(strFileName);
 }
 
-bool WriteFileFromStr(const std::string &pofilename, std::string const &strToWrite)
+bool CFile::WriteFileFromStr(const std::string &pofilename, std::string const &strToWrite)
 {
   std::string strDir = GetPath(pofilename);
   MakeDir(strDir);
@@ -181,7 +176,7 @@ bool WriteFileFromStr(const std::string &pofilename, std::string const &strToWri
   return true;
 };
 
-void ConvertStrLineEnds(std::string &strToConvert)
+void CFile::ConvertStrLineEnds(std::string &strToConvert)
 {
   size_t foundPos = strToConvert.find_first_of("\r");
   if (foundPos == std::string::npos)
@@ -207,7 +202,7 @@ void ConvertStrLineEnds(std::string &strToConvert)
   strToConvert.swap(strTemp);
 };
 
-std::string GetPath(std::string const &strFilename)
+std::string CFile::GetPath(std::string const &strFilename)
 {
   size_t posLastDirSepChar = strFilename.find_last_of(DirSepChar);
   if (posLastDirSepChar != std::string::npos)
@@ -225,7 +220,7 @@ int unlink_cb(const char *fpath, const struct stat *sb, int typeflag, struct FTW
   return rv;
 }
 
-int DeleteDirectory(std::string strDirPath)
+int CFile::DeleteDirectory(std::string strDirPath)
 {
   return nftw(strDirPath.c_str(), unlink_cb, 64, FTW_DEPTH | FTW_PHYS);
 }

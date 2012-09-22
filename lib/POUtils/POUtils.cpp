@@ -449,8 +449,8 @@ void CPODocument::ConvertLineEnds(const std::string &filename)
 
 bool CPODocument::SaveFile(const std::string &pofilename)
 {
-  std::string strDir = GetPath(pofilename);
-  MakeDir(strDir);
+  std::string strDir = g_File.GetPath(pofilename);
+  g_File.MakeDir(strDir);
 
   // Initalize the output po document
   FILE * pPOTFile = fopen (pofilename.c_str(),"wb");

@@ -50,17 +50,17 @@ std::string CHTTPHandler::GetURLToSTR(std::string strURL)
   bool bIsTooLongUrl = strCacheFile == "cache_for_long_URL_download";
   strCacheFile = m_strCacheDir + "GET" + strCacheFile;
 
-  if (!FileExist(strCacheFile) || GetFileAge(strCacheFile) > g_Settings.GetHTTPCacheExpire() * 60)
+  if (!g_File.FileExist(strCacheFile) || g_File.GetFileAge(strCacheFile) > g_Settings.GetHTTPCacheExpire() * 60)
   {
     long result = curlURLToCache(strCacheFile, strURL);
     if (result < 200 || result >= 400)
       return "";
   }
 
-  strBuffer = ReadFileToStr(strCacheFile);
+  strBuffer = g_File.ReadFileToStr(strCacheFile);
 
   if (bIsTooLongUrl)
-    DeleteFile(strCacheFile);
+    g_File.DeleteFile(strCacheFile);
   return strBuffer;
 };
 
@@ -103,7 +103,7 @@ long CHTTPHandler::curlURLToCache(std::string strCacheFile, std::string strURL)
       {
         CLog::Log(logINFO, "HTTPHandler: curlURLToCache finished with error code: %i from URL %s to localdir %s",
                   http_code, strURL.c_str(), strCacheFile.c_str());
-        DeleteFile(strCacheFile);
+        g_File.DeleteFile(strCacheFile);
       }
       return http_code;
     }
@@ -184,8 +184,8 @@ size_t Read_CurlData_String(void * ptr, size_t size, size_t nmemb, void * stream
 
 void CHTTPHandler::SetCacheDir(std::string strCacheDir)
 {
-  if (!DirExists(strCacheDir))
-    MakeDir(strCacheDir);
+  if (!g_File.DirExists(strCacheDir))
+    g_File.MakeDir(strCacheDir);
   m_strCacheDir = strCacheDir + DirSepChar;
   CLog::Log(logINFO, "HTTPHandler: Cache directory set to: %s", strCacheDir.c_str());
 };
@@ -304,7 +304,7 @@ bool CHTTPHandler::PutFileToURL(std::string strFilePath, std::string strURL)
   bool bIsTooLongUrl = strCacheFile == "cache_for_long_URL_download";
   strCacheFile = m_strCacheDir + "PUT" + strCacheFile;
 
-  if (!bIsTooLongUrl && FileExist(strCacheFile) && ComparePOFiles(strCacheFile, strFilePath))
+  if (!bIsTooLongUrl && g_File.FileExist(strCacheFile) && ComparePOFiles(strCacheFile, strFilePath))
   {
     CLog::Log(logINFO, "HTTPHandler::PutFileToURL: not necesarry to upload file as it has not changed from last upload. File: %s",
               strFilePath.c_str());
@@ -322,7 +322,7 @@ bool CHTTPHandler::PutFileToURL(std::string strFilePath, std::string strURL)
 
   CLog::Log(logINFO, "HTTPHandler::PutFileToURL: File upload was successful so creating a copy at the .httpcache directory");
   if (!bIsTooLongUrl)
-    CopyFile(strFilePath, strCacheFile);
+    g_File.CopyFile(strFilePath, strCacheFile);
 
   return true;
 };
@@ -333,7 +333,7 @@ long CHTTPHandler::curlPUTPOFileToURL(std::string strFilePath, std::string strUR
 
   strURL = URLEncode(strURL);
 
-  std::string strPO = ReadFileToStr(strFilePath);
+  std::string strPO = g_File.ReadFileToStr(strFilePath);
 
   CJSONHandler JSONHandler;
   std::string strPOJson = JSONHandler.CreateJSONStrFromPOStr(strPO);
@@ -391,8 +391,8 @@ long CHTTPHandler::curlPUTPOFileToURL(std::string strFilePath, std::string strUR
 bool CHTTPHandler::ComparePOFiles(std::string strPOFilePath1, std::string strPOFilePath2) const
 {
   CPOHandler POHandler1, POHandler2;
-  POHandler1.ParsePOStrToMem(ReadFileToStr(strPOFilePath1), strPOFilePath1);
-  POHandler2.ParsePOStrToMem(ReadFileToStr(strPOFilePath2), strPOFilePath2);
+  POHandler1.ParsePOStrToMem(g_File.ReadFileToStr(strPOFilePath1), strPOFilePath1);
+  POHandler2.ParsePOStrToMem(g_File.ReadFileToStr(strPOFilePath2), strPOFilePath2);
 
   if (POHandler1.GetNumEntriesCount() != POHandler2.GetNumEntriesCount())
     return false;
@@ -428,7 +428,7 @@ bool CHTTPHandler::CreateNewResource(std::string strResname, std::string strENPO
 
   strURL = URLEncode(strURL);
 
-  std::string strPO = ReadFileToStr(strENPOFilePath);
+  std::string strPO = g_File.ReadFileToStr(strENPOFilePath);
 
   CJSONHandler JSONHandler;
   std::string strPOJson = JSONHandler.CreateNewresJSONStrFromPOStr(strResname, strPO);
@@ -473,7 +473,7 @@ bool CHTTPHandler::CreateNewResource(std::string strResname, std::string strENPO
       CLog::Log(logINFO, "CHTTPHandler::CreateNewResource finished with success for resource %s from EN PO file %s to URL %s",
                 strResname.c_str(), strENPOFilePath.c_str(), strURL.c_str());
       if (!bIsTooLongUrl)
-        CopyFile(strENPOFilePath, strCacheFile);
+        g_File.CopyFile(strENPOFilePath, strCacheFile);
     }
     else
     {

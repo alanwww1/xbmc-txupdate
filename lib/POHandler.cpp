@@ -169,7 +169,7 @@ bool CPOHandler::FetchXMLURLToMem (std::string strURL)
   m_bIsXMLSource = true;
   TiXmlDocument XMLDoc;
 
-  ConvertStrLineEnds(strXMLBuffer);
+  g_File.ConvertStrLineEnds(strXMLBuffer);
   strXMLBuffer += "\n";
 
   if (!XMLDoc.Parse(strXMLBuffer.c_str(), 0, TIXML_DEFAULT_ENCODING))
@@ -414,7 +414,7 @@ void CPOHandler::SetHeaderNEW (std::string strLangCode)
   m_strHeader += "msgstr \"\"\n";
   m_strHeader += "\"Project-Id-Version: XBMC-Addons\\n\"\n";
   m_strHeader += "\"Report-Msgid-Bugs-To: alanwww1@xbmc.org\\n\"\n";
-  m_strHeader += "\"POT-Creation-Date: " + GetCurrTime() + "\\n\"\n";
+  m_strHeader += "\"POT-Creation-Date: " + g_File.GetCurrTime() + "\\n\"\n";
   m_strHeader += "\"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\\n\"\n";
   m_strHeader += "\"Last-Translator: FULL NAME <EMAIL@ADDRESS>\\n\"\n";
   m_strHeader += "\"Language-Team: LANGUAGE\\n\"\n";

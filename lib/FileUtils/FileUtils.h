@@ -19,6 +19,9 @@
  *
  */
 
+#ifndef FILEUTILS_H
+#define FILEUTILS_H
+
 #pragma once
 
 #include <string>
@@ -39,19 +42,24 @@ static const char DirSepChar = '/';
 #include <dirent.h>
 #endif
 
-bool MakeDir(std::string Path);
-bool MakeOneDir(std::string Path);
-std::string GetPath(std::string const &strFilename);
-bool DirExists(std::string Path);
-bool FileExist(std::string filename);
-void DeleteFile(std::string filename);
-void CopyFile(std::string strSourceFileName, std::string strDestFileName);
-size_t GetFileAge(std::string strFileName);
-std::string ReadFileToStr(std::string strFileName);
-std::string ReadFileToStrE(std::string const &strFileName);
-bool WriteFileFromStr(const std::string &pofilename, std::string const &strToWrite);
-void ConvertStrLineEnds(std::string &strToConvert);
-std::string AddSlash(std::string strIn);
-std::string GetCurrTime();
-int unlink_cb(const char *fpath, const struct stat *sb, int typeflag, struct FTW *ftwbuf);
-int DeleteDirectory(std::string strDirPath);
+class CFile
+{
+public:
+  bool MakeDir(std::string Path);
+  bool MakeOneDir(std::string Path);
+  std::string GetPath(std::string const &strFilename);
+  bool DirExists(std::string Path);
+  bool FileExist(std::string filename);
+  void DeleteFile(std::string filename);
+  void CopyFile(std::string strSourceFileName, std::string strDestFileName);
+  size_t GetFileAge(std::string strFileName);
+  std::string ReadFileToStr(std::string strFileName);
+  std::string ReadFileToStrE(std::string const &strFileName);
+  bool WriteFileFromStr(const std::string &pofilename, std::string const &strToWrite);
+  void ConvertStrLineEnds(std::string &strToConvert);
+  int DeleteDirectory(std::string strDirPath);
+  std::string GetCurrTime();
+};
+
+extern CFile g_File;
+#endif
