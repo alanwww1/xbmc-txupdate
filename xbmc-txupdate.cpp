@@ -132,6 +132,8 @@ int main(int argc, char* argv[])
 
     if (bDownloadNeeded)
     {
+      WriteFileFromStr(WorkingDir + ".httpcache" + DirSepChar + ".dload_merge_status", "fail");
+
       printf("\n");
       printf("----------------------------------------\n");
       printf("DOWNLOADING RESOURCES FROM TRANSIFEX.NET\n");
@@ -161,11 +163,20 @@ int main(int argc, char* argv[])
         printf("-------------------------------\n");
 
         TXProject.WriteResourcesToFile(WorkingDir);
+        CopyFile(WorkingDir + "xbmc-txupdate.xml", WorkingDir + ".httpcache" + DirSepChar + ".last_xbmc-txupdate.xml");
       }
+      WriteFileFromStr(WorkingDir + ".httpcache" + DirSepChar + ".dload_merge_status", "ok");
     }
 
     if (bUploadNeeded)
     {
+      if (ReadFileToStrE(WorkingDir + ".httpcache" + DirSepChar + ".dload_merge_status") != "ok")
+        CLog::Log(logERROR, "There was no successful download and merge run before. Please (re)run download and merge.");
+
+      if (ReadFileToStrE(WorkingDir + ".httpcache" + DirSepChar + ".last_xbmc-txupdate.xml") !=
+          ReadFileToStrE(WorkingDir + "xbmc-txupdate.xml"))
+        CLog::Log(logERROR, "xbmc-txupdate.xml file changed since last downlad and merge. Please (re)run download and merge.");
+
       printf("\n");
       printf("-----------------------------------------\n");
       printf("UPLOADING LANGUAGE FILES TO TRANSIFEX.NET\n");

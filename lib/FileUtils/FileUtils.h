@@ -48,6 +48,7 @@ void DeleteFile(std::string filename);
 void CopyFile(std::string strSourceFileName, std::string strDestFileName);
 size_t GetFileAge(std::string strFileName);
 std::string ReadFileToStr(std::string strFileName);
+std::string ReadFileToStrE(std::string const &strFileName);
 bool WriteFileFromStr(const std::string &pofilename, std::string const &strToWrite);
 void ConvertStrLineEnds(std::string &strToConvert);
 std::string AddSlash(std::string strIn);

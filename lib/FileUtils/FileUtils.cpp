@@ -156,6 +156,14 @@ std::string ReadFileToStr(std::string strFileName)
   return strRead;
 };
 
+std::string ReadFileToStrE(std::string const &strFileName)
+{
+  std::string strEmpty;
+  if (!FileExist(strFileName))
+    return strEmpty;
+  return ReadFileToStr(strFileName);
+}
+
 bool WriteFileFromStr(const std::string &pofilename, std::string const &strToWrite)
 {
   std::string strDir = GetPath(pofilename);
