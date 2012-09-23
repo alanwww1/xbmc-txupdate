@@ -393,10 +393,19 @@ void CPOHandler::SetPreHeader (std::string &strPreText)
   std::string strOutHeader;
   size_t startPos;
 
-  if ((startPos = m_strHeader.find("# Translators")) != std::string::npos)
+  if ((startPos = m_strHeader.find("msgid \"\"")) != std::string::npos)
     m_strHeader = m_strHeader.substr(startPos);
-  else if ((startPos = m_strHeader.find("msgid \"\"")) != std::string::npos)
-    m_strHeader = m_strHeader.substr(startPos);  startPos = m_strHeader.find("msgid \"\"");
+
+  size_t pos1, pos2;
+  pos1 = m_strHeader.find("\"Last-Translator:") + 17;
+  pos2 = m_strHeader.find("\\n\"", pos1);
+
+  if (pos1 != std::string::npos && pos2 != std::string::npos)
+  {
+    std::string strCleanFromNames = m_strHeader.substr(0, pos1) + " XBMC Translation Team" +
+                                    m_strHeader.substr(pos2, m_strHeader.size() - pos2 + 1);
+    m_strHeader = strCleanFromNames;
+  }
 
   strOutHeader += "# XBMC Media Center language file\n";
 
