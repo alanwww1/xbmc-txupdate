@@ -174,7 +174,7 @@ bool CPOHandler::FetchXMLURLToMem (std::string strURL)
 
   if (!XMLDoc.Parse(strXMLBuffer.c_str(), 0, TIXML_DEFAULT_ENCODING))
   {
-    CLog::Log(logERROR, "CPOHandler::FetchXMLURLToMem: AddonXML file problem: %s %s\n", XMLDoc.ErrorDesc(), strURL.c_str());
+    CLog::Log(logERROR, "CPOHandler::FetchXMLURLToMem: strings.xml file problem: %s %s\n", XMLDoc.ErrorDesc(), strURL.c_str());
     return false;
   }
 
@@ -422,7 +422,7 @@ void CPOHandler::SetHeaderNEW (std::string strLangCode)
   m_strHeader += "\"Content-Type: text/plain; charset=UTF-8\\n\"\n";
   m_strHeader += "\"Content-Transfer-Encoding: 8bit\\n\"\n";
   m_strHeader +=  "\"Language: " + strLangCode + "\\n\"\n";
-  m_strHeader +=  "\"Plural-Forms: nplurals=" + strnplurals + "; plural=" + g_LCodeHandler.GetPlurForm(strLangCode) + "\\n\"\n";
+  m_strHeader +=  "\"Plural-Forms: nplurals=" + strnplurals + "; plural=" + g_LCodeHandler.GetPlurForm(strLangCode) + ";\\n\"\n";
 }
 
 bool CPOHandler::AddNumPOEntryByID(uint32_t numid, CPOEntry const &POEntry)

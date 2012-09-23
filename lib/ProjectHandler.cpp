@@ -190,6 +190,7 @@ bool CProjectHandler::CreateMergedResources()
       for (size_t POEntryIdx = 0; pcurrPOHandlerEN && POEntryIdx != pcurrPOHandlerEN->GetNumEntriesCount(); POEntryIdx++)
       {
         size_t numID = pcurrPOHandlerEN->GetNumPOEntryByIdx(POEntryIdx)->numID;
+
         const CPOEntry* pcurrPOEntryEN = pcurrPOHandlerEN->GetNumPOEntryByIdx(POEntryIdx);
 
         pPOEntryTX = SafeGetPOEntry(m_mapResourcesTX, *itResAvail, strLangCode, numID);
@@ -412,9 +413,13 @@ void CProjectHandler::UploadTXUpdateFiles(std::string strProjRootDir)
     {
       CLog::Log(logINFO, "CProjectHandler::UploadTXUpdateFiles: No resource %s exists on Transifex. Creating it now.", itres->first.c_str());
       // We create the new resource on transifex and also upload the English source file at once
+      g_HTTPHandler.Cleanup();
+      g_HTTPHandler.ReInit();
       g_HTTPHandler.CreateNewResource(itres->second.strTXResName,
                                       strLangDir + "English" + DirSepChar + "strings.po",
                                       "https://www.transifex.com/api/2/project/" + g_Settings.GetProjectname() + "/resources/");
+      g_HTTPHandler.Cleanup();
+      g_HTTPHandler.ReInit();
       bNewResource = true;
     }
 
@@ -429,10 +434,15 @@ void CProjectHandler::UploadTXUpdateFiles(std::string strProjRootDir)
       std::string strFilePath = strLangDir + g_LCodeHandler.FindLang(*it) + DirSepChar + "strings.po";
       std::string strLangCode = *it;
 
+      bool buploaded = false;
+      size_t stradded, strupd;
       g_HTTPHandler.PutFileToURL(strFilePath, "https://www.transifex.com/api/2/project/" + g_Settings.GetProjectname() +
-                                              "/resource/" + XMLResdata.strTXResName + "/translation/" + strLangCode + "/");
-
-      printf ("\tlangcode: %s, file: %s\n", it->c_str(), strFilePath.c_str());
+                                              "/resource/" + XMLResdata.strTXResName + "/translation/" + strLangCode + "/",
+                                              buploaded, stradded, strupd);
+      if (buploaded)
+        printf ("\tlangcode: %s:\t added strings:%i, updated strings:%i\n", it->c_str(), stradded, strupd);
+      else
+        printf ("\tlangcode: %s:\t no change, skipping.\n", it->c_str());
     }
   }
 }
@@ -449,7 +459,12 @@ bool CProjectHandler::FindResInList(std::list<std::string> const &listResourceNa
 
 std::list<std::string> CProjectHandler::GetLangsFromDir(std::string const &strLangDir)
 {
+  if (!g_File.DirExists(strLangDir + "English"))
+    CLog::Log(logERROR, "CProjectHandler::GetLangsFromDir: no English directory found at langdir: %s", strLangDir.c_str());
+
   std::list<std::string> listDirs;
+  listDirs.push_back("en");
+
   DIR* Dir;
   struct dirent *DirEntry;
   Dir = opendir(strLangDir.c_str());
@@ -457,9 +472,12 @@ std::list<std::string> CProjectHandler::GetLangsFromDir(std::string const &strLa
   while((DirEntry=readdir(Dir)))
   {
     if (DirEntry->d_type == DT_DIR && DirEntry->d_name[0] != '.')
-      listDirs.push_back(g_LCodeHandler.FindLangCode(DirEntry->d_name));
+    {
+      std::string strDirname = DirEntry->d_name;
+      if (strDirname != "English")
+        listDirs.push_back(g_LCodeHandler.FindLangCode(DirEntry->d_name));
+    }
   }
-  listDirs.sort();
 
   return listDirs;
 };

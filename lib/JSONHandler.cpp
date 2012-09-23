@@ -194,3 +194,20 @@ std::string CJSONHandler::CreateNewresJSONStrFromPOStr(std::string strTXResname,
   std::string strJSON = writer.write(root);
   return strJSON;
 };
+
+void CJSONHandler::ParsUploadedStringsData(std::string const &strJSON, size_t &stradded, size_t &strupd)
+{
+  Json::Value root;   // will contains the root value after parsing.
+  Json::Reader reader;
+
+  bool parsingSuccessful = reader.parse(strJSON, root );
+  if ( !parsingSuccessful )
+  {
+    CLog::Log(logERROR, "JSONHandler: Parse upload tx server response: no valid JSON data");
+    return;
+  }
+
+  stradded = root.get("strings_added", 0).asInt();
+  strupd = root.get("strings_updated", 0).asInt();
+  return;
+};

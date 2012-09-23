@@ -297,7 +297,8 @@ std::string CHTTPHandler::URLEncode (std::string strURL)
 
 
 
-bool CHTTPHandler::PutFileToURL(std::string strFilePath, std::string strURL)
+bool CHTTPHandler::PutFileToURL(std::string const &strFilePath, std::string const &strURL, bool &buploaded,
+                                size_t &stradded, size_t &strupd)
 {
   std::string strBuffer;
   std::string strCacheFile = CacheFileNameFromURL(strURL);
@@ -313,7 +314,7 @@ bool CHTTPHandler::PutFileToURL(std::string strFilePath, std::string strURL)
 
   CLog::Log(logINFO, "HTTPHandler::PutFileToURL: Uploading file to Transifex: %s", strFilePath.c_str());
 
-  long result = curlPUTPOFileToURL(strFilePath, strURL);
+  long result = curlPUTPOFileToURL(strFilePath, strURL, stradded, strupd);
   if (result < 200 || result >= 400)
   {
     CLog::Log(logERROR, "HTTPHandler::PutFileToURL: File upload was unsuccessful, http errorcode: %i", result);
@@ -323,15 +324,16 @@ bool CHTTPHandler::PutFileToURL(std::string strFilePath, std::string strURL)
   CLog::Log(logINFO, "HTTPHandler::PutFileToURL: File upload was successful so creating a copy at the .httpcache directory");
   if (!bIsTooLongUrl)
     g_File.CopyFile(strFilePath, strCacheFile);
+  buploaded = true;
 
   return true;
 };
 
-long CHTTPHandler::curlPUTPOFileToURL(std::string strFilePath, std::string strURL)
+long CHTTPHandler::curlPUTPOFileToURL(std::string const &strFilePath, std::string const &cstrURL, size_t &stradded, size_t &strupd)
 {
   CURLcode curlResult;
 
-  strURL = URLEncode(strURL);
+  std::string strURL = URLEncode(cstrURL);
 
   std::string strPO = g_File.ReadFileToStr(strFilePath);
 
@@ -341,6 +343,7 @@ long CHTTPHandler::curlPUTPOFileToURL(std::string strFilePath, std::string strUR
   PutStrData.pPOString = &strPOJson;
   PutStrData.pos = 0;
 
+  std::string strServerResp;
   CLoginData LoginData = GetCredentials(strURL);
 
   if(m_curlHandle) 
@@ -350,6 +353,7 @@ long CHTTPHandler::curlPUTPOFileToURL(std::string strFilePath, std::string strUR
     headers = curl_slist_append( headers, "charsets: utf-8");
 
     curl_easy_setopt(m_curlHandle, CURLOPT_READFUNCTION, Read_CurlData_String);
+    curl_easy_setopt(m_curlHandle, CURLOPT_WRITEFUNCTION, Write_CurlData_String);
     curl_easy_setopt(m_curlHandle, CURLOPT_URL, strURL.c_str());
     curl_easy_setopt(m_curlHandle, CURLOPT_UPLOAD, 1L);
     curl_easy_setopt(m_curlHandle, CURLOPT_PUT, 1L);
@@ -361,6 +365,7 @@ long CHTTPHandler::curlPUTPOFileToURL(std::string strFilePath, std::string strUR
     }
     curl_easy_setopt(m_curlHandle, CURLOPT_FAILONERROR, true);
     curl_easy_setopt(m_curlHandle, CURLOPT_READDATA, &PutStrData);
+    curl_easy_setopt(m_curlHandle, CURLOPT_WRITEDATA, &strServerResp);
     curl_easy_setopt(m_curlHandle, CURLOPT_INFILESIZE_LARGE, (curl_off_t)strPOJson.size());
     curl_easy_setopt(m_curlHandle, CURLOPT_USERAGENT, "libcurl-agent/1.0");
     curl_easy_setopt(m_curlHandle, CURLOPT_HTTPHEADER, headers);
@@ -368,6 +373,8 @@ long CHTTPHandler::curlPUTPOFileToURL(std::string strFilePath, std::string strUR
 //  curl_easy_setopt(m_curlHandle, CURLOPT_VERBOSE, 1L);
 
     curlResult = curl_easy_perform(m_curlHandle);
+
+    g_Json.ParsUploadedStringsData(strServerResp, stradded, strupd);
 
     long http_code = 0;
     curl_easy_getinfo (m_curlHandle, CURLINFO_RESPONSE_CODE, &http_code);
@@ -435,6 +442,7 @@ bool CHTTPHandler::CreateNewResource(std::string strResname, std::string strENPO
   PutStrData.pPOString = &strPOJson;
   PutStrData.pos = 0;
 
+  std::string strServerResp;
   CLoginData LoginData = GetCredentials(strURL);
 
   if(m_curlHandle) 
@@ -444,6 +452,7 @@ bool CHTTPHandler::CreateNewResource(std::string strResname, std::string strENPO
     headers = curl_slist_append( headers, "charsets: utf-8");
 
     curl_easy_setopt(m_curlHandle, CURLOPT_READFUNCTION, Read_CurlData_String);
+    curl_easy_setopt(m_curlHandle, CURLOPT_WRITEFUNCTION, Write_CurlData_String);
     curl_easy_setopt(m_curlHandle, CURLOPT_URL, strURL.c_str());
     curl_easy_setopt(m_curlHandle, CURLOPT_POST, 1L);
 //    curl_easy_setopt(m_curlHandle, CURLOPT_UPLOAD, 0);
@@ -455,11 +464,12 @@ bool CHTTPHandler::CreateNewResource(std::string strResname, std::string strENPO
     }
     curl_easy_setopt(m_curlHandle, CURLOPT_FAILONERROR, true);
     curl_easy_setopt(m_curlHandle, CURLOPT_READDATA, &PutStrData);
+    curl_easy_setopt(m_curlHandle, CURLOPT_WRITEDATA, &strServerResp);
     curl_easy_setopt(m_curlHandle, CURLOPT_POSTFIELDSIZE_LARGE, (curl_off_t)strPOJson.size());
     curl_easy_setopt(m_curlHandle, CURLOPT_USERAGENT, "libcurl-agent/1.0");
     curl_easy_setopt(m_curlHandle, CURLOPT_HTTPHEADER, headers);
     curl_easy_setopt(m_curlHandle, CURLOPT_SSL_VERIFYPEER, 0);
-    curl_easy_setopt(m_curlHandle, CURLOPT_VERBOSE, 1L);
+//    curl_easy_setopt(m_curlHandle, CURLOPT_VERBOSE, 1L);
 
     curlResult = curl_easy_perform(m_curlHandle);
 
