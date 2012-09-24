@@ -424,11 +424,19 @@ void CProjectHandler::UploadTXUpdateFiles(std::string strProjRootDir)
     }
 
     std::list<std::string> listLangCodes = GetLangsFromDir(strLangDir);
-    if (listLangCodes.empty()) // No update needed for the specific resource (not even an English one)
-      continue;
 
     CLog::Log(logINFO, "CProjectHandler::UploadTXUpdateFiles: Uploading resource: %s, from langdir: %s",itres->first.c_str(), strLangDir.c_str());
-    printf ("Uploading files for resource: %s\n", itres->first.c_str());
+    printf ("Uploading files for resource: %s", itres->first.c_str());
+
+    if (listLangCodes.empty()) // No update needed for the specific resource (not even an English one)
+    {
+      CLog::Log(logINFO, "CProjectHandler::GetLangsFromDir: no English directory found at langdir: %s,"
+                         " skipping upload for this resource.", strLangDir.c_str());
+      printf (", no upload was requested.\n");
+      continue;
+    }
+    else
+      printf("\n");
 
     for (std::list<std::string>::const_iterator it = listLangCodes.begin(); it!=listLangCodes.end(); it++)
     {
@@ -464,11 +472,7 @@ std::list<std::string> CProjectHandler::GetLangsFromDir(std::string const &strLa
 {
   std::list<std::string> listDirs;
   if (!g_File.DirExists(strLangDir + "English"))
-  {
-    CLog::Log(logINFO, "CProjectHandler::GetLangsFromDir: no English directory found at langdir: %s,"
-                       " skipping upload for this resource.", strLangDir.c_str());
     return listDirs;
-  }
 
   listDirs.push_back("en");
 
