@@ -494,3 +494,14 @@ bool CHTTPHandler::CreateNewResource(std::string strResname, std::string strENPO
     CLog::Log(logERROR, "CHTTPHandler::CreateNewResource failed because Curl was not initalized");
   return 700;
 };
+
+void CHTTPHandler::DeleteCachedFile (std::string const &strURL, std::string strPrefix)
+{
+  std::string strCacheFile = CacheFileNameFromURL(strURL);
+  if (strCacheFile == "cache_for_long_URL_download")
+    return;
+
+  strCacheFile = m_strCacheDir + strPrefix + strCacheFile;
+  if (!g_File.FileExist(strCacheFile))
+    g_File.DeleteFile(strCacheFile);
+}

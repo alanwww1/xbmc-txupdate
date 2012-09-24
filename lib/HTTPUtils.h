@@ -48,15 +48,16 @@ public:
   bool PutFileToURL(std::string const &strFilePath, std::string const &strURL, bool &buploaded,
                                   size_t &stradded, size_t &strupd);
   bool CreateNewResource(std::string strResname, std::string strENPOFilePath, std::string strURL);
+  void DeleteCachedFile(std::string const &strURL, std::string strPrefix);
 private:
   CURL *m_curlHandle;
   std::string m_strCacheDir;
-  std::string CacheFileNameFromURL(std::string strURL);
   long curlURLToCache(std::string strCacheFile, std::string strURL);
   long curlPUTPOFileToURL(std::string const &strFilePath, std::string const &strURL, size_t &stradded, size_t &strupd);
 
   CLoginData GetCredentials (std::string strURL);
   bool ComparePOFiles(std::string strPOFilePath1, std::string strPOFilePath2) const;
+  std::string CacheFileNameFromURL(std::string strURL);
   std::string URLEncode (std::string strURL);
   std::map<std::string, CLoginData> m_mapLoginData;
   std::map<std::string, CLoginData>::iterator itMapLoginData;

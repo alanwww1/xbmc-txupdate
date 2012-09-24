@@ -421,6 +421,7 @@ void CProjectHandler::UploadTXUpdateFiles(std::string strProjRootDir)
       g_HTTPHandler.Cleanup();
       g_HTTPHandler.ReInit();
       bNewResource = true;
+      g_HTTPHandler.DeleteCachedFile("https://www.transifex.com/api/2/project/" + g_Settings.GetProjectname() + "/resources/", "GET");
     }
 
     std::list<std::string> listLangCodes = GetLangsFromDir(strLangDir);
@@ -451,7 +452,13 @@ void CProjectHandler::UploadTXUpdateFiles(std::string strProjRootDir)
                                               "/resource/" + XMLResdata.strTXResName + "/translation/" + strLangCode + "/",
                                               buploaded, stradded, strupd);
       if (buploaded)
+      {
         printf ("\tlangcode: %s:\t added strings:%i, updated strings:%i\n", it->c_str(), stradded, strupd);
+        g_HTTPHandler.DeleteCachedFile("https://www.transifex.com/api/2/project/" + g_Settings.GetProjectname() +
+                                       "/resource/" + strResname + "/stats/", "GET");
+        g_HTTPHandler.DeleteCachedFile("https://www.transifex.com/api/2/project/" + g_Settings.GetProjectname() +
+        "/resource/" + strResname + "/translation/" + *it + "/?file", "GET");
+      }
       else
         printf ("\tlangcode: %s:\t no change, skipping.\n", it->c_str());
     }
