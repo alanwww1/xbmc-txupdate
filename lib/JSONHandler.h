@@ -42,7 +42,8 @@ public:
   std::map<std::string, CLangcodes> ParseTransifexLanguageDatabase(std::string strJSON);
   std::string CreateJSONStrFromPOStr(std::string const &strPO);
   std::string CreateNewresJSONStrFromPOStr(std::string strTXResname, std::string const &strPO);
-  void ParsUploadedStringsData(std::string const &strJSON, size_t &stradded, size_t &strupd);
+  void ParseUploadedStringsData(std::string const &strJSON, size_t &stradded, size_t &strupd);
+  void ParseUploadedStrForNewRes(std::string const &strJSON, size_t &stradded);
 };
 extern CJSONHandler g_Json;
 #endif

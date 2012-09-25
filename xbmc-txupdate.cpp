@@ -75,6 +75,7 @@ int main(int argc, char* argv[])
   bool bDownloadNeeded = false;
   bool bMergeNeeded = false;
   bool bUploadNeeded = false;
+  bool bForceUpload;
 
   if (argv[1])
    WorkingDir = argv[1];
@@ -101,8 +102,14 @@ int main(int argc, char* argv[])
       {bDownloadNeeded = true; bMergeNeeded = true;}
     else if (strMode == "-dmu")
       {bDownloadNeeded = true; bMergeNeeded = true; bUploadNeeded = true;}
+    else if (strMode == "-fu")
+    {
+      bUploadNeeded = true;
+      bForceUpload = true;
+    }
     else if (strMode == "-u")
       bUploadNeeded = true;
+
     else
     {
       printf ("\nWrong working mode arguments used. Stopping.\n\n");
@@ -170,10 +177,10 @@ int main(int argc, char* argv[])
 
     if (bUploadNeeded)
     {
-      if (g_File.ReadFileToStrE(WorkingDir + ".httpcache" + DirSepChar + ".dload_merge_status") != "ok")
+      if (!bForceUpload && g_File.ReadFileToStrE(WorkingDir + ".httpcache" + DirSepChar + ".dload_merge_status") != "ok")
         CLog::Log(logERROR, "There was no successful download and merge run before. Please (re)run download and merge.");
 
-      if (g_File.ReadFileToStrE(WorkingDir + ".httpcache" + DirSepChar + ".last_xbmc-txupdate.xml") !=
+      if (!bForceUpload && g_File.ReadFileToStrE(WorkingDir + ".httpcache" + DirSepChar + ".last_xbmc-txupdate.xml") !=
           g_File.ReadFileToStrE(WorkingDir + "xbmc-txupdate.xml"))
         CLog::Log(logERROR, "xbmc-txupdate.xml file changed since last downlad and merge. Please (re)run download and merge.");
 

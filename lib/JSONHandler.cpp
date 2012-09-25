@@ -195,7 +195,7 @@ std::string CJSONHandler::CreateNewresJSONStrFromPOStr(std::string strTXResname,
   return strJSON;
 };
 
-void CJSONHandler::ParsUploadedStringsData(std::string const &strJSON, size_t &stradded, size_t &strupd)
+void CJSONHandler::ParseUploadedStringsData(std::string const &strJSON, size_t &stradded, size_t &strupd)
 {
   Json::Value root;   // will contains the root value after parsing.
   Json::Reader reader;
@@ -203,11 +203,28 @@ void CJSONHandler::ParsUploadedStringsData(std::string const &strJSON, size_t &s
   bool parsingSuccessful = reader.parse(strJSON, root );
   if ( !parsingSuccessful )
   {
-    CLog::Log(logERROR, "JSONHandler: Parse upload tx server response: no valid JSON data");
+    CLog::Log(logERROR, "JSONHandler::ParseUploadedStringsData: Parse upload tx server response: no valid JSON data");
     return;
   }
 
   stradded = root.get("strings_added", 0).asInt();
   strupd = root.get("strings_updated", 0).asInt();
+  return;
+};
+
+void CJSONHandler::ParseUploadedStrForNewRes(std::string const &strJSON, size_t &stradded)
+{
+  Json::Value root;   // will contains the root value after parsing.
+  Json::Reader reader;
+
+  bool parsingSuccessful = reader.parse(strJSON, root );
+  if ( !parsingSuccessful )
+  {
+    CLog::Log(logERROR, "JSONHandler::ParseUploadedStrForNewRes: Parse upload tx server response: no valid JSON data");
+    return;
+  }
+
+  stradded = root[0].asInt();
+
   return;
 };

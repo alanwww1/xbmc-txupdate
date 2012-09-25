@@ -409,15 +409,24 @@ void CProjectHandler::UploadTXUpdateFiles(std::string strProjRootDir)
         CLog::Log(logERROR, "ResHandler: No resourcetype defined for resource: %s",strResname.c_str());
     }
 
+    CLog::Log(logINFO, "CProjectHandler::UploadTXUpdateFiles: Uploading resource: %s, from langdir: %s",itres->first.c_str(), strLangDir.c_str());
+    printf ("Uploading files for resource: %s", itres->first.c_str());
+
     if (!FindResInList(listResourceNamesTX, itres->second.strTXResName))
     {
       CLog::Log(logINFO, "CProjectHandler::UploadTXUpdateFiles: No resource %s exists on Transifex. Creating it now.", itres->first.c_str());
       // We create the new resource on transifex and also upload the English source file at once
       g_HTTPHandler.Cleanup();
       g_HTTPHandler.ReInit();
+      size_t straddednew;
       g_HTTPHandler.CreateNewResource(itres->second.strTXResName,
                                       strLangDir + "English" + DirSepChar + "strings.po",
-                                      "https://www.transifex.com/api/2/project/" + g_Settings.GetProjectname() + "/resources/");
+                                      "https://www.transifex.com/api/2/project/" + g_Settings.GetProjectname() + "/resources/", straddednew);
+
+      CLog::Log(logINFO, "CProjectHandler::UploadTXUpdateFiles: Resource %s was succesfully created with %i English strings.",
+                itres->first.c_str(), straddednew);
+      printf (", newly created on Transifex with %i English strings.\n", straddednew);
+
       g_HTTPHandler.Cleanup();
       g_HTTPHandler.ReInit();
       bNewResource = true;
@@ -426,9 +435,6 @@ void CProjectHandler::UploadTXUpdateFiles(std::string strProjRootDir)
 
     std::list<std::string> listLangCodes = GetLangsFromDir(strLangDir);
 
-    CLog::Log(logINFO, "CProjectHandler::UploadTXUpdateFiles: Uploading resource: %s, from langdir: %s",itres->first.c_str(), strLangDir.c_str());
-    printf ("Uploading files for resource: %s", itres->first.c_str());
-
     if (listLangCodes.empty()) // No update needed for the specific resource (not even an English one)
     {
       CLog::Log(logINFO, "CProjectHandler::GetLangsFromDir: no English directory found at langdir: %s,"
@@ -436,7 +442,7 @@ void CProjectHandler::UploadTXUpdateFiles(std::string strProjRootDir)
       printf (", no upload was requested.\n");
       continue;
     }
-    else
+    else if (!bNewResource)
       printf("\n");
 
     for (std::list<std::string>::const_iterator it = listLangCodes.begin(); it!=listLangCodes.end(); it++)
@@ -480,8 +486,6 @@ std::list<std::string> CProjectHandler::GetLangsFromDir(std::string const &strLa
   std::list<std::string> listDirs;
   if (!g_File.DirExists(strLangDir + "English"))
     return listDirs;
-
-  listDirs.push_back("en");
 
   DIR* Dir;
   struct dirent *DirEntry;

@@ -374,7 +374,7 @@ long CHTTPHandler::curlPUTPOFileToURL(std::string const &strFilePath, std::strin
 
     curlResult = curl_easy_perform(m_curlHandle);
 
-    g_Json.ParsUploadedStringsData(strServerResp, stradded, strupd);
+    g_Json.ParseUploadedStringsData(strServerResp, stradded, strupd);
 
     long http_code = 0;
     curl_easy_getinfo (m_curlHandle, CURLINFO_RESPONSE_CODE, &http_code);
@@ -424,7 +424,7 @@ bool CHTTPHandler::ComparePOFiles(std::string strPOFilePath1, std::string strPOF
   return true;
 }
 
-bool CHTTPHandler::CreateNewResource(std::string strResname, std::string strENPOFilePath, std::string strURL)
+bool CHTTPHandler::CreateNewResource(std::string strResname, std::string strENPOFilePath, std::string strURL, size_t &stradded)
 {
   std::string strCacheFile = CacheFileNameFromURL(strURL);
   bool bIsTooLongUrl = strCacheFile == "cache_for_long_URL_download";
@@ -482,6 +482,7 @@ bool CHTTPHandler::CreateNewResource(std::string strResname, std::string strENPO
                 strResname.c_str(), strENPOFilePath.c_str(), strURL.c_str());
       if (!bIsTooLongUrl)
         g_File.CopyFile(strENPOFilePath, strCacheFile);
+      g_Json.ParseUploadedStrForNewRes(strServerResp, stradded);
     }
     else
     {
@@ -502,6 +503,6 @@ void CHTTPHandler::DeleteCachedFile (std::string const &strURL, std::string strP
     return;
 
   strCacheFile = m_strCacheDir + strPrefix + strCacheFile;
-  if (!g_File.FileExist(strCacheFile))
+  if (g_File.FileExist(strCacheFile))
     g_File.DeleteFile(strCacheFile);
 }
