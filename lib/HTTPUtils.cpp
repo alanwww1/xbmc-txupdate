@@ -424,9 +424,10 @@ bool CHTTPHandler::ComparePOFiles(std::string strPOFilePath1, std::string strPOF
   return true;
 }
 
-bool CHTTPHandler::CreateNewResource(std::string strResname, std::string strENPOFilePath, std::string strURL, size_t &stradded)
+bool CHTTPHandler::CreateNewResource(std::string strResname, std::string strENPOFilePath, std::string strURL, size_t &stradded,
+                                     std::string const &strURLENTransl)
 {
-  std::string strCacheFile = CacheFileNameFromURL(strURL);
+  std::string strCacheFile = CacheFileNameFromURL(strURLENTransl);
   bool bIsTooLongUrl = strCacheFile == "cache_for_long_URL_download";
   strCacheFile = m_strCacheDir + "PUT" + strCacheFile;
 

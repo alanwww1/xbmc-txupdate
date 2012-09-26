@@ -421,7 +421,9 @@ void CProjectHandler::UploadTXUpdateFiles(std::string strProjRootDir)
       size_t straddednew;
       g_HTTPHandler.CreateNewResource(itres->second.strTXResName,
                                       strLangDir + "English" + DirSepChar + "strings.po",
-                                      "https://www.transifex.com/api/2/project/" + g_Settings.GetProjectname() + "/resources/", straddednew);
+                                      "https://www.transifex.com/api/2/project/" + g_Settings.GetProjectname() + "/resources/",
+                                      straddednew, "https://www.transifex.com/api/2/project/" + g_Settings.GetProjectname() +
+                                      "/resource/" + XMLResdata.strTXResName + "/translation/" + "en" + "/");
 
       CLog::Log(logINFO, "CProjectHandler::UploadTXUpdateFiles: Resource %s was succesfully created with %i English strings.",
                 itres->first.c_str(), straddednew);

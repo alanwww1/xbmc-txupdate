@@ -47,7 +47,8 @@ public:
   bool LoadCredentials (std::string CredentialsFilename);
   bool PutFileToURL(std::string const &strFilePath, std::string const &strURL, bool &buploaded,
                                   size_t &stradded, size_t &strupd);
-  bool CreateNewResource(std::string strResname, std::string strENPOFilePath, std::string strURL, size_t &stradded);
+  bool CreateNewResource(std::string strResname, std::string strENPOFilePath, std::string strURL, size_t &stradded,
+                         std::string const &strURLENTransl);
   void DeleteCachedFile(std::string const &strURL, std::string strPrefix);
 private:
   CURL *m_curlHandle;
