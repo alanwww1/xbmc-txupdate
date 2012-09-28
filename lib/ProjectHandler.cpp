@@ -52,17 +52,20 @@ bool CProjectHandler::FetchResourcesFromTransifex()
     printf("Downloading resource from TX: %s\n", it->c_str());
     CLog::Log(logLINEFEED, "");
     CLog::Log(logINFO, "ProjHandler: *** Fetch Resource: %s ***", it->c_str());
+    CLog::IncIdent(4);
 
     std::string strResname = m_UpdateXMLHandler.GetResNameFromTXResName(*it);
     if (strResname.empty())
     {
       CLog::Log(logWARNING, "ProjHandler: found resource on Transifex which is not in xbmc-txupdate.xml: %s", it->c_str());
+      CLog::DecIdent(4);
       continue;
     }
 
     m_mapResourcesTX[strResname]=ResourceHandler;
     m_mapResourcesTX[strResname].FetchPOFilesTXToMem("https://www.transifex.com/api/2/project/" + g_Settings.GetProjectname() +
                                               "/resource/" + *it + "/");
+    CLog::DecIdent(4);
   }
   return true;
 };
@@ -80,8 +83,10 @@ bool CProjectHandler::FetchResourcesFromUpstream()
     CLog::Log(logLINEFEED, "");
     CLog::Log(logINFO, "ProjHandler: *** Fetch Resource from upstream: %s ***", it->first.c_str());
 
+    CLog::IncIdent(4);
     m_mapResourcesUpstr[it->first] = ResourceHandler;
     m_mapResourcesUpstr[it->first].FetchPOFilesUpstreamToMem(it->second, CreateMergedLanguageList(it->first, true));
+    CLog::DecIdent(4);
   }
   return true;
 };
@@ -130,6 +135,7 @@ bool CProjectHandler::CreateMergedResources()
   {
     printf("Merging resource: %s\n", itResAvail->c_str());
     CLog::Log(logINFO, "CreateMergedResources: Merging resource:%s", itResAvail->c_str());
+    CLog::IncIdent(4);
 
     CResourceHandler mergedResHandler, updTXResHandler;
 
@@ -139,8 +145,6 @@ bool CProjectHandler::CreateMergedResources()
       strResPreHeader = m_mapResourcesUpstr[*itResAvail].GetXMLHandler()->GetResHeaderPretext();
     else if (m_mapResourcesTX.find(*itResAvail) != m_mapResourcesTX.end())
       strResPreHeader = m_mapResourcesTX[*itResAvail].GetXMLHandler()->GetResHeaderPretext();
-
-    CLog::Log(logINFO, "MergedPOHandl:\tLanguage\t\t\tID entries\tnon-ID entries\tInterline-comments");
 
     std::list<std::string> listMergedLangs = CreateMergedLanguageList(*itResAvail, false);
 
@@ -234,8 +238,10 @@ bool CProjectHandler::CreateMergedResources()
         mergedPOHandler.SetPreHeader(strResPreHeader);
         mergedResHandler.AddPOData(mergedPOHandler, strLangCode);
 
-        CLog::Log(logINFO, "MergedPOHandler: %s\t\t%i\t\t%i\t\t%i", strLangCode.c_str(), mergedPOHandler.GetNumEntriesCount(),
+        CLog::IncIdent(2);
+        CLog::LogTable(logINFO, "merged", "\t\t\t%s\t\t%i\t\t%i\t\t%i", strLangCode.c_str(), mergedPOHandler.GetNumEntriesCount(),
                   mergedPOHandler.GetClassEntriesCount(), mergedPOHandler.GetCommntEntriesCount());
+        CLog::DecIdent(2);
       }
 
       if (updTXPOHandler.GetNumEntriesCount() !=0 || updTXPOHandler.GetClassEntriesCount() !=0)
@@ -250,14 +256,22 @@ bool CProjectHandler::CreateMergedResources()
         updTXPOHandler.SetPreHeader(strResPreHeader);
         updTXResHandler.AddPOData(updTXPOHandler, strLangCode);
 
-        CLog::Log(logINFO, "UpdTXPOHandler: %s\t\t%i\t\t%i\t\t%i", strLangCode.c_str(), updTXPOHandler.GetNumEntriesCount(),
+        CLog::IncIdent(2);
+        CLog::LogTable(logINFO, "mergeUpd", "\t\t\t%s\t\t%i\t\t%i\t\t%i", strLangCode.c_str(), updTXPOHandler.GetNumEntriesCount(),
                   updTXPOHandler.GetClassEntriesCount(), updTXPOHandler.GetCommntEntriesCount());
+        CLog::DecIdent(2);
       }
     }
+    CLog::IncIdent(2);
+    CLog::LogTable(logCLOSETABLE, "merged",   "MergedPOHandler:\tLang\t\tID entries\tnon-ID entries\tIntline-comm");
+    CLog::LogTable(logCLOSETABLE, "mergeUpd", "UpdTXPOHandler:\tLang\t\tID entries\tnon-ID entries\tIntline-comm");
+    CLog::DecIdent(2);
+
     if (mergedResHandler.GetLangsCount() != 0 || !mergedResHandler.GetXMLHandler()->GetMapAddonXMLData()->empty())
       m_mapResMerged[*itResAvail] = mergedResHandler;
     if (updTXResHandler.GetLangsCount() != 0 || !updTXResHandler.GetXMLHandler()->GetMapAddonXMLData()->empty())
       m_mapResUpdateTX[*itResAvail] = updTXResHandler;
+    CLog::DecIdent(4);
   }
   return true;
 }
