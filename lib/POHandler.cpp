@@ -58,7 +58,7 @@ bool CPOHandler::ProcessPOFile(CPODocument &PODoc)
 
   m_mapStrings.clear();
   m_vecClassicEntries.clear();
-  int ilCommsCntr = 0;
+  m_CommsCntr = 0;
 
   bool bMultipleComment = false;
   std::vector<std::string> vecILCommnts;
@@ -76,7 +76,8 @@ bool CPOHandler::ProcessPOFile(CPODocument &PODoc)
       if (!vecILCommnts.empty())
         bMultipleComment = true;
       vecILCommnts = currEntry.interlineComm;
-      ilCommsCntr++;
+      if (!bMultipleComment && !vecILCommnts.empty())
+        m_CommsCntr++;
       continue;
     }
 
@@ -101,7 +102,6 @@ bool CPOHandler::ProcessPOFile(CPODocument &PODoc)
       ClearCPOEntry(currEntry);
     }
   }
-  m_CommsCntr = ilCommsCntr;
 
   return true;
 };
@@ -158,6 +158,9 @@ void CPOHandler::GetXMLComment(const TiXmlNode *pCommentNode, CPOEntry &currEntr
   }
   currEntry.interlineComm = m_prevCommEntry.interlineComm;
   m_prevCommEntry.interlineComm = prevCommEntry.interlineComm;
+
+  if (currEntry.interlineComm.size() != 0)
+    m_CommsCntr++;
 }
 
 bool CPOHandler::FetchXMLURLToMem (std::string strURL)
@@ -167,6 +170,7 @@ bool CPOHandler::FetchXMLURLToMem (std::string strURL)
     CLog::Log(logERROR, "CPOHandler::FetchXMLURLToMem: http error reading XML file from url: %s", strURL.c_str());
 
   m_bIsXMLSource = true;
+  m_CommsCntr = 0;
   TiXmlDocument XMLDoc;
 
   g_File.ConvertStrLineEnds(strXMLBuffer);

@@ -51,7 +51,7 @@ bool CProjectHandler::FetchResourcesFromTransifex()
   {
     printf("Downloading resource from TX: %s\n", it->c_str());
     CLog::Log(logLINEFEED, "");
-    CLog::Log(logINFO, "ProjHandler: *** Fetch Resource: %s ***", it->c_str());
+    CLog::Log(logINFO, "ProjHandler: ****** FETCH Resource from TRANSIFEX: %s", it->c_str());
     CLog::IncIdent(4);
 
     std::string strResname = m_UpdateXMLHandler.GetResNameFromTXResName(*it);
@@ -81,7 +81,7 @@ bool CProjectHandler::FetchResourcesFromUpstream()
   {
     printf("Downloading resource from Upstream: %s\n", it->first.c_str());
     CLog::Log(logLINEFEED, "");
-    CLog::Log(logINFO, "ProjHandler: *** Fetch Resource from upstream: %s ***", it->first.c_str());
+    CLog::Log(logINFO, "ProjHandler: ****** FETCH Resource from UPSTREAM: %s ******", it->first.c_str());
 
     CLog::IncIdent(4);
     m_mapResourcesUpstr[it->first] = ResourceHandler;
@@ -100,11 +100,13 @@ bool CProjectHandler::WriteResourcesToFile(std::string strProjRootDir)
   g_File.DeleteDirectory(strProjRootDir + strPrefixDir);
   for (T_itmapRes itmapResources = m_mapResMerged.begin(); itmapResources != m_mapResMerged.end(); itmapResources++)
   {
-    printf("Writing resource to HDD: %s\n", itmapResources->first.c_str());
+    printf("Writing merged resources to HDD: %s\n", itmapResources->first.c_str());
     CLog::Log(logLINEFEED, "");
-    CLog::Log(logINFO, "ProjHandler: *** Write Resource: %s ***", itmapResources->first.c_str());
+    CLog::Log(logINFO, "ProjHandler: *** Write Merged Resource: %s ***", itmapResources->first.c_str());
+    CLog::IncIdent(4);
     CXMLResdata XMLResdata = m_UpdateXMLHandler.GetResData(itmapResources->first);
     m_mapResMerged[itmapResources->first].WritePOToFiles (strProjRootDir, strPrefixDir, itmapResources->first, XMLResdata);
+    CLog::DecIdent(4);
   }
 
   strPrefixDir = g_Settings.GetTXUpdateLangfilesDir();
@@ -112,11 +114,13 @@ bool CProjectHandler::WriteResourcesToFile(std::string strProjRootDir)
   g_File.DeleteDirectory(strProjRootDir + strPrefixDir);
   for (T_itmapRes itmapResources = m_mapResUpdateTX.begin(); itmapResources != m_mapResUpdateTX.end(); itmapResources++)
   {
-    printf("Writing update TX resource to HDD: %s\n", itmapResources->first.c_str());
+    printf("Writing update TX resources to HDD: %s\n", itmapResources->first.c_str());
     CLog::Log(logLINEFEED, "");
     CLog::Log(logINFO, "ProjHandler: *** Write UpdTX Resource: %s ***", itmapResources->first.c_str());
+    CLog::IncIdent(4);
     CXMLResdata XMLResdata = m_UpdateXMLHandler.GetResData(itmapResources->first);
     m_mapResUpdateTX[itmapResources->first].WritePOToFiles (strProjRootDir, strPrefixDir, itmapResources->first, XMLResdata);
+    CLog::DecIdent(4);
   }
 
   return true;
@@ -237,11 +241,6 @@ bool CProjectHandler::CreateMergedResources()
 
         mergedPOHandler.SetPreHeader(strResPreHeader);
         mergedResHandler.AddPOData(mergedPOHandler, strLangCode);
-
-        CLog::IncIdent(2);
-        CLog::LogTable(logINFO, "merged", "\t\t\t%s\t\t%i\t\t%i\t\t%i", strLangCode.c_str(), mergedPOHandler.GetNumEntriesCount(),
-                  mergedPOHandler.GetClassEntriesCount(), mergedPOHandler.GetCommntEntriesCount());
-        CLog::DecIdent(2);
       }
 
       if (updTXPOHandler.GetNumEntriesCount() !=0 || updTXPOHandler.GetClassEntriesCount() !=0)
@@ -255,17 +254,16 @@ bool CProjectHandler::CreateMergedResources()
 
         updTXPOHandler.SetPreHeader(strResPreHeader);
         updTXResHandler.AddPOData(updTXPOHandler, strLangCode);
-
-        CLog::IncIdent(2);
-        CLog::LogTable(logINFO, "mergeUpd", "\t\t\t%s\t\t%i\t\t%i\t\t%i", strLangCode.c_str(), updTXPOHandler.GetNumEntriesCount(),
-                  updTXPOHandler.GetClassEntriesCount(), updTXPOHandler.GetCommntEntriesCount());
-        CLog::DecIdent(2);
       }
+
+      CLog::LogTable(logINFO, "merged", "\t\t\t%s\t\t%i\t\t%i\t\t%i\t\t%i", strLangCode.c_str(), mergedPOHandler.GetNumEntriesCount(),
+                     mergedPOHandler.GetClassEntriesCount(), updTXPOHandler.GetNumEntriesCount(), updTXPOHandler.GetClassEntriesCount());
+
     }
-    CLog::IncIdent(2);
-    CLog::LogTable(logCLOSETABLE, "merged",   "MergedPOHandler:\tLang\t\tID entries\tnon-ID entries\tIntline-comm");
-    CLog::LogTable(logCLOSETABLE, "mergeUpd", "UpdTXPOHandler:\tLang\t\tID entries\tnon-ID entries\tIntline-comm");
-    CLog::DecIdent(2);
+    CLog::LogTable(logADDTABLEHEADER, "merged", "--------------------------------------------------------------------------------------------\n");
+    CLog::LogTable(logADDTABLEHEADER, "merged", "MergedPOHandler:\tLang\t\tmergedID\tmergedClass\tupdID\t\tupdClass\n");
+    CLog::LogTable(logADDTABLEHEADER, "merged", "--------------------------------------------------------------------------------------------\n");
+    CLog::LogTable(logCLOSETABLE, "merged",   "");
 
     if (mergedResHandler.GetLangsCount() != 0 || !mergedResHandler.GetXMLHandler()->GetMapAddonXMLData()->empty())
       m_mapResMerged[*itResAvail] = mergedResHandler;

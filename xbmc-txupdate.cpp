@@ -146,12 +146,22 @@ int main(int argc, char* argv[])
       printf("DOWNLOADING RESOURCES FROM TRANSIFEX.NET\n");
       printf("----------------------------------------\n");
 
+      CLog::Log(logLINEFEED, "");
+      CLog::Log(logINFO, "****************************************");
+      CLog::Log(logINFO, "DOWNLOADING RESOURCES FROM TRANSIFEX.NET");
+      CLog::Log(logINFO, "****************************************");
+
       TXProject.FetchResourcesFromTransifex();
 
       printf("\n");
       printf("-----------------------------------\n");
       printf("DOWNLOADING RESOURCES FROM UPSTREAM\n");
       printf("-----------------------------------\n");
+
+      CLog::Log(logLINEFEED, "");
+      CLog::Log(logINFO, "***********************************");
+      CLog::Log(logINFO, "DOWNLOADING RESOURCES FROM UPSTREAM");
+      CLog::Log(logINFO, "***********************************");
 
       TXProject.FetchResourcesFromUpstream();
 
@@ -162,12 +172,22 @@ int main(int argc, char* argv[])
         printf("MERGING RESOURCES\n");
         printf("-----------------\n");
 
+        CLog::Log(logLINEFEED, "");
+        CLog::Log(logINFO, "*****************");
+        CLog::Log(logINFO, "MERGING RESOURCES");
+        CLog::Log(logINFO, "*****************");
+
         TXProject.CreateMergedResources();
 
         printf("\n");
         printf("-------------------------------\n");
         printf("WRITING MERGED RESOURCES TO HDD\n");
         printf("-------------------------------\n");
+
+        CLog::Log(logLINEFEED, "");
+        CLog::Log(logINFO, "*******************************");
+        CLog::Log(logINFO, "WRITING MERGED RESOURCES TO HDD");
+        CLog::Log(logINFO, "*******************************");
 
         TXProject.WriteResourcesToFile(WorkingDir);
         g_File.CopyFile(WorkingDir + "xbmc-txupdate.xml", WorkingDir + ".httpcache" + DirSepChar + ".last_xbmc-txupdate.xml");

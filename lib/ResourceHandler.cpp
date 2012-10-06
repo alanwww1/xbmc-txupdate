@@ -62,7 +62,6 @@ bool CResourceHandler::FetchPOFilesTXToMem(std::string strURL)
   std::list<std::string> listLangsTX = g_Json.ParseAvailLanguagesTX(strtemp);
 
   CPOHandler POHandler;
-  CLog::IncIdent(2);
 
   for (std::list<std::string>::iterator it = listLangsTX.begin(); it != listLangsTX.end(); it++)
   {
@@ -71,12 +70,14 @@ bool CResourceHandler::FetchPOFilesTXToMem(std::string strURL)
     pPOHandler->FetchPOURLToMem(strURL + "translation/" + *it + "/?file", false);
     pPOHandler->SetIfIsEnglish(*it == "en");
     std::string strLang = *it;
-    strLang.resize(20, ' ');
-    CLog::LogTable(logINFO, "txfetch", "POHandler: %s\t\t%i\t\t%i\t\t%i", strLang.c_str(), pPOHandler->GetNumEntriesCount(),
-              pPOHandler->GetClassEntriesCount(), pPOHandler->GetCommntEntriesCount());
+//    strLang.resize(20, ' ');
+    CLog::LogTable(logINFO, "txfetch", "\t\t\t%s\t\t%i\t\t%i", strLang.c_str(), pPOHandler->GetNumEntriesCount(),
+              pPOHandler->GetClassEntriesCount());
   }
+  CLog::LogTable(logADDTABLEHEADER, "txfetch", "--------------------------------------------------------------\n");
+  CLog::LogTable(logADDTABLEHEADER, "txfetch", "FetchPOFilesTX:\tLang\t\tIDEntry\t\tClassEntry\n");
+  CLog::LogTable(logADDTABLEHEADER, "txfetch", "--------------------------------------------------------------\n");
   CLog::LogTable(logCLOSETABLE, "txfetch", "");
-  CLog::DecIdent(2);
   return true;
 }
 
@@ -164,7 +165,6 @@ bool CResourceHandler::FetchPOFilesUpstreamToMem(CXMLResdata XMLResdata, std::li
     while (posEnd != std::string::npos);
   }
   bool bResult;
-  CLog::IncIdent(2);
 
   for (std::list<std::string>::iterator it = listLangs.begin(); it != listLangs.end(); it++)
   {
@@ -179,13 +179,14 @@ bool CResourceHandler::FetchPOFilesUpstreamToMem(CXMLResdata XMLResdata, std::li
     {
       m_mapPOFiles[*it] = POHandler;
       std::string strLang = *it;
-      strLang.resize(20, ' ');
-      CLog::LogTable(logINFO, "upstrFetch", "POHandler: %s\t\t%i\t\t%i\t\t%i", strLang.c_str(), POHandler.GetNumEntriesCount(),
+      CLog::LogTable(logINFO, "upstrFetch", "\t\t\t%s\t\t%i\t\t%i\t\t%i", strLang.c_str(), POHandler.GetNumEntriesCount(),
               POHandler.GetClassEntriesCount(), POHandler.GetCommntEntriesCount());
     }
   }
+  CLog::LogTable(logADDTABLEHEADER, "upstrFetch", "-----------------------------------------------------------------------------\n");
+  CLog::LogTable(logADDTABLEHEADER, "upstrFetch", "FetchPOFilesUpstr:\tLang\t\tIDEntry\t\tClassEntry\tCommEntry\n");
+  CLog::LogTable(logADDTABLEHEADER, "upstrFetch", "-----------------------------------------------------------------------------\n");
   CLog::LogTable(logCLOSETABLE, "upstrFetch", "");
-  CLog::DecIdent(2);
   return true;
 }
 
@@ -218,10 +219,13 @@ bool CResourceHandler::WritePOToFiles(std::string strProjRootDir, std::string st
     CPOHandler * pPOHandler = &m_mapPOFiles[itmapPOFiles->first];
     pPOHandler->WritePOFile(strPODir + DirSepChar + "strings.po");
 
-    strLang.resize(20, ' ');
-    CLog::Log(logINFO, "POHandler: %s\t\t%i\t\t%i\t\t%i", strLang.c_str(), pPOHandler->GetNumEntriesCount(),
-              pPOHandler->GetClassEntriesCount(), pPOHandler->GetCommntEntriesCount());
+    CLog::LogTable(logINFO, "writepo", "\t\t\t%s\t\t%i\t\t%i", itmapPOFiles->first.c_str(), pPOHandler->GetNumEntriesCount(),
+              pPOHandler->GetClassEntriesCount());
   }
+  CLog::LogTable(logADDTABLEHEADER, "writepo", "-----------------------------------------------------------------------------\n");
+  CLog::LogTable(logADDTABLEHEADER, "writepo", "WritePOFiles:\tLang\t\tIDEntry\t\tClassEntry\n");
+  CLog::LogTable(logADDTABLEHEADER, "writepo", "-----------------------------------------------------------------------------\n");
+  CLog::LogTable(logCLOSETABLE, "writepo", "");
 
   // update local addon.xml file
   if (strResname != "xbmc.core" && strPrefixDir == g_Settings.GetMergedLangfilesDir())

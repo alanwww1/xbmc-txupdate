@@ -104,15 +104,23 @@ void CLog::Log(TLogLevel loglevel, const char *format, ... )
 
 void CLog::LogTable(TLogLevel loglevel, std::string strTableName, const char *format, ... )
 {
+  if (loglevel == logADDTABLEHEADER)
+  {
+    std::string strIdent;
+    strIdent.assign(m_ident, ' ');
+    std::string strHeader = format;
+
+    m_mapStrResultTable[strTableName] = g_File.GetCurrTime() + "\t" + listLogTypes[logINFO] + "\t" + strIdent +
+                                         strHeader + m_mapStrResultTable[strTableName];
+    return;
+  }
+
   if (loglevel == logCLOSETABLE)
   {
     std::string strIdent;
     strIdent.assign(m_ident, ' ');
 
-    std::string strHeader = format;
-    strHeader = g_File.GetCurrTime() + "\t" + listLogTypes[logINFO] + "\t" + strIdent + strHeader;
-
-    fprintf(m_pLogFile, "%s", (strHeader + "\n" + m_mapStrResultTable[strTableName]).c_str());
+    fprintf(m_pLogFile, "%s", (m_mapStrResultTable[strTableName]).c_str());
     m_mapStrResultTable.erase(m_mapStrResultTable.find(strTableName));
     return;
   }

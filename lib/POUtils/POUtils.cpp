@@ -190,7 +190,7 @@ bool CPODocument::GetNextEntry(bool bSkipError)
           m_Entry.Content[ipos+2] != '|')
       {
         m_Entry.Type = COMMENT_ENTRY_FOUND; // we found a pluralized entry
-      return true;
+        return true;
       }
     }
     if (m_nextEntryPos != m_POfilelength-1 && !bSkipError)
