@@ -49,7 +49,7 @@ bool CProjectHandler::FetchResourcesFromTransifex()
   CResourceHandler ResourceHandler;
   for (std::list<std::string>::iterator it = listResourceNamesTX.begin(); it != listResourceNamesTX.end(); it++)
   {
-    printf("Downloading resource from TX: %s\n", it->c_str());
+    printf("Downloading resource from TX: %s (", it->c_str());
     CLog::Log(logLINEFEED, "");
     CLog::Log(logINFO, "ProjHandler: ****** FETCH Resource from TRANSIFEX: %s", it->c_str());
     CLog::IncIdent(4);
@@ -57,6 +57,7 @@ bool CProjectHandler::FetchResourcesFromTransifex()
     std::string strResname = m_UpdateXMLHandler.GetResNameFromTXResName(*it);
     if (strResname.empty())
     {
+      printf(" )\n");
       CLog::Log(logWARNING, "ProjHandler: found resource on Transifex which is not in xbmc-txupdate.xml: %s", it->c_str());
       CLog::DecIdent(4);
       continue;
@@ -66,6 +67,7 @@ bool CProjectHandler::FetchResourcesFromTransifex()
     m_mapResourcesTX[strResname].FetchPOFilesTXToMem("https://www.transifex.com/api/2/project/" + g_Settings.GetProjectname() +
                                               "/resource/" + *it + "/");
     CLog::DecIdent(4);
+    printf(" )\n");
   }
   return true;
 };
@@ -79,7 +81,7 @@ bool CProjectHandler::FetchResourcesFromUpstream()
 
   for (std::map<std::string, CXMLResdata>::iterator it = mapRes.begin(); it != mapRes.end(); it++)
   {
-    printf("Downloading resource from Upstream: %s\n", it->first.c_str());
+    printf("Downloading resource from Upstream: %s (", it->first.c_str());
     CLog::Log(logLINEFEED, "");
     CLog::Log(logINFO, "ProjHandler: ****** FETCH Resource from UPSTREAM: %s ******", it->first.c_str());
 
@@ -87,6 +89,7 @@ bool CProjectHandler::FetchResourcesFromUpstream()
     m_mapResourcesUpstr[it->first] = ResourceHandler;
     m_mapResourcesUpstr[it->first].FetchPOFilesUpstreamToMem(it->second, CreateMergedLanguageList(it->first, true));
     CLog::DecIdent(4);
+    printf(" )\n");
   }
   return true;
 };

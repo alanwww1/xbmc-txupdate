@@ -180,14 +180,14 @@ int main(int argc, char* argv[])
         TXProject.CreateMergedResources();
 
         printf("\n");
-        printf("-------------------------------\n");
-        printf("WRITING MERGED RESOURCES TO HDD\n");
-        printf("-------------------------------\n");
+        printf("--------------------------------------------\n");
+        printf("WRITING MERGED AND TXUPDATE RESOURCES TO HDD\n");
+        printf("--------------------------------------------\n");
 
         CLog::Log(logLINEFEED, "");
-        CLog::Log(logINFO, "*******************************");
-        CLog::Log(logINFO, "WRITING MERGED RESOURCES TO HDD");
-        CLog::Log(logINFO, "*******************************");
+        CLog::Log(logINFO, "********************************************");
+        CLog::Log(logINFO, "WRITING MERGED AND TXUPDATE RESOURCES TO HDD");
+        CLog::Log(logINFO, "********************************************");
 
         TXProject.WriteResourcesToFile(WorkingDir);
         g_File.CopyFile(WorkingDir + "xbmc-txupdate.xml", WorkingDir + ".httpcache" + DirSepChar + ".last_xbmc-txupdate.xml");

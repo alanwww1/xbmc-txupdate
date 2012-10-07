@@ -65,14 +65,14 @@ bool CResourceHandler::FetchPOFilesTXToMem(std::string strURL)
 
   for (std::list<std::string>::iterator it = listLangsTX.begin(); it != listLangsTX.end(); it++)
   {
+    printf (" %s", it->c_str());
     m_mapPOFiles[*it] = POHandler;
     CPOHandler * pPOHandler = &m_mapPOFiles[*it];
     pPOHandler->FetchPOURLToMem(strURL + "translation/" + *it + "/?file", false);
     pPOHandler->SetIfIsEnglish(*it == "en");
     std::string strLang = *it;
-//    strLang.resize(20, ' ');
     CLog::LogTable(logINFO, "txfetch", "\t\t\t%s\t\t%i\t\t%i", strLang.c_str(), pPOHandler->GetNumEntriesCount(),
-              pPOHandler->GetClassEntriesCount());
+                            pPOHandler->GetClassEntriesCount());
   }
   CLog::LogTable(logADDTABLEHEADER, "txfetch", "--------------------------------------------------------------\n");
   CLog::LogTable(logADDTABLEHEADER, "txfetch", "FetchPOFilesTX:\tLang\t\tIDEntry\t\tClassEntry\n");
@@ -170,6 +170,7 @@ bool CResourceHandler::FetchPOFilesUpstreamToMem(CXMLResdata XMLResdata, std::li
   {
     CPOHandler POHandler;
     POHandler.SetIfIsEnglish(*it == "en");
+    printf (" %s", it->c_str());
 
     if (XMLResdata.strLangFileType == "xml")
       bResult = POHandler.FetchXMLURLToMem(XMLResdata.strUptreamURL + strLangdirPrefix + g_LCodeHandler.FindLang(*it) + DirSepChar + "strings.xml");
@@ -222,9 +223,9 @@ bool CResourceHandler::WritePOToFiles(std::string strProjRootDir, std::string st
     CLog::LogTable(logINFO, "writepo", "\t\t\t%s\t\t%i\t\t%i", itmapPOFiles->first.c_str(), pPOHandler->GetNumEntriesCount(),
               pPOHandler->GetClassEntriesCount());
   }
-  CLog::LogTable(logADDTABLEHEADER, "writepo", "-----------------------------------------------------------------------------\n");
+  CLog::LogTable(logADDTABLEHEADER, "writepo", "--------------------------------------------------------------\n");
   CLog::LogTable(logADDTABLEHEADER, "writepo", "WritePOFiles:\tLang\t\tIDEntry\t\tClassEntry\n");
-  CLog::LogTable(logADDTABLEHEADER, "writepo", "-----------------------------------------------------------------------------\n");
+  CLog::LogTable(logADDTABLEHEADER, "writepo", "--------------------------------------------------------------\n");
   CLog::LogTable(logCLOSETABLE, "writepo", "");
 
   // update local addon.xml file
