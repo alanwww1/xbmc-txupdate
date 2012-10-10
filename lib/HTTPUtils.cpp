@@ -21,7 +21,6 @@
 
 #include "Log.h"
 #include "HTTPUtils.h"
-// #include <curl/types.h>
 #include <curl/easy.h>
 #include "FileUtils/FileUtils.h"
 #include <cctype>
@@ -370,7 +369,6 @@ long CHTTPHandler::curlPUTPOFileToURL(std::string const &strFilePath, std::strin
     curl_easy_setopt(m_curlHandle, CURLOPT_USERAGENT, "libcurl-agent/1.0");
     curl_easy_setopt(m_curlHandle, CURLOPT_HTTPHEADER, headers);
     curl_easy_setopt(m_curlHandle, CURLOPT_SSL_VERIFYPEER, 0);
-//  curl_easy_setopt(m_curlHandle, CURLOPT_VERBOSE, 1L);
 
     curlResult = curl_easy_perform(m_curlHandle);
 
@@ -456,8 +454,6 @@ bool CHTTPHandler::CreateNewResource(std::string strResname, std::string strENPO
     curl_easy_setopt(m_curlHandle, CURLOPT_WRITEFUNCTION, Write_CurlData_String);
     curl_easy_setopt(m_curlHandle, CURLOPT_URL, strURL.c_str());
     curl_easy_setopt(m_curlHandle, CURLOPT_POST, 1L);
-//    curl_easy_setopt(m_curlHandle, CURLOPT_UPLOAD, 0);
-//    curl_easy_setopt(m_curlHandle, CURLOPT_PUT, 0);
     if (!LoginData.strLogin.empty())
     {
       curl_easy_setopt(m_curlHandle, CURLOPT_USERNAME, LoginData.strLogin.c_str());
@@ -470,7 +466,6 @@ bool CHTTPHandler::CreateNewResource(std::string strResname, std::string strENPO
     curl_easy_setopt(m_curlHandle, CURLOPT_USERAGENT, "libcurl-agent/1.0");
     curl_easy_setopt(m_curlHandle, CURLOPT_HTTPHEADER, headers);
     curl_easy_setopt(m_curlHandle, CURLOPT_SSL_VERIFYPEER, 0);
-//    curl_easy_setopt(m_curlHandle, CURLOPT_VERBOSE, 1L);
 
     curlResult = curl_easy_perform(m_curlHandle);
 

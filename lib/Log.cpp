@@ -29,8 +29,6 @@ static std::map<std::string, std::string> m_mapStrResultTable;
 
 using namespace std;
 
-//CLogIdent LogIdents [4] =
-
 CLog::CLog()
 {
   m_numWarnings = 0;

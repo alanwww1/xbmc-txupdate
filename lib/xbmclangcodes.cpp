@@ -29,7 +29,6 @@
 using namespace std;
 
 CLCodeHandler g_LCodeHandler;
-// #define MAXLANGCOUNT 2;
 
 enum
 {

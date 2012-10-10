@@ -41,8 +41,6 @@ CPOEntry::~CPOEntry()
 bool CPOEntry::operator==(const CPOEntry& poentry) const
 {
   bool bhasMatch = true;
-//  if (!poentry.Content.empty())
-//    bhasMatch = bhasMatch && (poentry.Content == Content);
   if (!poentry.msgCtxt.empty())
     bhasMatch = bhasMatch && (poentry.msgCtxt == msgCtxt);
   if (!poentry.msgID.empty())

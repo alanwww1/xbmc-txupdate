@@ -263,7 +263,6 @@ bool CPOHandler::WritePOFile(const std::string &strOutputPOFilename)
 
   for (itStrings it = m_mapStrings.begin(); it != m_mapStrings.end(); it++)
   {
-//    int id = it->first;
     CPOEntry currEntry = it->second;
     PODoc.WritePOEntry(currEntry);
   }

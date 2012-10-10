@@ -45,8 +45,6 @@ bool CAddonXMLHandler::LoadAddonXMLFile (std::string strAddonXMLFilename)
 
   g_File.ConvertStrLineEnds(m_strAddonXMLFile);
 
-//  printf("%s", m_strAddonXMLFile.c_str());
-
   TiXmlDocument xmlAddonXML;
 
   if (!xmlAddonXML.LoadFile(strAddonXMLFilename.c_str()))
