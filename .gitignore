@@ -10,3 +10,14 @@
 *.lai
 *.la
 *.a
+
+# Temporary files
+*~
+*.bak
+
+# Built binary
+xbmc-txupdate
+
+# Kdevelop files
+.kdev4
+
