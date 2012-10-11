@@ -51,7 +51,10 @@ The format of the file looks like this:
 Where:
   * projectname: The Transifex projectname. Use the exact same string as on Transifex.
     Optional attributes:
-
       * http_cache_expire - (default: 360) expirity time for cached files in minutes. If cache file is younger than the given time, no actual http download will happen. In that case the cached file gets used.
       * min_completion - (default: 10%) a limit for the translated percentage to actually download a translation file.
       * merged_langfiledir - (default: merged-langfiles) the directory under PROJECTDIR, where the fresh merged, cleaned translations will be locally created.
+      * temptxupdate_langfiledir - (default: tempfiles_txupdate) the directory under PROJECTDIR, where the language files to update Transifex will be locally created.
+  * name: The name of the resource(plugin). This is the name which will be used as a directory name where the language files will be created. So the best is to use the same directory name here which is used at the upstream repo. This field must be filled.
+  * TXname: The Transifex name you want to have for the resource(plugin). No special characters alowed(nor dot). This field must be filled.
+
