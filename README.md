@@ -15,7 +15,7 @@ Requirements:
 OS: Linux
 Packages: curl, libcurl, libjsoncpp
 
-## Usage:
+## Usage
 
 
   **xbmc-txpudate PROJECTDIR [working mode]**
@@ -33,7 +33,10 @@ Please note that the utility needs at least a projet setup xml file in the PROJE
 
 ## Setting files
 In you PROJECTDIR folder you need to have the following files:
-* **xbmc-txupdate.xml**
+
+**I. xbmc-txupdate.xml**
+
+This file stores basic data needed for the translation project.
 The format of the file looks like this:
 
 ```xml
@@ -67,5 +70,33 @@ Where:
   * resourceType: The type of the resource ehich can be the following:
       * addon: A regular addon with an addon.xml file AND language files
       * addon_nostrings: Special addon with an addon.xml file, but NO language files
-      * skin: A skin addon with with an addon.xml file AND language files
-      * xbmc-core: Main language files
+      * skin: A skin addon with an addon.xml file AND language files
+      * xbmc-core: Language files for xbmc-core
+  * resourceSubdir: The subdirectory to put the language files of the resource in. (optional)
+
+**II. .passwords.xml**
+
+This file stores http password to access protected upstream or Transifex language files. For Transifex you must specify your user credentials here.
+The format of the file looks like this:
+
+```xml
+<?xml version="1.0" ?>
+<websites>
+    <website prefix="">
+        <login></login>
+        <password></password>
+    </website>
+</websites>
+```
+
+Where:
+   * Attribute prefix: The URL prefix of the website you want to use a password with. For example for Transifex, you have to use : "https://www.transifex.com/api/2/project/"
+
+## Tips and tricks
+* Cache files for http download and upload actions are stored in the .httpcache directory. If the format of a downloaded file is corrupt upstream, you can find the file here and correct it to continue. If you want to be sure to use the latest upstream files, you can simply delete this directory.
+* Don't run in upload mode, before doing a succesful download and merge. The status is stored in a file called ".dload_merge_status" in the .httpcache directory. If there is an OK in it, download and merge has run successfully before.
+* The xbmc-txupdate.xml file is monitored if it has been changed before upload. The old state of the file is stored in the ".last_xbmc-txupdate.xml" file in .httpcache. If you want to force-run upload mode, you can copy the changed xml file as this name to cheat the utility. Only do this, if you know what you are doing!
+
+For any questions, please write to: alanwww1@xbmc.org
+
+2012 Attila Jakosa, Team XBMC
