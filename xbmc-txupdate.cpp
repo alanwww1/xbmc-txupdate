@@ -64,6 +64,7 @@ void PrintUsage()
 
 int main(int argc, char* argv[])
 {
+  setbuf(stdout, NULL);
   if (argc > 3 || argc < 2)
   {
     printf ("\nBad arguments given\n\n");
