@@ -13,8 +13,8 @@ Important to note that in case we both have a translation at the upstream reposi
 
 ## Install
 Requirements:
-OS: Linux
-Packages: curl, libcurl, libjsoncpp
+* OS: Linux
+* Packages: curl, libcurl, libjsoncpp
 
 Ubuntu prerequisites installation:
 ```
