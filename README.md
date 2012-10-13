@@ -1,7 +1,7 @@
 xbmc-txupdate
 =============
 
-This utility is suitable for keeping XBMC upstream language files and the language files hosted on transifex.net in sync.
+This utility is suitable for keeping XBMC upstream language files and the language files hosted on transifex.com in sync.
 
 What it does:
 * Downloads the fresh files from upstream http URLs specified in the xbmc-txupdate.xml file and also downloads the fresh translations from transifex.net and makes a merge of the files. 
@@ -11,9 +11,16 @@ What it does:
 
 Important to note that in case we both have a translation at the upstream repository and we have a translation at transifex.net for the same English string, the utility prefers the one at transifex.net. This means that new translations modifications can only be pulled from ustream into the merged files in case they are for completely newly introduced English strings which do not have translation existing at transifex yet.
 
+## Install
 Requirements:
 OS: Linux
 Packages: curl, libcurl, libjsoncpp
+
+Ubuntu prerequisites installation:
+```
+sudo apt-get install build-essential curl libcurl4-gnutls-dev libjsoncpp0 libjsoncpp-dev git
+```
+After git cloning the utility, simply run make. The bin file called "xbmc-txupdate" will be created.
 
 ## Usage
 
