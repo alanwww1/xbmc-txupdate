@@ -29,12 +29,13 @@ class CXMLResdata
 public:
   CXMLResdata();
   ~CXMLResdata();
-  std::string strUptreamURL;
+  std::string strUpstreamURL;
   std::string strLangsFromUpstream;
   int Restype;
   std::string strResDirectory;
   std::string strTXResName;
   std::string strLangFileType;
+  std::string strURLSuffix; 
 };
 
 class CUpdateXMLHandler

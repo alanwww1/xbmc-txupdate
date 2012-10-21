@@ -85,18 +85,18 @@ bool CResourceHandler::FetchPOFilesUpstreamToMem(CXMLResdata XMLResdata, std::li
 {
   g_HTTPHandler.Cleanup();
   g_HTTPHandler.ReInit();
-  CLog::Log(logINFO, "ResHandler: Starting to load resource from Upsream URL: %s into memory",XMLResdata.strUptreamURL.c_str());
+  CLog::Log(logINFO, "ResHandler: Starting to load resource from Upsream URL: %s into memory",XMLResdata.strUpstreamURL.c_str());
 
   std::string strLangdirPrefix;
 
   if (XMLResdata.Restype == CORE)
   {
-    m_AddonXMLHandler.FetchCoreVersionUpstr(XMLResdata.strUptreamURL + "xbmc/GUIInfoManager.h");
+    m_AddonXMLHandler.FetchCoreVersionUpstr(XMLResdata.strUpstreamURL + "xbmc/GUIInfoManager.h");
     strLangdirPrefix = "language/";
   }
   else
   {
-    m_AddonXMLHandler.FetchAddonXMLFileUpstr(XMLResdata.strUptreamURL + "addon.xml");
+    m_AddonXMLHandler.FetchAddonXMLFileUpstr(XMLResdata.strUpstreamURL + "addon.xml" + XMLResdata.strURLSuffix);
     if (XMLResdata.Restype == SKIN)
       strLangdirPrefix = "language/";
     else if (XMLResdata.Restype == ADDON)
@@ -117,16 +117,16 @@ bool CResourceHandler::FetchPOFilesUpstreamToMem(CXMLResdata XMLResdata, std::li
     CLog::Log(logINFO, "ResHandler: using language list dwonloaded with github API");
     size_t pos1, pos2, pos3;
     std::string strGitHubURL, strGitBranch;
-    if (XMLResdata.strUptreamURL.find("raw.github.com/") == std::string::npos)
+    if (XMLResdata.strUpstreamURL.find("raw.github.com/") == std::string::npos)
       CLog::Log(logERROR, "ResHandler: Wrong Github URL format given");
-    pos1 = XMLResdata.strUptreamURL.find("raw.github.com/")+15;
-    pos2 = XMLResdata.strUptreamURL.find("/", pos1+1);
-    pos2 = XMLResdata.strUptreamURL.find("/", pos2+1);
-    pos3 = XMLResdata.strUptreamURL.find("/", pos2+1);
-    strGitHubURL = "https://api.github.com/repos/" + XMLResdata.strUptreamURL.substr(pos1, pos2-pos1);
+    pos1 = XMLResdata.strUpstreamURL.find("raw.github.com/")+15;
+    pos2 = XMLResdata.strUpstreamURL.find("/", pos1+1);
+    pos2 = XMLResdata.strUpstreamURL.find("/", pos2+1);
+    pos3 = XMLResdata.strUpstreamURL.find("/", pos2+1);
+    strGitHubURL = "https://api.github.com/repos/" + XMLResdata.strUpstreamURL.substr(pos1, pos2-pos1);
     strGitHubURL += "/contents";
-    strGitHubURL += XMLResdata.strUptreamURL.substr(pos3, XMLResdata.strUptreamURL.size() - pos3 - 1);
-    strGitBranch = XMLResdata.strUptreamURL.substr(pos2+1, pos3-pos2-1);
+    strGitHubURL += XMLResdata.strUpstreamURL.substr(pos3, XMLResdata.strUpstreamURL.size() - pos3 - 1);
+    strGitBranch = XMLResdata.strUpstreamURL.substr(pos2+1, pos3-pos2-1);
     if (XMLResdata.Restype == SKIN || XMLResdata.Restype == CORE)
       strGitHubURL += "/language";
     else if (XMLResdata.Restype == ADDON)
@@ -173,9 +173,9 @@ bool CResourceHandler::FetchPOFilesUpstreamToMem(CXMLResdata XMLResdata, std::li
     printf (" %s", it->c_str());
 
     if (XMLResdata.strLangFileType == "xml")
-      bResult = POHandler.FetchXMLURLToMem(XMLResdata.strUptreamURL + strLangdirPrefix + g_LCodeHandler.FindLang(*it) + DirSepChar + "strings.xml");
+      bResult = POHandler.FetchXMLURLToMem(XMLResdata.strUpstreamURL + strLangdirPrefix + g_LCodeHandler.FindLang(*it) + DirSepChar + "strings.xml" + XMLResdata.strURLSuffix);
     else
-      bResult = POHandler.FetchPOURLToMem(XMLResdata.strUptreamURL + strLangdirPrefix + g_LCodeHandler.FindLang(*it) + DirSepChar + "strings.po",true);
+      bResult = POHandler.FetchPOURLToMem(XMLResdata.strUpstreamURL + strLangdirPrefix + g_LCodeHandler.FindLang(*it) + DirSepChar + "strings.po" + XMLResdata.strURLSuffix,true);
     if (bResult)
     {
       m_mapPOFiles[*it] = POHandler;

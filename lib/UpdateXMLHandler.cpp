@@ -136,11 +136,13 @@ bool CUpdateXMLHandler::LoadXMLToMem (std::string rootDir)
     {
       const TiXmlElement *pChildURLElement = pChildResElement->FirstChildElement("upstreamURL");
       if (pChildURLElement && pChildURLElement->FirstChild())
-        currResData.strUptreamURL = pChildURLElement->FirstChild()->Value();
-      if (currResData.strUptreamURL.empty())
+        currResData.strUpstreamURL = pChildURLElement->FirstChild()->Value();
+      if (currResData.strUpstreamURL.empty())
         CLog::Log(logERROR, "UpdXMLHandler: UpstreamURL entry is empty or missing for resource %s", strResName.c_str());
       if (pChildURLElement->Attribute("filetype"))
         currResData.strLangFileType = pChildURLElement->Attribute("filetype"); // For PO no need to explicitly specify. Only for XML.
+      if (pChildURLElement->Attribute("URLsuffix"))
+        currResData.strURLSuffix = pChildURLElement->Attribute("URLsuffix"); // Some http servers need suffix strings after filename(eg. gitweb)
 
       const TiXmlElement *pChildUpstrLElement = pChildResElement->FirstChildElement("upstreamLangs");
       if (pChildUpstrLElement && pChildUpstrLElement->FirstChild())
