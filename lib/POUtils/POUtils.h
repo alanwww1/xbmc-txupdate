@@ -106,7 +106,6 @@ protected:
   void ConvertLineEnds(const std::string &filename);
   bool ReadStringLine(const std::string &line, std::string * pStrToAppend, int skip);
   const bool HasPrefix(const std::string &strLine, const std::string &strPrefix);
-  void WriteStrLine(std::string prefix, std::string linkedString);
   void WriteLF();
   void WriteMultilineComment(std::vector<std::string> vecCommnts, std::string prefix);
 

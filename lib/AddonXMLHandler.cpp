@@ -100,7 +100,7 @@ bool CAddonXMLHandler::ProcessAddonXMLFile (std::string AddonXMLFilename, TiXmlD
     m_strResourceData += "xbmc-unnamed\n";
   }
   else
-    m_strResourceData += g_CharsetUtils.ToUTF8(addonXMLEncoding, EscapeLF(pMainAttrId)) + "\n";
+    m_strResourceData += g_CharsetUtils.ToUTF8(addonXMLEncoding, CstrToString(pMainAttrId)) + "\n";
 
   pMainAttrId=pRootElement->Attribute("id");
   m_strResourceData += "# Addon id: ";
@@ -110,7 +110,7 @@ bool CAddonXMLHandler::ProcessAddonXMLFile (std::string AddonXMLFilename, TiXmlD
     m_strResourceData +=  "unknown\n";
   }
   else
-    m_strResourceData += g_CharsetUtils.ToUTF8(addonXMLEncoding, EscapeLF(pMainAttrId)) + "\n";
+    m_strResourceData += g_CharsetUtils.ToUTF8(addonXMLEncoding, CstrToString(pMainAttrId)) + "\n";
 
   pMainAttrId=pRootElement->Attribute("version");
   m_strResourceData += "# Addon version: ";
@@ -120,7 +120,7 @@ bool CAddonXMLHandler::ProcessAddonXMLFile (std::string AddonXMLFilename, TiXmlD
     m_strResourceData += "rev_unknown\n";
   }
   else
-    m_strResourceData += g_CharsetUtils.ToUTF8(addonXMLEncoding, EscapeLF(pMainAttrId)) + "\n";
+    m_strResourceData += g_CharsetUtils.ToUTF8(addonXMLEncoding, CstrToString(pMainAttrId)) + "\n";
 
   pMainAttrId=pRootElement->Attribute("provider-name");
   m_strResourceData += "# Addon Provider: ";
@@ -130,7 +130,7 @@ bool CAddonXMLHandler::ProcessAddonXMLFile (std::string AddonXMLFilename, TiXmlD
     m_strResourceData += "unknown\n";
   }
   else
-    m_strResourceData += g_CharsetUtils.ToUTF8(addonXMLEncoding, EscapeLF(pMainAttrId)) + "\n";
+    m_strResourceData += g_CharsetUtils.ToUTF8(addonXMLEncoding, CstrToString(pMainAttrId)) + "\n";
 
   std::string strAttrToSearch = "xbmc.addon.metadata";
 
@@ -144,7 +144,7 @@ bool CAddonXMLHandler::ProcessAddonXMLFile (std::string AddonXMLFilename, TiXmlD
     std::string strLang = pChildSummElement->Attribute("lang");
     if (pChildSummElement->FirstChild())
     {
-      std::string strValue = EscapeLF(pChildSummElement->FirstChild()->Value());
+      std::string strValue = CstrToString(pChildSummElement->FirstChild()->Value());
       m_mapAddonXMLData[strLang].strSummary = g_CharsetUtils.ToUTF8(addonXMLEncoding, strValue);
     }
     pChildSummElement = pChildSummElement->NextSiblingElement("summary");
@@ -156,7 +156,7 @@ bool CAddonXMLHandler::ProcessAddonXMLFile (std::string AddonXMLFilename, TiXmlD
     std::string strLang = pChildDescElement->Attribute("lang");
     if (pChildDescElement->FirstChild())
     {
-      std::string strValue = EscapeLF(pChildDescElement->FirstChild()->Value());
+      std::string strValue = CstrToString(pChildDescElement->FirstChild()->Value());
       m_mapAddonXMLData[strLang].strDescription = g_CharsetUtils.ToUTF8(addonXMLEncoding, strValue);
     }
     pChildDescElement = pChildDescElement->NextSiblingElement("description");
@@ -168,7 +168,7 @@ bool CAddonXMLHandler::ProcessAddonXMLFile (std::string AddonXMLFilename, TiXmlD
     std::string strLang = pChildDisclElement->Attribute("lang");
     if (pChildDisclElement->FirstChild())
     {
-      std::string strValue = EscapeLF(pChildDisclElement->FirstChild()->Value());
+      std::string strValue = CstrToString(pChildDisclElement->FirstChild()->Value());
       m_mapAddonXMLData[strLang].strDisclaimer = g_CharsetUtils.ToUTF8(addonXMLEncoding, strValue);
     }
     pChildDisclElement = pChildDisclElement->NextSiblingElement("disclaimer");
@@ -251,19 +251,19 @@ bool CAddonXMLHandler::UpdateAddonXMLFile (std::string strAddonXMLFilename)
   for (std::list<std::string>::iterator it = listAddonDataLangs.begin(); it != listAddonDataLangs.end(); it++)
   {
     if (!m_mapAddonXMLData[*it].strSummary.empty())
-      strNewMetadata += strAllign + "<summary lang=\"" + *it + "\">" + XMLEscapeString(m_mapAddonXMLData[*it].strSummary)
+      strNewMetadata += strAllign + "<summary lang=\"" + *it + "\">" + g_CharsetUtils.EscapeStringXML(m_mapAddonXMLData[*it].strSummary)
                         + "</summary>\n";
   }
   for (std::list<std::string>::iterator it = listAddonDataLangs.begin(); it != listAddonDataLangs.end(); it++)
   {
     if (!m_mapAddonXMLData[*it].strDescription.empty())
-      strNewMetadata += strAllign + "<description lang=\"" + *it + "\">" + XMLEscapeString(m_mapAddonXMLData[*it].strDescription)
+      strNewMetadata += strAllign + "<description lang=\"" + *it + "\">" + g_CharsetUtils.EscapeStringXML(m_mapAddonXMLData[*it].strDescription)
                         + "</description>\n";
   }
   for (std::list<std::string>::iterator it = listAddonDataLangs.begin(); it != listAddonDataLangs.end(); it++)
   {
     if (!m_mapAddonXMLData[*it].strDisclaimer.empty())
-      strNewMetadata += strAllign + "<disclaimer lang=\"" + *it + "\">" + XMLEscapeString(m_mapAddonXMLData[*it].strDisclaimer)
+      strNewMetadata += strAllign + "<disclaimer lang=\"" + *it + "\">" + g_CharsetUtils.EscapeStringXML(m_mapAddonXMLData[*it].strDisclaimer)
                         + "</disclaimer>\n";
   }
 
@@ -315,23 +315,10 @@ bool CAddonXMLHandler::GetEncoding(const TiXmlDocument* pDoc, std::string& strEn
   return !strEncoding.empty(); // Other encoding then UTF8?
 };
 
-std::string CAddonXMLHandler::EscapeLF(const char * StrToEscape)
+std::string CAddonXMLHandler::CstrToString(const char * StrToConv)
 {
-  std::string strIN(StrToEscape);
-  std::string strOut;
-  std::string::iterator it;
-  for (it = strIN.begin(); it != strIN.end(); it++)
-  {
-    if (*it == '\n')
-    {
-      strOut.append("\\n");
-      continue;
-    }
-    if (*it == '\r')
-      continue;
-    strOut += *it;
-  }
-  return strOut;
+  std::string strIN(StrToConv);
+  return strIN;
 }
 
 bool CAddonXMLHandler::FetchCoreVersionUpstr(std::string strURL)
@@ -395,56 +382,4 @@ bool CAddonXMLHandler::ProcessCoreVersion(std::string filename, std::string &str
   return true;
 }
 
-std::string CAddonXMLHandler::XMLEscapeString(const std::string &strInput)
-{
-  std::string strOutput;
-  if (strInput.empty())
-    return strOutput;
-
-  std::string oescstring;
-  strOutput.reserve(strInput.size());
-  std::string::const_iterator it = strInput.begin();
-  while (it < strInput.end())
-  {
-    oescstring = *it++;
-    if (oescstring == "\\")
-    {
-      if (it == strInput.end())
-      {
-        CLog::Log(logWARNING, "XMLEscapeString: Unhandled escape character at line-end. Problematic string: %s", strInput.c_str());
-        continue;
-      }
-      switch (*it++)
-      {
-        case 'a':  oescstring = "\a"; break;
-        case 'b':  oescstring = "\b"; break;
-        case 'v':  oescstring = "\v"; break;
-        case 'n':  oescstring = "&#10;"; break;
-        case 't':  oescstring = "\t"; break;
-        case 'r':  oescstring = "\r"; break;
-        case '"':  oescstring = "&quot;" ; break;
-        case '0':  oescstring = "\0"; break;
-        case 'f':  oescstring = "\f"; break;
-        case '?':  oescstring = "\?"; break;
-        case '\'': oescstring = "\'"; break;
-        case '\\': oescstring = "\\"; break;
-
-        default: 
-        {
-          CLog::Log(logWARNING, "XMLEscapeString: Unhandled escape character. Problematic string: %s", strInput.c_str());
-          continue;
-        }
-      }
-    }
-    else if (oescstring == "\"")
-      oescstring = "&quot;";
-    else if (oescstring == "<")
-      oescstring = "&lt;";
-    else if (oescstring == ">")
-      oescstring = "&gt;";
-
-    strOutput += oescstring;
-  }
-  return strOutput;
-};
 

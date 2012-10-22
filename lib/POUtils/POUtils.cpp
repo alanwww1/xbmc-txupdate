@@ -330,7 +330,9 @@ bool CPODocument::ReadStringLine(const std::string &line, std::string * pStrToAp
 {
   int linesize = line.size(); 
   if (line[linesize-1] != '\"' || line[skip] != '\"') return false;
-  pStrToAppend->append(line, skip + 1, linesize - skip - 2);
+  std::string strToAppend;
+  strToAppend.append(line, skip + 1, linesize - skip - 2);
+  pStrToAppend->append(g_CharsetUtils.UnescapeCPPString(strToAppend));
   return true;
 };
 
@@ -342,53 +344,6 @@ const bool CPODocument::HasPrefix(const std::string &strLine, const std::string 
     return strLine.compare(0, strPrefix.length(), strPrefix) == 0;
 };
 
-std::string CPODocument::UnescapeString(const std::string &strInput)
-{
-  std::string strOutput;
-  if (strInput.empty())
-    return strOutput;
-
-  char oescchar;
-  strOutput.reserve(strInput.size());
-  std::string::const_iterator it = strInput.begin();
-  while (it < strInput.end())
-  {
-    oescchar = *it++;
-    if (oescchar == '\\')
-    {
-      if (it == strInput.end())
-      {
-        CLog::Log(logWARNING, "POParser: Unhandled escape character "
-               "at line-end. Problematic entry: %s", m_Entry.Content.c_str());
-        continue;
-      }
-      switch (*it++)
-      {
-        case 'a':  oescchar = '\a'; break;
-        case 'b':  oescchar = '\b'; break;
-        case 'v':  oescchar = '\v'; break;
-        case 'n':  oescchar = '\n'; break;
-        case 't':  oescchar = '\t'; break;
-        case 'r':  oescchar = '\r'; break;
-        case '"':  oescchar = '"' ; break;
-        case '0':  oescchar = '\0'; break;
-        case 'f':  oescchar = '\f'; break;
-        case '?':  oescchar = '\?'; break;
-        case '\'': oescchar = '\''; break;
-        case '\\': oescchar = '\\'; break;
-
-        default: 
-        {
-          CLog::Log(logWARNING, "POParser: Unhandled escape character. Problematic entry: %s",
-                 m_Entry.Content.c_str());
-          continue;
-        }
-      }
-    }
-    strOutput.push_back(oescchar);
-  }
-  return strOutput;
-};
 
 bool CPODocument::FindLineStart(const std::string &strToFind)
 {
@@ -502,12 +457,12 @@ void CPODocument::WritePOEntry(const CPOEntry &currEntry)
   if (currEntry.Type == ID_FOUND)
     m_strOutBuffer += "msgctxt \"#" + IntToStr(currEntry.numID) + "\"\n";
   else if (!currEntry.msgCtxt.empty())
-    m_strOutBuffer += "msgctxt \"" + currEntry.msgCtxt + "\"\n";
+    m_strOutBuffer += "msgctxt \"" + g_CharsetUtils.EscapeStringCPP(currEntry.msgCtxt) + "\"\n";
 
   WriteLF();
-  m_strOutBuffer += "msgid \""  + currEntry.msgID +  "\"\n";
+  m_strOutBuffer += "msgid \""  + g_CharsetUtils.EscapeStringCPP(currEntry.msgID) +  "\"\n";
   if (m_bIsForeignLang)
-    m_strOutBuffer += "msgstr \"" + currEntry.msgStr + "\"\n";
+    m_strOutBuffer += "msgstr \"" + g_CharsetUtils.EscapeStringCPP(currEntry.msgStr) + "\"\n";
   else
     m_strOutBuffer += "msgstr \"\"\n";
 
@@ -523,14 +478,6 @@ void CPODocument::WriteLF()
   }
 };
 
-// we write str lines into the buffer
-void CPODocument::WriteStrLine(std::string prefix, std::string linkedString)
-{
-  WriteLF();
-  m_strOutBuffer += prefix + "\"" + linkedString + "\"\n";
-  return;
-};
-
 void CPODocument::WriteMultilineComment(std::vector<std::string> vecCommnts, std::string prefix)
 {
   if (vecCommnts.empty())
@@ -543,13 +490,3 @@ void CPODocument::WriteMultilineComment(std::vector<std::string> vecCommnts, std
   }
   return;
 };
-
-/*
-std::string CPODocument::GetLCodeFromHeader(std::string strHeader)
-{
-  size_t startpos = strHeader.find("Language: ")+10;
-  size_t endpos = strHeader.find_first_of("\\ \n", startpos);
-  std::string LCode = strHeader.substr(startpos, endpos-startpos);
-  return LCode;
-}
-*/

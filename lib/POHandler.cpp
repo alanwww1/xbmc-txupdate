@@ -213,7 +213,7 @@ bool CPOHandler::FetchXMLURLToMem (std::string strURL)
       {
         currEntry.Type = ID_FOUND;
         pValue = pChildElement->FirstChild()->Value();
-        valueString = g_CharsetUtils.EscapeLF(pValue);
+        valueString = pValue;
         currEntry.numID = id;
         std::string strUtf8 = g_CharsetUtils.ToUTF8(strXMLEncoding, valueString).c_str();
 
@@ -483,3 +483,37 @@ itStrings CPOHandler::IterateToMapIndex(itStrings it, size_t index)
     it++;
   return it;
 }
+
+bool CPOHandler::WriteXMLFile(const std::string &strOutputPOFilename)
+{
+  std::string strDir = g_File.GetPath(strOutputPOFilename);
+  g_File.MakeDir(strDir);
+
+  TiXmlDocument doc;
+  TiXmlDeclaration * decl = new TiXmlDeclaration( "1.0", "", "" );
+  TiXmlElement * pRootElement = new TiXmlElement( "strings" );
+
+  for (itStrings it = m_mapStrings.begin(); it != m_mapStrings.end(); it++)
+  {
+    CPOEntry currEntry = it->second;
+    TiXmlElement * pStringElement = new TiXmlElement("string");
+    pStringElement->SetAttribute("id", currEntry.numID);
+
+    std::string strEntry;
+    if (m_bPOIsEnglish)
+      strEntry = currEntry.msgID;
+    else
+      strEntry = currEntry.msgStr;
+
+    TiXmlText * textString = new TiXmlText(strEntry.c_str());
+
+    pStringElement->LinkEndChild(textString);
+    pRootElement->LinkEndChild(pStringElement);
+  }
+
+  doc.LinkEndChild(decl);
+  doc.LinkEndChild(pRootElement);
+  doc.SaveFile(strOutputPOFilename.c_str());
+
+  return true;
+};

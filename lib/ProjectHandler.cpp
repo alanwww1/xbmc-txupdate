@@ -108,7 +108,7 @@ bool CProjectHandler::WriteResourcesToFile(std::string strProjRootDir)
     CLog::Log(logINFO, "ProjHandler: *** Write Merged Resource: %s ***", itmapResources->first.c_str());
     CLog::IncIdent(4);
     CXMLResdata XMLResdata = m_UpdateXMLHandler.GetResData(itmapResources->first);
-    m_mapResMerged[itmapResources->first].WritePOToFiles (strProjRootDir, strPrefixDir, itmapResources->first, XMLResdata);
+    m_mapResMerged[itmapResources->first].WritePOToFiles (strProjRootDir, strPrefixDir, itmapResources->first, XMLResdata, false);
     CLog::DecIdent(4);
   }
 
@@ -122,7 +122,7 @@ bool CProjectHandler::WriteResourcesToFile(std::string strProjRootDir)
     CLog::Log(logINFO, "ProjHandler: *** Write UpdTX Resource: %s ***", itmapResources->first.c_str());
     CLog::IncIdent(4);
     CXMLResdata XMLResdata = m_UpdateXMLHandler.GetResData(itmapResources->first);
-    m_mapResUpdateTX[itmapResources->first].WritePOToFiles (strProjRootDir, strPrefixDir, itmapResources->first, XMLResdata);
+    m_mapResUpdateTX[itmapResources->first].WritePOToFiles (strProjRootDir, strPrefixDir, itmapResources->first, XMLResdata, true);
     CLog::DecIdent(4);
   }
 

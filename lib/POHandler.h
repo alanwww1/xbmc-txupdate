@@ -37,6 +37,7 @@ public:
   bool FetchXMLURLToMem (std::string strURL);
   bool ParsePOStrToMem (std::string const &strPOData, std::string const &strFilePath);
   bool WritePOFile(const std::string &strOutputPOFilename);
+  bool WriteXMLFile(const std::string &strOutputPOFilename);
   bool LookforClassicEntry (CPOEntry &EntryToFind);
   void AddClassicEntry (CPOEntry &EntryToAdd);
   bool ModifyClassicEntry (CPOEntry &EntryToFind, CPOEntry EntryNewValue);

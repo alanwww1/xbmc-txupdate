@@ -40,7 +40,9 @@
 class CCharsetUtils
 {
 public:
-  std::string EscapeLF(const char * StrToEscape);
+  std::string UnescapeCPPString(const std::string &strInput);
+  std::string EscapeStringCPP(const std::string &strInput);
+  std::string EscapeStringXML(const std::string &strInput);
   std::string ToUTF8(const std::string& strEncoding, const std::string& str);
   std::string UnWhitespace(std::string strInput);
   void stringCharsetToUtf8(const std::string& strSourceCharset, const std::string& strSource,

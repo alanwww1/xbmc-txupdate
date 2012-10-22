@@ -22,27 +22,97 @@
 #include <string>
 #include "CharsetUtils.h"
 #include <errno.h>
+#include "../Log.h"
 
 CCharsetUtils g_CharsetUtils;
 
-std::string CCharsetUtils::EscapeLF(const char * StrToEscape)
+std::string CCharsetUtils::UnescapeCPPString(const std::string &strInput)
 {
-  std::string strIN(StrToEscape);
-  std::string strOut;
-  std::string::iterator it;
-  for (it = strIN.begin(); it != strIN.end(); it++)
+  std::string strOutput;
+  if (strInput.empty())
+    return strOutput;
+
+  char oescchar;
+  strOutput.reserve(strInput.size());
+  std::string::const_iterator it = strInput.begin();
+  while (it < strInput.end())
   {
-    if (*it == '\n')
+    oescchar = *it++;
+    if (oescchar == '\\')
     {
-      strOut.append("\\n");
-      continue;
+      if (it == strInput.end())
+      {
+        CLog::Log(logWARNING, "CharsetUtils: Unhandled escape character at line-end. Problematic string: %s", strInput.c_str());
+        continue;
+      }
+      switch (*it++)
+      {
+        case 'a':  oescchar = '\a'; break;
+        case 'b':  oescchar = '\b'; break;
+        case 'v':  oescchar = '\v'; break;
+        case 'n':  oescchar = '\n'; break;
+        case 't':  oescchar = '\t'; break;
+        case 'r':  oescchar = '\r'; break;
+        case '"':  oescchar = '"' ; break;
+        case '0':  oescchar = '\0'; break;
+        case 'f':  oescchar = '\f'; break;
+        case '?':  oescchar = '\?'; break;
+        case '\'': oescchar = '\''; break;
+        case '\\': oescchar = '\\'; break;
+
+        default: 
+        {
+          CLog::Log(logWARNING, "CharsetUtils: Unhandled escape character. Problematic string: %s",strInput.c_str());
+          continue;
+        }
+      }
     }
-    if (*it == '\r')
-      continue;
-    strOut += *it;
+    strOutput.push_back(oescchar);
   }
-  return strOut;
-}
+  return strOutput;
+};
+
+std::string CCharsetUtils::EscapeStringCPP(const std::string &strInput)
+{
+  std::string strOutput;
+  if (strInput.empty())
+    return strOutput;
+
+  strOutput.reserve(strInput.size());
+  for (std::string::const_iterator it = strInput.begin(); it != strInput.end();it++)
+  {
+    switch (*it)
+    {
+      case '\n':  strOutput += "\\n"; break;
+      case '\"':  strOutput += "\\\""; break;
+      case '\r':  strOutput += "\\r"; break;
+      case '\\':  strOutput += "\\\\"; break;
+      default: strOutput.push_back(*it);
+    }
+  }
+  return strOutput;
+};
+
+std::string CCharsetUtils::EscapeStringXML(const std::string &strInput)
+{
+  std::string strOutput;
+  if (strInput.empty())
+    return strOutput;
+
+  strOutput.reserve(strInput.size());
+  for (std::string::const_iterator it = strInput.begin(); it != strInput.end();it++)
+  {
+    switch (*it)
+    {
+      case '\n':  strOutput += "&#10;";  break;
+      case '\"':  strOutput += "&quot;"; break;
+      case '<':   strOutput += "&lt;";   break;
+      case '>':   strOutput += "&gt;";   break;
+      default: strOutput.push_back(*it);
+    }
+  }
+  return strOutput;
+};
 
 // remove trailing and leading whitespaces
 std::string CCharsetUtils::UnWhitespace(std::string strInput)

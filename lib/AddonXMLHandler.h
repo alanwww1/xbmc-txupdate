@@ -43,10 +43,9 @@ protected:
   bool ProcessAddonXMLFile (std::string AddonXMLFilename, TiXmlDocument &xmlAddonXML);
   bool ProcessCoreVersion(std::string filename, std::string &strBuffer);
   bool GetEncoding(const TiXmlDocument* pDoc, std::string& strEncoding);
-  std::string EscapeLF(const char * StrToEscape);
+  std::string CstrToString(const char * StrToEscape);
   std::string GetXMLEntry (std::string const &strprefix, size_t &pos1, size_t &pos2);
   void CleanWSBetweenXMLEntries (std::string &strXMLString);
-  std::string XMLEscapeString(const std::string &strInput);
   std::map<std::string, CAddonXMLEntry> m_mapAddonXMLData;
   std::map<std::string, CAddonXMLEntry>::iterator itAddonXMLData;
   std::string m_strResourceData;

@@ -35,7 +35,8 @@ public:
   std::string strResDirectory;
   std::string strTXResName;
   std::string strLangFileType;
-  std::string strURLSuffix; 
+  std::string strURLSuffix;
+  bool bWritePO, bWriteXML;
 };
 
 class CUpdateXMLHandler

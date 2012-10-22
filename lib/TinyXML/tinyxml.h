@@ -342,13 +342,13 @@ protected:
 		{
 			if ( *p == '&' )
 				return GetEntity( p, _value, length, encoding );
-                        // escape double quotes as they are not allowed in gettextpo files
+/*                        // escape double quotes as they are not allowed in gettextpo files
                         if (*p == '"') 
                         {
                           _value[0] = '\\'; _value[1] = '"';
                           *length = 2;
                           return p+1;
-                        }
+                        }*/
                         *_value = *p;
                         return p+1;
 		}

@@ -509,12 +509,12 @@ const char* TiXmlBase::GetEntity( const char* p, char* value, int* length, TiXml
 			*value = (char)ucs;
 			*length = 1;
 		}
-		// convert line end chr to c++ style escape
+/*		convert line end chr to c++ style escape
 		if (*value == '\n')
                 {
                   *value ='\\'; value++; *value ='n';
                   *length = 2;
-                }
+                }*/
 		return p + delta + 1;
 	}
 

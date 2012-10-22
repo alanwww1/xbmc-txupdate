@@ -81,6 +81,9 @@ Where:
       * skin: A skin addon with an addon.xml file AND language files
       * xbmc-core: Language files for xbmc-core
   * resourceSubdir: The subdirectory to put the language files of the resource in. (optional)
+    Optional attributes:
+      * writeXML: (default: false) write merged string files in the old XML file format.
+      * writePO: (default: true) write merged string files in the new PO file format.
 
 **II. .passwords.xml**
 

@@ -191,7 +191,7 @@ bool CResourceHandler::FetchPOFilesUpstreamToMem(CXMLResdata XMLResdata, std::li
   return true;
 }
 
-bool CResourceHandler::WritePOToFiles(std::string strProjRootDir, std::string strPrefixDir, std::string strResname, CXMLResdata XMLResdata)
+bool CResourceHandler::WritePOToFiles(std::string strProjRootDir, std::string strPrefixDir, std::string strResname, CXMLResdata XMLResdata, bool bTXUpdFile)
 {
   std::string strResourceDir, strLangDir;
   switch (XMLResdata.Restype)
@@ -218,7 +218,11 @@ bool CResourceHandler::WritePOToFiles(std::string strProjRootDir, std::string st
     std::string strPODir = strLangDir + strLang;
 
     CPOHandler * pPOHandler = &m_mapPOFiles[itmapPOFiles->first];
-    pPOHandler->WritePOFile(strPODir + DirSepChar + "strings.po");
+    if (XMLResdata.bWritePO || bTXUpdFile)
+      pPOHandler->WritePOFile(strPODir + DirSepChar + "strings.po");
+
+    if (XMLResdata.bWriteXML && !bTXUpdFile)
+      pPOHandler->WriteXMLFile(strPODir + DirSepChar + "strings.xml");
 
     CLog::LogTable(logINFO, "writepo", "\t\t\t%s\t\t%i\t\t%i", itmapPOFiles->first.c_str(), pPOHandler->GetNumEntriesCount(),
               pPOHandler->GetClassEntriesCount());

@@ -31,6 +31,8 @@ using namespace std;
 CXMLResdata::CXMLResdata()
 {
   Restype = UNKNOWN;
+  bWritePO = true;
+  bWriteXML = false;
 }
 
 CXMLResdata::~CXMLResdata()
@@ -167,6 +169,16 @@ bool CUpdateXMLHandler::LoadXMLToMem (std::string rootDir)
       const TiXmlElement *pChildResDirElement = pChildResElement->FirstChildElement("resourceSubdir");
       if (pChildResDirElement && pChildResDirElement->FirstChild())
         currResData.strResDirectory = pChildResDirElement->FirstChild()->Value();
+      if (pChildResDirElement->Attribute("writePO"))
+      {
+	std::string strBool = pChildResDirElement->Attribute("writePO");
+        currResData.bWritePO = strBool == "true";
+      }
+      if (pChildResDirElement->Attribute("writeXML"))
+      {
+	std::string strBool = pChildResDirElement->Attribute("writeXML");
+        currResData.bWriteXML = strBool == "true";
+      }
 
       const TiXmlElement *pChildTXNameElement = pChildResElement->FirstChildElement("TXname");
       if (pChildTXNameElement && pChildTXNameElement->FirstChild())
