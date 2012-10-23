@@ -31,6 +31,7 @@ CSettings::CSettings()
   m_minComplPercentage = DEFAULTMINCOMPLETION;
   m_strMergedLangfilesDir = DEFAULTMERGEDLANGDIR;
   m_strTXUpdateLangfilesDir = DEFAULTTXUPDLANGDIR;
+  m_bForceComm = false;
 };
 
 CSettings::~CSettings()
@@ -87,3 +88,12 @@ std::string CSettings::GetTXUpdateLangfilesDir()
   return m_strTXUpdateLangfilesDir;
 };
 
+void CSettings::SetForcePOComments(bool bForceComm)
+{
+  m_bForceComm = bForceComm;
+};
+
+bool CSettings::GetForcePOComments()
+{
+  return m_bForceComm;
+};

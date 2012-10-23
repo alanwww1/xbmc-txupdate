@@ -44,8 +44,7 @@ public:
   bool DeleteClassicEntry (CPOEntry &EntryToFind);
 
   const CPOEntry* GetNumPOEntryByID(uint32_t numid);
-  bool AddNumPOEntryByID(uint32_t numid, CPOEntry const &POEntry);
-  bool AddNumPOEntryByID(uint32_t numid, CPOEntry const &POEntry, std::string forceMsgID);
+  bool AddNumPOEntryByID(uint32_t numid, CPOEntry const &POEntry, CPOEntry const &POEntryEN, bool bCopyComments);
   const CPOEntry* GetClassicPOEntryByIdx(size_t pos) const;
 
   const CPOEntry* GetNumPOEntryByIdx(size_t pos) const;

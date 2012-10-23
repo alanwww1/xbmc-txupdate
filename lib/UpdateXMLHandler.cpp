@@ -115,6 +115,12 @@ bool CUpdateXMLHandler::LoadXMLToMem (std::string rootDir)
     CLog::Log(logINFO, "UpdXMLHandler: No temp tx update language file directory specified in xbmc-txupdate.xml file. Using default value: %s",
               g_Settings.GetTXUpdateLangfilesDir().c_str());
 
+  std::string strForcePOComm;
+  if (pRootElement->Attribute("forcePOComm") && (strForcePOComm = pRootElement->Attribute("forcePOComm")) == "true")
+  {
+    CLog::Log(logINFO, "UpdXMLHandler: Forced PO file comments for non English languages.", strMergedLangfileDir.c_str());
+    g_Settings.SetForcePOComments(true);
+  }
 
   const TiXmlElement *pChildResElement = pRootElement->FirstChildElement("resource");
   if (!pChildResElement || pChildResElement->NoChildren())

@@ -437,20 +437,26 @@ void CPOHandler::SetHeaderNEW (std::string strLangCode)
   m_strHeader +=  "\"Plural-Forms: nplurals=" + strnplurals + "; plural=" + g_LCodeHandler.GetPlurForm(strLangCode) + ";\\n\"\n";
 }
 
-bool CPOHandler::AddNumPOEntryByID(uint32_t numid, CPOEntry const &POEntry)
+bool CPOHandler::AddNumPOEntryByID(uint32_t numid, CPOEntry const &POEntry, CPOEntry const &POEntryEN, bool bCopyComments)
 {
   if (m_mapStrings.find(numid) != m_mapStrings.end())
     return false;
   m_mapStrings[numid] = POEntry;
-  return true;
-}
-
-bool CPOHandler::AddNumPOEntryByID(uint32_t numid, CPOEntry const &POEntry, std::string forceMsgID)
-{
-  if (m_mapStrings.find(numid) != m_mapStrings.end())
-    return false;
-  m_mapStrings[numid] = POEntry;
-  m_mapStrings[numid].msgID = forceMsgID;
+  m_mapStrings[numid].msgID = POEntryEN.msgID;
+  if (bCopyComments)
+  {
+    m_mapStrings[numid].extractedComm = POEntryEN.extractedComm;
+    m_mapStrings[numid].interlineComm = POEntryEN.interlineComm;
+    m_mapStrings[numid].referenceComm = POEntryEN.referenceComm;
+    m_mapStrings[numid].translatorComm = POEntryEN.translatorComm;
+  }
+  else
+  {
+    m_mapStrings[numid].extractedComm.clear();
+    m_mapStrings[numid].interlineComm.clear();
+    m_mapStrings[numid].referenceComm.clear();
+    m_mapStrings[numid].translatorComm.clear();
+  }
   return true;
 }
 

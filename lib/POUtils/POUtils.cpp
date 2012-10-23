@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include <sstream>
 #include "../HTTPUtils.h"
+#include "../Settings.h"
 
 using namespace std;
 
@@ -430,11 +431,10 @@ void CPODocument::WritePOEntry(const CPOEntry &currEntry)
 {
   m_bhasLFWritten = false;
 
-  if (!m_bIsForeignLang && currEntry.Type == ID_FOUND)
+  if ((!m_bIsForeignLang || g_Settings.GetForcePOComments()) && currEntry.Type == ID_FOUND)
   {
     int id = currEntry.numID;
-    WriteMultilineComment(currEntry.interlineComm, "#");
-    if (id-m_previd >= 2 && m_previd > -1)
+    if (id-m_previd >= 2 && m_previd > -1 && !m_bIsForeignLang)
     {
       WriteLF();
       if (id-m_previd == 2)
@@ -442,11 +442,12 @@ void CPODocument::WritePOEntry(const CPOEntry &currEntry)
       if (id-m_previd > 2)
         m_strOutBuffer += "#empty strings from id " + IntToStr(m_previd+1) + " to " + IntToStr(id-1) + "\n";
     }
+    WriteMultilineComment(currEntry.interlineComm, "#");
     m_previd =id;
   }
   m_bhasLFWritten = false;
 
-  if (!m_bIsForeignLang)
+  if (!m_bIsForeignLang || g_Settings.GetForcePOComments())
   {
     WriteMultilineComment(currEntry.translatorComm, "# ");
     WriteMultilineComment(currEntry.extractedComm,  "#.");

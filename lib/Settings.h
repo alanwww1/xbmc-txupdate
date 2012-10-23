@@ -46,12 +46,15 @@ public:
   std::string GetMergedLangfilesDir();
   void SetTXUpdateLangfilesDir(std::string const &strTXUpdateLangfilesDir);
   std::string GetTXUpdateLangfilesDir();
+  void SetForcePOComments(bool bForceComm);
+  bool GetForcePOComments();
 private:
   size_t m_CacheExpire;
   int m_minComplPercentage;
   std::string m_strProjectName;
   std::string m_strMergedLangfilesDir;
   std::string m_strTXUpdateLangfilesDir;
+  bool m_bForceComm;
 };
 
 extern CSettings g_Settings;

@@ -209,24 +209,24 @@ bool CProjectHandler::CreateMergedResources()
 
         if (strLangCode == "en")
         {
-          mergedPOHandler.AddNumPOEntryByID(numID, *pcurrPOEntryEN);
-          updTXPOHandler.AddNumPOEntryByID(numID, *pcurrPOEntryEN);
+          mergedPOHandler.AddNumPOEntryByID(numID, *pcurrPOEntryEN, *pcurrPOEntryEN, true);
+          updTXPOHandler.AddNumPOEntryByID(numID, *pcurrPOEntryEN, *pcurrPOEntryEN, true);
         }
 
         if (strLangCode != "en" && pPOEntryTX && pPOEntryTX->msgID == pcurrPOEntryEN->msgID && !pPOEntryTX->msgStr.empty())
-          mergedPOHandler.AddNumPOEntryByID(numID, *pPOEntryTX);
+          mergedPOHandler.AddNumPOEntryByID(numID, *pPOEntryTX, *pcurrPOEntryEN, true);
         else if (strLangCode != "en" && pPOEntryUpstr && (pPOEntryUpstr->msgID == pcurrPOEntryEN->msgID) && !pPOEntryUpstr->msgStr.empty())
         {
-          mergedPOHandler.AddNumPOEntryByID(numID, *pPOEntryUpstr);
-          updTXPOHandler.AddNumPOEntryByID(numID, *pPOEntryUpstr);
+          mergedPOHandler.AddNumPOEntryByID(numID, *pPOEntryUpstr, *pcurrPOEntryEN, true);
+          updTXPOHandler.AddNumPOEntryByID(numID, *pPOEntryUpstr, *pcurrPOEntryEN, false);
         }
         else if (strLangCode != "en" && pPOEntryUpstr && pPOEntryUpstr->msgID.empty() && !pPOEntryUpstr->msgStr.empty())
         {
-          mergedPOHandler.AddNumPOEntryByID(numID, *pPOEntryUpstr, pcurrPOEntryEN->msgID); // we got this entry from a strings.xml file
-          updTXPOHandler.AddNumPOEntryByID(numID, *pPOEntryUpstr, pcurrPOEntryEN->msgID);
+          mergedPOHandler.AddNumPOEntryByID(numID, *pPOEntryUpstr, *pcurrPOEntryEN, true); // we got this entry from a strings.xml file
+          updTXPOHandler.AddNumPOEntryByID(numID, *pPOEntryUpstr, *pcurrPOEntryEN, false);
         }
         else if (strLangCode != "en")
-          mergedPOHandler.AddNumPOEntryByID(numID, *pcurrPOEntryEN);
+          mergedPOHandler.AddNumPOEntryByID(numID, *pcurrPOEntryEN, *pcurrPOEntryEN, true);
       }
 
       CPOHandler * pPOHandlerTX, * pPOHandlerUpst;
