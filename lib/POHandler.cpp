@@ -495,15 +495,24 @@ bool CPOHandler::WriteXMLFile(const std::string &strOutputPOFilename)
   std::string strDir = g_File.GetPath(strOutputPOFilename);
   g_File.MakeDir(strDir);
 
-  TiXmlDocument doc;
-  TiXmlDeclaration * decl = new TiXmlDeclaration( "1.0", "", "" );
-  TiXmlElement * pRootElement = new TiXmlElement( "strings" );
+  std::string strXMLDoc;
+
+  strXMLDoc += "<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"yes\"?>\n";
+  strXMLDoc += "<strings>\n";
 
   for (itStrings it = m_mapStrings.begin(); it != m_mapStrings.end(); it++)
   {
     CPOEntry currEntry = it->second;
-    TiXmlElement * pStringElement = new TiXmlElement("string");
-    pStringElement->SetAttribute("id", currEntry.numID);
+
+    if (!currEntry.interlineComm.empty())
+    {
+      if (it != m_mapStrings.begin())
+        strXMLDoc += "\n";
+      for (std::vector<std::string>::iterator itvec = currEntry.interlineComm.begin(); itvec != currEntry.interlineComm.end(); itvec++)
+      {
+        strXMLDoc += "    <!-- " + *itvec + " -->\n";
+      }
+    }
 
     std::string strEntry;
     if (m_bPOIsEnglish)
@@ -511,15 +520,21 @@ bool CPOHandler::WriteXMLFile(const std::string &strOutputPOFilename)
     else
       strEntry = currEntry.msgStr;
 
-    TiXmlText * textString = new TiXmlText(strEntry.c_str());
+    strXMLDoc += "    <string id=\"" + g_CharsetUtils.IntToStr(currEntry.numID) + "\">" + g_CharsetUtils.EscapeStringXML(strEntry) + "</string>";
 
-    pStringElement->LinkEndChild(textString);
-    pRootElement->LinkEndChild(pStringElement);
+    if (!currEntry.extractedComm.empty())
+    {
+      for (std::vector<std::string>::iterator itvec = currEntry.extractedComm.begin(); itvec != currEntry.extractedComm.end(); itvec++)
+      {
+        strXMLDoc += " <!--" + *itvec + " -->";
+      }
+    }
+    strXMLDoc += "\n";
   }
 
-  doc.LinkEndChild(decl);
-  doc.LinkEndChild(pRootElement);
-  doc.SaveFile(strOutputPOFilename.c_str());
+  strXMLDoc += "</strings>";
+
+  g_File.WriteFileFromStr(strOutputPOFilename, strXMLDoc);
 
   return true;
 };

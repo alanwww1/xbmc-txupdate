@@ -23,8 +23,16 @@
 #include "CharsetUtils.h"
 #include <errno.h>
 #include "../Log.h"
+#include <sstream>
 
 CCharsetUtils g_CharsetUtils;
+
+std::string CCharsetUtils::IntToStr(int number)
+{
+  std::stringstream ss;//create a stringstream
+  ss << number;//add number to the stream
+  return ss.str();//return a string with the contents of the stream
+};
 
 std::string CCharsetUtils::UnescapeCPPString(const std::string &strInput)
 {
@@ -108,6 +116,8 @@ std::string CCharsetUtils::EscapeStringXML(const std::string &strInput)
       case '\"':  strOutput += "&quot;"; break;
       case '<':   strOutput += "&lt;";   break;
       case '>':   strOutput += "&gt;";   break;
+      case '&':   strOutput += "&amp;";  break;
+      case '\'':  strOutput += "&apos;"; break;
       default: strOutput.push_back(*it);
     }
   }
