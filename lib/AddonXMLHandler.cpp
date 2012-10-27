@@ -159,8 +159,8 @@ bool CAddonXMLHandler::ProcessAddonXMLFile (std::string AddonXMLFilename, TiXmlD
   while (pChildDescElement && pChildDescElement->FirstChild())
   {
     std::string strLang;
-    if (pChildSummElement->Attribute("lang"))
-      strLang = pChildSummElement->Attribute("lang");
+    if (pChildDescElement->Attribute("lang"))
+      strLang = pChildDescElement->Attribute("lang");
     else
       strLang = "en";
 
@@ -176,8 +176,8 @@ bool CAddonXMLHandler::ProcessAddonXMLFile (std::string AddonXMLFilename, TiXmlD
   while (pChildDisclElement && pChildDisclElement->FirstChild())
   {
     std::string strLang;
-    if (pChildSummElement->Attribute("lang"))
-      strLang = pChildSummElement->Attribute("lang");
+    if (pChildDisclElement->Attribute("lang"))
+      strLang = pChildDisclElement->Attribute("lang");
     else
       strLang = "en";
 
