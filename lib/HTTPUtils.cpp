@@ -74,7 +74,7 @@ long CHTTPHandler::curlURLToCache(std::string strCacheFile, std::string strURL)
 
     if(m_curlHandle) 
     {
-      dloadfile = fopen(strCacheFile.c_str(),"wb");
+      dloadfile = fopen((strCacheFile + "_dload").c_str(),"wb");
       curl_easy_setopt(m_curlHandle, CURLOPT_URL, strURL.c_str());
       curl_easy_setopt(m_curlHandle, CURLOPT_WRITEFUNCTION, Write_CurlData_File);
       if (!LoginData.strLogin.empty())
@@ -100,10 +100,12 @@ long CHTTPHandler::curlURLToCache(std::string strCacheFile, std::string strURL)
                   strURL.c_str(), strCacheFile.c_str(), filesize);
       else
       {
+        g_File.DeleteFile(strCacheFile+"_dload");
         CLog::Log(logINFO, "HTTPHandler: curlURLToCache finished with error code: %i from URL %s to localdir %s",
                   http_code, strURL.c_str(), strCacheFile.c_str());
-        g_File.DeleteFile(strCacheFile);
       }
+      g_File.CopyFile(strCacheFile+"_dload", strCacheFile);
+      g_File.DeleteFile(strCacheFile+"_dload");
       return http_code;
     }
     else
