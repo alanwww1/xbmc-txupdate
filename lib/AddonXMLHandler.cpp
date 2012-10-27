@@ -158,7 +158,12 @@ bool CAddonXMLHandler::ProcessAddonXMLFile (std::string AddonXMLFilename, TiXmlD
   const TiXmlElement *pChildDescElement = pChildElement->FirstChildElement("description");
   while (pChildDescElement && pChildDescElement->FirstChild())
   {
-    std::string strLang = pChildDescElement->Attribute("lang");
+    std::string strLang;
+    if (pChildSummElement->Attribute("lang"))
+      strLang = pChildSummElement->Attribute("lang");
+    else
+      strLang = "en";
+
     if (pChildDescElement->FirstChild())
     {
       std::string strValue = CstrToString(pChildDescElement->FirstChild()->Value());
@@ -170,7 +175,12 @@ bool CAddonXMLHandler::ProcessAddonXMLFile (std::string AddonXMLFilename, TiXmlD
   const TiXmlElement *pChildDisclElement = pChildElement->FirstChildElement("disclaimer");
   while (pChildDisclElement && pChildDisclElement->FirstChild())
   {
-    std::string strLang = pChildDisclElement->Attribute("lang");
+    std::string strLang;
+    if (pChildSummElement->Attribute("lang"))
+      strLang = pChildSummElement->Attribute("lang");
+    else
+      strLang = "en";
+
     if (pChildDisclElement->FirstChild())
     {
       std::string strValue = CstrToString(pChildDisclElement->FirstChild()->Value());
