@@ -82,6 +82,8 @@ bool CFile::FileExist(std::string filename)
 
 void CFile::DeleteFile(std::string filename)
 {
+  if (!FileExist(filename))
+    return;
   if (remove(filename.c_str()) != 0)
     CLog::Log(logERROR, "FileUtils: DeleteFile: unable to delete file: %s", filename.c_str());
 };
