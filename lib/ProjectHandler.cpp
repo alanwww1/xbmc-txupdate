@@ -153,18 +153,17 @@ bool CProjectHandler::CreateMergedResources()
     else if (m_mapResourcesTX.find(*itResAvail) != m_mapResourcesTX.end())
       strResPreHeader = m_mapResourcesTX[*itResAvail].GetXMLHandler()->GetResHeaderPretext();
 
-    std::list<std::string> listMergedLangs = CreateMergedLanguageList(*itResAvail, false);
-
     CAddonXMLEntry * pENAddonXMLEntry;
 
     if ((pENAddonXMLEntry = GetAddonDataFromXML(&m_mapResourcesUpstr, *itResAvail, "en")) != NULL)
     {
-      CLog::Log(logINFO, "CreateMergedResources: Using Upstream AddonXML file as source for merging");
       mergedResHandler.GetXMLHandler()->SetStrAddonXMLFile(m_mapResourcesUpstr[*itResAvail].GetXMLHandler()->GetStrAddonXMLFile());
       updTXResHandler.GetXMLHandler()->SetStrAddonXMLFile(m_mapResourcesUpstr[*itResAvail].GetXMLHandler()->GetStrAddonXMLFile());
     }
     else if (*itResAvail != "xbmc.core")
       CLog::Log(logERROR, "CreateMergedResources: No Upstream AddonXML file found as source for merging");
+
+    std::list<std::string> listMergedLangs = CreateMergedLanguageList(*itResAvail, false);
 
     CPOHandler * pcurrPOHandlerEN = m_mapResourcesUpstr[*itResAvail].GetPOData("en");
 
@@ -283,6 +282,8 @@ std::list<std::string> CProjectHandler::CreateMergedLanguageList(std::string str
 
   if (m_mapResourcesTX.find(strResname) != m_mapResourcesTX.end())
   {
+
+    // Add languages exist in transifex PO files
     for (size_t i =0; i != m_mapResourcesTX[strResname].GetLangsCount(); i++)
     {
       std::string strMLCode = m_mapResourcesTX[strResname].GetLangCodeFromPos(i);
@@ -295,11 +296,21 @@ std::list<std::string> CProjectHandler::CreateMergedLanguageList(std::string str
 
   if (m_mapResourcesUpstr.find(strResname) != m_mapResourcesUpstr.end())
   {
+
+    // Add languages exist in upstream PO or XML files
     for (size_t i =0; i != m_mapResourcesUpstr[strResname].GetLangsCount(); i++)
     {
       std::string strMLCode = m_mapResourcesUpstr[strResname].GetLangCodeFromPos(i);
       if (std::find(listMergedLangs.begin(), listMergedLangs.end(), strMLCode) == listMergedLangs.end())
         listMergedLangs.push_back(strMLCode);
+    }
+
+    // Add languages only exist in addon.xml files
+    std::map<std::string, CAddonXMLEntry> * pMapUpstAddonXMLData = m_mapResourcesUpstr[strResname].GetXMLHandler()->GetMapAddonXMLData();
+    for (std::map<std::string, CAddonXMLEntry>::iterator it = pMapUpstAddonXMLData->begin(); it != pMapUpstAddonXMLData->end(); it++)
+    {
+      if (std::find(listMergedLangs.begin(), listMergedLangs.end(), it->first) == listMergedLangs.end())
+        listMergedLangs.push_back(it->first);
     }
   }
 
