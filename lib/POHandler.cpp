@@ -24,6 +24,7 @@
 #include <algorithm>
 #include <list>
 #include <sstream>
+#include "Settings.h"
 
 CPOHandler::CPOHandler()
 {
@@ -425,7 +426,7 @@ void CPOHandler::SetHeaderNEW (std::string strLangCode)
   m_strHeader += "msgid \"\"\n";
   m_strHeader += "msgstr \"\"\n";
   m_strHeader += "\"Project-Id-Version: XBMC-Addons\\n\"\n";
-  m_strHeader += "\"Report-Msgid-Bugs-To: alanwww1@xbmc.org\\n\"\n";
+  m_strHeader += "\"Report-Msgid-Bugs-To: " + g_Settings.GetSupportEmailAdd() + "\\n\"\n";
   m_strHeader += "\"POT-Creation-Date: " + g_File.GetCurrTime() + "\\n\"\n";
   m_strHeader += "\"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\\n\"\n";
   m_strHeader += "\"Last-Translator: FULL NAME <EMAIL@ADDRESS>\\n\"\n";

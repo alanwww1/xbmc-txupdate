@@ -115,6 +115,16 @@ bool CUpdateXMLHandler::LoadXMLToMem (std::string rootDir)
     CLog::Log(logINFO, "UpdXMLHandler: No temp tx update language file directory specified in xbmc-txupdate.xml file. Using default value: %s",
               g_Settings.GetTXUpdateLangfilesDir().c_str());
 
+  std::string strSupportEmailAdd;
+  if (pRootElement->Attribute("support_email") && (strSupportEmailAdd = pRootElement->Attribute("support_email")) != "")
+  {
+    CLog::Log(logINFO, "UpdXMLHandler: Found support email address in xbmc-txupdate.xml file: %s", strSupportEmailAdd.c_str());
+    g_Settings.SetSupportEmailAdd(strSupportEmailAdd);
+  }
+  else
+    CLog::Log(logINFO, "UpdXMLHandler: No support email address specified in xbmc-txupdate.xml file. Using default value: %s",
+              g_Settings.GetSupportEmailAdd().c_str());
+
   std::string strForcePOComm;
   if (pRootElement->Attribute("forcePOComm") && (strForcePOComm = pRootElement->Attribute("forcePOComm")) == "true")
   {

@@ -32,6 +32,7 @@ CSettings::CSettings()
   m_strMergedLangfilesDir = DEFAULTMERGEDLANGDIR;
   m_strTXUpdateLangfilesDir = DEFAULTTXUPDLANGDIR;
   m_bForceComm = false;
+  m_strSupportEmailAdd = "anonymus";
 };
 
 CSettings::~CSettings()
@@ -76,6 +77,16 @@ void CSettings::SetMergedLangfilesDir(std::string const &strMergedLangfilesDir)
 std::string CSettings::GetMergedLangfilesDir()
 {
   return m_strMergedLangfilesDir;
+};
+
+void CSettings::SetSupportEmailAdd(std::string const &strEmailAdd)
+{
+  m_strSupportEmailAdd = strEmailAdd;
+}
+
+std::string CSettings::GetSupportEmailAdd()
+{
+  return m_strSupportEmailAdd;
 };
 
 void CSettings::SetTXUpdateLangfilesDir(std::string const &strTXUpdateLangfilesDir)

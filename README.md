@@ -66,6 +66,7 @@ Where:
       * merged_langfiledir - (default: merged-langfiles) the directory under PROJECTDIR, where the fresh merged, cleaned translations will be locally created.
       * temptxupdate_langfiledir - (default: tempfiles_txupdate) the directory under PROJECTDIR, where the language files to update Transifex will be locally created.
       * forcePOComm - (default: false) Force program to write comments into the non-English PO files, not only into the English ones.
+      * support_email - (default: anonymus) Specify the support email address written in PO file headers, which users can use in case of PO file format problems.
   * name: The name of the resource(eg. addon). This is the name which will be used as a directory name where the language files will be created. So the best is to use the same directory name here which is used at the upstream repo. This field must be filled.
   * TXname: The Transifex name you want to have for the resource(addon). No special characters (or dots) are alowed. This field must be filled.
   * upsreamURL: The http URL where the upstream files are maintained. For a plugin, use the URL for the directory where the addon.xml file exists.

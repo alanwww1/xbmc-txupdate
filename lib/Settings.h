@@ -48,12 +48,15 @@ public:
   std::string GetTXUpdateLangfilesDir();
   void SetForcePOComments(bool bForceComm);
   bool GetForcePOComments();
+  void SetSupportEmailAdd(std::string const &strEmailAdd);
+  std::string GetSupportEmailAdd();
 private:
   size_t m_CacheExpire;
   int m_minComplPercentage;
   std::string m_strProjectName;
   std::string m_strMergedLangfilesDir;
   std::string m_strTXUpdateLangfilesDir;
+  std::string m_strSupportEmailAdd;
   bool m_bForceComm;
 };
 
