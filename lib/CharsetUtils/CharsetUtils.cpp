@@ -113,11 +113,9 @@ std::string CCharsetUtils::EscapeStringXML(const std::string &strInput)
     switch (*it)
     {
       case '\n':  strOutput += "&#10;";  break;
-      case '\"':  strOutput += "&quot;"; break;
       case '<':   strOutput += "&lt;";   break;
       case '>':   strOutput += "&gt;";   break;
       case '&':   strOutput += "&amp;";  break;
-      case '\'':  strOutput += "&apos;"; break;
       default: strOutput.push_back(*it);
     }
   }
