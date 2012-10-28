@@ -101,7 +101,7 @@ long CHTTPHandler::curlURLToCache(std::string strCacheFile, std::string strURL)
       else
       {
         g_File.DeleteFile(strCacheFile+"_dload");
-        CLog::Log(logINFO, "HTTPHandler: curlURLToCache finished with error code: %i from URL %s to localdir %s",
+        CLog::Log(logERROR, "HTTPHandler: curlURLToCache finished with error code: %i from URL %s to localdir %s",
                   http_code, strURL.c_str(), strCacheFile.c_str());
       }
       g_File.CopyFile(strCacheFile+"_dload", strCacheFile);
