@@ -47,7 +47,7 @@ bool CAddonXMLHandler::LoadAddonXMLFile (std::string strAddonXMLFilename)
 
   TiXmlDocument xmlAddonXML;
 
-  if (!xmlAddonXML.LoadFile(strAddonXMLFilename.c_str()))
+  if (!xmlAddonXML.Parse(m_strAddonXMLFile.c_str(), 0, TIXML_DEFAULT_ENCODING))
   {
     CLog::Log(logERROR, "AddonXMLHandler: AddonXML file problem: %s %s\n", xmlAddonXML.ErrorDesc(), strAddonXMLFilename.c_str());
     return false;
@@ -66,7 +66,7 @@ bool CAddonXMLHandler::FetchAddonXMLFileUpstr (std::string strURL)
   m_strAddonXMLFile = strXMLFile;
   g_File.ConvertStrLineEnds(m_strAddonXMLFile);
 
-  if (!xmlAddonXML.Parse(strXMLFile.c_str(), 0, TIXML_DEFAULT_ENCODING))
+  if (!xmlAddonXML.Parse(m_strAddonXMLFile.c_str(), 0, TIXML_DEFAULT_ENCODING))
   {
     CLog::Log(logERROR, "AddonXMLHandler: AddonXML file problem: %s %s\n", xmlAddonXML.ErrorDesc(), strURL.c_str());
     return false;
