@@ -533,7 +533,7 @@ bool CPOHandler::WriteXMLFile(const std::string &strOutputPOFilename)
     strXMLDoc += "\n";
   }
 
-  strXMLDoc += "</strings>";
+  strXMLDoc += "</strings>\n";
 
   g_File.WriteFileFromStr(strOutputPOFilename, strXMLDoc);
 
