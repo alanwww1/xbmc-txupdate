@@ -137,13 +137,23 @@ std::string CCharsetUtils::UnWhitespace(std::string strInput)
   return strInput;
 }
 
-std::string CCharsetUtils::ToUTF8(const std::string& strEncoding, const std::string& str)
+std::string CCharsetUtils::ToUTF8(std::string strEncoding, const std::string& str)
 {
-  if (strEncoding.empty())
-    return str;
+  if (strEncoding.empty() || strEncoding == "utf8" || strEncoding == "UTF8" || strEncoding == "utf-8" || strEncoding == "UTF-8")
+  {
+    if (IsValidUTF8(str))
+      return str;
+
+    CLog::Log(logWARNING, "CharsetUtils::ToUTF8: Invalid character sequence in UTF8 string, trying windows-1252 for string: %s", str.c_str());
+    strEncoding = "windows-1252"; // The most common is that user thinks that he is typing utf8, but he uses cp-1252 codepage
+  }
 
   std::string ret;
   stringCharsetToUtf8(strEncoding, str, ret);
+
+  if (!IsValidUTF8(ret))
+    CLog::Log(logERROR, "CharsetUtils::ToUTF8: Wrong character encoding given, not able to convert to UTF8. String is: %s", str.c_str());
+
   return ret;
 }
 
@@ -290,3 +300,46 @@ size_t CCharsetUtils::iconv_const (void* cd, const char** inbuf, size_t *inbytes
 
   return iconv((iconv_t)cd, iconv_param_adapter(inbuf), inbytesleft, outbuf, outbytesleft);
 }
+
+bool CCharsetUtils::IsValidUTF8(std::string const &strToCheck)
+{
+  int numContBExpected =0;
+  for (std::string::const_iterator it = strToCheck.begin(); it != strToCheck.end(); it++)
+  {
+    unsigned char ch = (unsigned char) *it;
+
+    if (ch <= 0x7f) //We are at the ASCII range
+    {
+      if (numContBExpected ==0)
+        continue;
+      else
+        return false; // we were expecting a continuation byte, but we are not getting one
+    }
+
+    if (ch==0xc0 || ch==0xc1 || ch>=0xf5) //invalid characters in an utf8 string
+      return false;
+
+    if ((ch & 0xc0) == 0xc0 && (numContBExpected !=0)) // we have a code entry start, but
+      return false; // we are still expecting a continuation byte not a new code start
+
+    if ((ch & 0xc0) == 0x80)
+    {
+      if (numContBExpected == 0) // we have a continuation byte, but
+        return false; // we are not expecting one
+      numContBExpected--;
+      continue;
+    }
+
+    if ((ch & 0xe0) == 0xc0) // we have a 2byte long code entry start
+      numContBExpected = 1;
+    else if ((ch & 0xf0) == 0xe0) // we have a 3byte long code entry start
+      numContBExpected = 2;
+    else if ((ch & 0xf8) == 0xf0) // we have a 4byte long code entry start
+      numContBExpected = 3;
+    else if ((ch & 0xfc) == 0xf8) // we have a 5byte long code entry start which is invalid by new standards
+      return false;
+    else if ((ch & 0xfe) == 0xfc) // we have a 6byte long code entry start which is invalid by new standards
+      return false;
+  }
+  return true;
+};

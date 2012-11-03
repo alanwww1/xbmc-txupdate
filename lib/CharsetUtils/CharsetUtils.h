@@ -44,10 +44,11 @@ public:
   std::string UnescapeCPPString(const std::string &strInput);
   std::string EscapeStringCPP(const std::string &strInput);
   std::string EscapeStringXML(const std::string &strInput);
-  std::string ToUTF8(const std::string& strEncoding, const std::string& str);
+  std::string ToUTF8(std::string strEncoding, const std::string& str);
   std::string UnWhitespace(std::string strInput);
   void stringCharsetToUtf8(const std::string& strSourceCharset, const std::string& strSource,
                           std::string& strDest);
+  bool IsValidUTF8(std::string const &strToCheck);
 
 private:
   size_t iconv_const (void* cd, const char** inbuf, size_t *inbytesleft, char* * outbuf, size_t *outbytesleft);

@@ -333,6 +333,8 @@ bool CPODocument::ReadStringLine(const std::string &line, std::string * pStrToAp
   if (line[linesize-1] != '\"' || line[skip] != '\"') return false;
   std::string strToAppend;
   strToAppend.append(line, skip + 1, linesize - skip - 2);
+  if (!g_CharsetUtils.IsValidUTF8(strToAppend))
+    CLog::Log(logERROR, "POUtils::ReadStringLine: wrong utf8 sequence found in string: %s", strToAppend.c_str());
   pStrToAppend->append(g_CharsetUtils.UnescapeCPPString(strToAppend));
   return true;
 };

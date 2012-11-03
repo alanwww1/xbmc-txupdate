@@ -151,9 +151,9 @@ void CPOHandler::GetXMLComment(const TiXmlNode *pCommentNode, CPOEntry &currEntr
     if (nodeType == TiXmlNode::TINYXML_COMMENT)
     {
       if (pCommentNode->m_CommentLFPassed)
-        prevCommEntry.interlineComm.push_back(g_CharsetUtils.UnWhitespace(pCommentNode->Value()));
+        prevCommEntry.interlineComm.push_back(g_CharsetUtils.ToUTF8("utf-8", g_CharsetUtils.UnWhitespace(pCommentNode->Value())));
       else
-        currEntry.extractedComm.push_back(g_CharsetUtils.UnWhitespace(pCommentNode->Value()));
+        currEntry.extractedComm.push_back(g_CharsetUtils.ToUTF8("utf-8", g_CharsetUtils.UnWhitespace(pCommentNode->Value())));
     }
     pCommentNode = pCommentNode->NextSibling();
   }
