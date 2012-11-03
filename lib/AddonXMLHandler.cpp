@@ -64,6 +64,7 @@ bool CAddonXMLHandler::FetchAddonXMLFileUpstr (std::string strURL)
     CLog::Log(logERROR, "CAddonXMLHandler::FetchAddonXMLFileUpstr: http error getting XML file from upstream url: %s", strURL.c_str());
 
   m_strAddonXMLFile = strXMLFile;
+  m_strAddonXMLFile.push_back('\n'); // with some addon.xml files, EOF mark is missing. That gives us a TinyXML failure. To avoid, we add an LF
   g_File.ConvertStrLineEnds(m_strAddonXMLFile);
 
   if (!xmlAddonXML.Parse(m_strAddonXMLFile.c_str(), 0, TIXML_DEFAULT_ENCODING))

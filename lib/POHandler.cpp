@@ -174,6 +174,7 @@ bool CPOHandler::FetchXMLURLToMem (std::string strURL)
   m_CommsCntr = 0;
   TiXmlDocument XMLDoc;
 
+  strXMLBuffer.push_back('\n'); // with some addon.xml files, EOF mark is missing. That gives us a TinyXML failure. To avoid, we add an LF
   g_File.ConvertStrLineEnds(strXMLBuffer);
   strXMLBuffer += "\n";
 
