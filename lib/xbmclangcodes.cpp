@@ -104,3 +104,19 @@ std::string CLCodeHandler::FindLangCode(std::string Lang)
   CLog::Log(logERROR, "LangCodes: FindLangCode: unable to find langcode for language: %s", Lang.c_str());
   return "UNKNOWN";
 }
+
+std::string CLCodeHandler::VerifyLangCode(std::string LangCode)
+{
+  std::string strOldCode = LangCode;
+
+  if (LangCode == "kr")
+    LangCode = "ko"; // common mistake, we correct it on the fly
+
+  if (strOldCode != LangCode)
+    CLog::Log(logWARNING, "LangCodes: problematic language code: %s was corrected to %s", strOldCode.c_str(), LangCode.c_str());
+
+  if (m_mapLCodes.find(LangCode) != m_mapLCodes.end())
+    return LangCode;
+  CLog::Log(logERROR, "LangCodes::VerifyLangCode: unable to find language code: %s", LangCode.c_str());
+  return "UNKNOWN";
+}

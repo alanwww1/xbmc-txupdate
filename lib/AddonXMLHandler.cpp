@@ -147,6 +147,7 @@ bool CAddonXMLHandler::ProcessAddonXMLFile (std::string AddonXMLFilename, TiXmlD
       strLang = pChildSummElement->Attribute("lang");
     else
       strLang = "en";
+    strLang = g_LCodeHandler.VerifyLangCode(strLang); // just make sure we read a valid language code
 
     if (pChildSummElement->FirstChild())
     {
@@ -164,6 +165,7 @@ bool CAddonXMLHandler::ProcessAddonXMLFile (std::string AddonXMLFilename, TiXmlD
       strLang = pChildDescElement->Attribute("lang");
     else
       strLang = "en";
+    strLang = g_LCodeHandler.VerifyLangCode(strLang); // just make sure we read a valid language code
 
     if (pChildDescElement->FirstChild())
     {
@@ -181,6 +183,7 @@ bool CAddonXMLHandler::ProcessAddonXMLFile (std::string AddonXMLFilename, TiXmlD
       strLang = pChildDisclElement->Attribute("lang");
     else
       strLang = "en";
+    strLang = g_LCodeHandler.VerifyLangCode(strLang); // just make sure we read a valid language code
 
     if (pChildDisclElement->FirstChild())
     {
