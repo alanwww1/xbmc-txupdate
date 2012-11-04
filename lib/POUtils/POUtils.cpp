@@ -415,6 +415,8 @@ bool CPODocument::SaveFile(const std::string &pofilename)
     CLog::Log(logERROR, "POParser: Error opening output file: %s\n", pofilename.c_str());
     return false;
   }
+  if (m_strOutBuffer.find('\x00') != std::string::npos)
+    CLog::Log(logERROR, "CPODocument::SaveFile: Unexpected zero byte in file: %s", pofilename.c_str());
   fprintf(pPOTFile, "%s", m_strOutBuffer.c_str());
   fclose(pPOTFile);
 

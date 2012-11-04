@@ -67,7 +67,7 @@ protected:
   bool ProcessPOFile(CPODocument &PODoc);
   itStrings IterateToMapIndex(itStrings it, size_t index);
   bool GetXMLEncoding(const TiXmlDocument* pDoc, std::string& strEncoding);
-  void GetXMLComment(const TiXmlNode *pCommentNode, CPOEntry &currEntry);
+  void GetXMLComment(std::string strXMLEncoding, const TiXmlNode *pCommentNode, CPOEntry &currEntry);
 
   std::string m_strHeader;
 

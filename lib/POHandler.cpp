@@ -124,7 +124,7 @@ void CPOHandler::ClearCPOEntry (CPOEntry &entry)
 };
 
 
-bool CPOHandler::GetXMLEncoding(const TiXmlDocument* pDoc, std::string& strEncoding)
+bool CPOHandler::GetXMLEncoding( const TiXmlDocument* pDoc, std::string& strEncoding)
 {
   const TiXmlNode* pNode=NULL;
   while ((pNode=pDoc->IterateChildren(pNode)) && pNode->Type()!=TiXmlNode::TINYXML_DECLARATION) {}
@@ -139,7 +139,7 @@ bool CPOHandler::GetXMLEncoding(const TiXmlDocument* pDoc, std::string& strEncod
   return !strEncoding.empty(); // Other encoding then UTF8?
 }
 
-void CPOHandler::GetXMLComment(const TiXmlNode *pCommentNode, CPOEntry &currEntry)
+void CPOHandler::GetXMLComment(std::string strXMLEncoding, const TiXmlNode *pCommentNode, CPOEntry &currEntry)
 {
   int nodeType;
   CPOEntry prevCommEntry;
@@ -151,9 +151,9 @@ void CPOHandler::GetXMLComment(const TiXmlNode *pCommentNode, CPOEntry &currEntr
     if (nodeType == TiXmlNode::TINYXML_COMMENT)
     {
       if (pCommentNode->m_CommentLFPassed)
-        prevCommEntry.interlineComm.push_back(g_CharsetUtils.ToUTF8("utf-8", g_CharsetUtils.UnWhitespace(pCommentNode->Value())));
+        prevCommEntry.interlineComm.push_back(g_CharsetUtils.ToUTF8(strXMLEncoding, g_CharsetUtils.UnWhitespace(pCommentNode->Value())));
       else
-        currEntry.extractedComm.push_back(g_CharsetUtils.ToUTF8("utf-8", g_CharsetUtils.UnWhitespace(pCommentNode->Value())));
+        currEntry.extractedComm.push_back(g_CharsetUtils.ToUTF8(strXMLEncoding, g_CharsetUtils.UnWhitespace(pCommentNode->Value())));
     }
     pCommentNode = pCommentNode->NextSibling();
   }
@@ -197,7 +197,7 @@ bool CPOHandler::FetchXMLURLToMem (std::string strURL)
   CPOEntry currEntry, commHolder, prevcommHolder;
 
   if (m_bPOIsEnglish)
-    GetXMLComment(pRootElement->FirstChild(), currEntry);
+    GetXMLComment(strXMLEncoding, pRootElement->FirstChild(), currEntry);
 
   const TiXmlElement *pChildElement = pRootElement->FirstChildElement("string");
   const char* pAttrId = NULL;
@@ -225,7 +225,7 @@ bool CPOHandler::FetchXMLURLToMem (std::string strURL)
           currEntry.msgStr = strUtf8;
 
         if (m_bPOIsEnglish)
-          GetXMLComment(pChildElement->NextSibling(), currEntry);
+          GetXMLComment(strXMLEncoding, pChildElement->NextSibling(), currEntry);
 
         m_mapStrings[id] = currEntry;
       }
