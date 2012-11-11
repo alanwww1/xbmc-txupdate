@@ -36,6 +36,7 @@ public:
   std::string strTXResName;
   std::string strLangFileType;
   std::string strURLSuffix;
+  std::string strDIRprefix;
   bool bWritePO, bWriteXML;
 };
 

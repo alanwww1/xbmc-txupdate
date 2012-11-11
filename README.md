@@ -86,6 +86,7 @@ Where:
     Optional attributes:
       * writeXML: (default: false) write merged string files in the old XML file format.
       * writePO: (default: true) write merged string files in the new PO file format.
+      * DIRprefix - (default: no prefix needed) if for some reason, you need a SUBdir in the tree AFTER the resource name.
 
 **II. .passwords.xml**
 

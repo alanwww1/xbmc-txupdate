@@ -197,15 +197,15 @@ bool CResourceHandler::WritePOToFiles(std::string strProjRootDir, std::string st
   switch (XMLResdata.Restype)
   {
     case ADDON: case ADDON_NOSTRINGS:
-      strResourceDir = strProjRootDir + strPrefixDir + DirSepChar + XMLResdata.strResDirectory + DirSepChar + strResname +DirSepChar;
+      strResourceDir = strProjRootDir + strPrefixDir + DirSepChar + XMLResdata.strResDirectory + DirSepChar + strResname + DirSepChar + XMLResdata.strDIRprefix + DirSepChar;
       strLangDir = strResourceDir + "resources" + DirSepChar + "language" + DirSepChar;
       break;
     case SKIN:
-      strResourceDir = strProjRootDir + strPrefixDir + DirSepChar  + XMLResdata.strResDirectory + DirSepChar + strResname +DirSepChar;
+      strResourceDir = strProjRootDir + strPrefixDir + DirSepChar  + XMLResdata.strResDirectory + DirSepChar + strResname + DirSepChar+ XMLResdata.strDIRprefix + DirSepChar;
       strLangDir = strResourceDir + "language" + DirSepChar;
       break;
     case CORE:
-      strResourceDir = strProjRootDir + strPrefixDir + DirSepChar + XMLResdata.strResDirectory + DirSepChar;
+      strResourceDir = strProjRootDir + strPrefixDir + DirSepChar + XMLResdata.strResDirectory + DirSepChar + XMLResdata.strDIRprefix + DirSepChar;
       strLangDir = strResourceDir + "language" + DirSepChar;
       break;
     default:

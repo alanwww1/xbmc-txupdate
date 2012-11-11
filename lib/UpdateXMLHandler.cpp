@@ -187,14 +187,16 @@ bool CUpdateXMLHandler::LoadXMLToMem (std::string rootDir)
         currResData.strResDirectory = pChildResDirElement->FirstChild()->Value();
       if (pChildResDirElement->Attribute("writePO"))
       {
-	std::string strBool = pChildResDirElement->Attribute("writePO");
+	      std::string strBool = pChildResDirElement->Attribute("writePO");
         currResData.bWritePO = strBool == "true";
       }
       if (pChildResDirElement->Attribute("writeXML"))
       {
-	std::string strBool = pChildResDirElement->Attribute("writeXML");
+	      std::string strBool = pChildResDirElement->Attribute("writeXML");
         currResData.bWriteXML = strBool == "true";
       }
+      if (pChildResDirElement->Attribute("DIRprefix"))
+        currResData.strDIRprefix = pChildResDirElement->Attribute("DIRprefix"); // If there is any SUBdirectory needed in the tree
 
       const TiXmlElement *pChildTXNameElement = pChildResElement->FirstChildElement("TXname");
       if (pChildTXNameElement && pChildTXNameElement->FirstChild())
