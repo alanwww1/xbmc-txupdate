@@ -71,8 +71,6 @@ bool CPOHandler::ProcessPOFile(CPODocument &PODoc)
     PODoc.ParseEntry();
     currEntry = PODoc.GetEntryData();
     currType = PODoc.GetEntryType();
-    if (m_bPOIsEnglish)
-      currEntry.msgStr.clear();
 
     if (currType == COMMENT_ENTRY_FOUND)
     {

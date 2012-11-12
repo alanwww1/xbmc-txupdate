@@ -201,7 +201,9 @@ bool CProjectHandler::CreateMergedResources()
       {
         size_t numID = pcurrPOHandlerEN->GetNumPOEntryByIdx(POEntryIdx)->numID;
 
-        const CPOEntry* pcurrPOEntryEN = pcurrPOHandlerEN->GetNumPOEntryByIdx(POEntryIdx);
+        CPOEntry currPOEntryEN = *(pcurrPOHandlerEN->GetNumPOEntryByIdx(POEntryIdx));
+        currPOEntryEN.msgStr.clear();
+        CPOEntry* pcurrPOEntryEN = &currPOEntryEN;
 
         pPOEntryTX = SafeGetPOEntry(m_mapResourcesTX, *itResAvail, strLangCode, numID);
         pPOEntryUpstr = SafeGetPOEntry(m_mapResourcesUpstr, *itResAvail, strLangCode, numID);
