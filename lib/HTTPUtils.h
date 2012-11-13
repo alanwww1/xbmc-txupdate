@@ -28,6 +28,7 @@
 #include <stdio.h>
 #include <curl/curl.h>
 #include "TinyXML/tinyxml.h"
+#include "POHandler.h"
 
 struct CLoginData
 {
@@ -50,6 +51,7 @@ public:
   bool CreateNewResource(std::string strResname, std::string strENPOFilePath, std::string strURL, size_t &stradded,
                          std::string const &strURLENTransl);
   void DeleteCachedFile(std::string const &strURL, std::string strPrefix);
+  bool ComparePOFilesInMem(CPOHandler * pPOHandler1, CPOHandler * pPOHandler2, bool bLangIsEN) const;
 
 private:
   CURL *m_curlHandle;

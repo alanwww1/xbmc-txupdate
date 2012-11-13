@@ -25,7 +25,6 @@
 #include "FileUtils/FileUtils.h"
 #include <cctype>
 #include "Settings.h"
-#include "POHandler.h"
 #include "JSONHandler.h"
 
 CHTTPHandler g_HTTPHandler;
@@ -399,26 +398,37 @@ bool CHTTPHandler::ComparePOFiles(std::string strPOFilePath1, std::string strPOF
   CPOHandler POHandler1, POHandler2;
   POHandler1.ParsePOStrToMem(g_File.ReadFileToStr(strPOFilePath1), strPOFilePath1);
   POHandler2.ParsePOStrToMem(g_File.ReadFileToStr(strPOFilePath2), strPOFilePath2);
+  return ComparePOFilesInMem(&POHandler1, &POHandler2, false);
+}
 
-  if (POHandler1.GetNumEntriesCount() != POHandler2.GetNumEntriesCount())
+bool CHTTPHandler::ComparePOFilesInMem(CPOHandler * pPOHandler1, CPOHandler * pPOHandler2, bool bLangIsEN) const
+{
+  if (!pPOHandler1 || !pPOHandler2)
     return false;
-  if (POHandler1.GetClassEntriesCount() != POHandler2.GetClassEntriesCount())
+  if (pPOHandler1->GetNumEntriesCount() != pPOHandler2->GetNumEntriesCount())
+    return false;
+  if (pPOHandler1->GetClassEntriesCount() != pPOHandler2->GetClassEntriesCount())
     return false;
 
-  for (size_t POEntryIdx = 0; POEntryIdx != POHandler1.GetNumEntriesCount(); POEntryIdx++)
+  for (size_t POEntryIdx = 0; POEntryIdx != pPOHandler1->GetNumEntriesCount(); POEntryIdx++)
   {
-    const CPOEntry * POEntry1 = POHandler1.GetNumPOEntryByIdx(POEntryIdx);
-    const CPOEntry * POEntry2 = POHandler2.GetNumPOEntryByID(POEntry1->numID);
+    CPOEntry POEntry1 = *(pPOHandler1->GetNumPOEntryByIdx(POEntryIdx));
+    CPOEntry POEntry2 = *(pPOHandler2->GetNumPOEntryByID(POEntry1.numID));
+    if (bLangIsEN)
+    {
+      POEntry1.msgStr.clear();
+      POEntry2.msgStr.clear();
+    }
 
-    if (!(*POEntry1 == *POEntry2))
+    if (!(POEntry1 == POEntry2))
       return false;
   }
 
-  for (size_t POEntryIdx = 0; POEntryIdx != POHandler1.GetClassEntriesCount(); POEntryIdx++)
+  for (size_t POEntryIdx = 0; POEntryIdx != pPOHandler1->GetClassEntriesCount(); POEntryIdx++)
   {
-    const CPOEntry * POEntry1 = POHandler1.GetClassicPOEntryByIdx(POEntryIdx);
+    const CPOEntry * POEntry1 = pPOHandler1->GetClassicPOEntryByIdx(POEntryIdx);
     CPOEntry POEntryToFind = *POEntry1;
-    if (!POHandler2.LookforClassicEntry(POEntryToFind))
+    if (!pPOHandler2->LookforClassicEntry(POEntryToFind))
       return false;
   }
   return true;

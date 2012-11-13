@@ -236,7 +236,7 @@ bool CProjectHandler::CreateMergedResources()
 
       if (mergedPOHandler.GetNumEntriesCount() !=0 || mergedPOHandler.GetClassEntriesCount() !=0)
       {
-        if (pPOHandlerTX && strLangCode != "en")
+        if (pPOHandlerTX && strLangCode != "en" && !g_HTTPHandler.ComparePOFilesInMem(&mergedPOHandler, pPOHandlerUpst, strLangCode == "en"))
           mergedPOHandler.SetHeader(pPOHandlerTX->GetHeader());
         else if (pPOHandlerUpst && !pcurrPOHandlerEN->GetIfSourceIsXML())
           mergedPOHandler.SetHeader(pPOHandlerUpst->GetHeader());
@@ -247,12 +247,13 @@ bool CProjectHandler::CreateMergedResources()
         mergedResHandler.AddPOData(mergedPOHandler, strLangCode);
       }
 
-      if (updTXPOHandler.GetNumEntriesCount() !=0 || updTXPOHandler.GetClassEntriesCount() !=0)
+      if ((updTXPOHandler.GetNumEntriesCount() !=0 || updTXPOHandler.GetClassEntriesCount() !=0) &&
+        (strLangCode != "en" || !g_HTTPHandler.ComparePOFilesInMem(&updTXPOHandler, pPOHandlerTX, strLangCode == "en")))
       {
-        if (pPOHandlerTX && strLangCode != "en")
-          updTXPOHandler.SetHeader(pPOHandlerTX->GetHeader());
-        else if (pPOHandlerUpst && !pcurrPOHandlerEN->GetIfSourceIsXML())
+        if (pPOHandlerUpst && !pcurrPOHandlerEN->GetIfSourceIsXML())
           updTXPOHandler.SetHeader(pPOHandlerUpst->GetHeader());
+        else if (pPOHandlerTX && strLangCode != "en")
+          updTXPOHandler.SetHeader(pPOHandlerTX->GetHeader());
         else // no upstream nor on tx we have a valid header. Creating a new one
           updTXPOHandler.SetHeaderNEW(*itlang);
 
