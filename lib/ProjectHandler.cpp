@@ -226,8 +226,9 @@ bool CProjectHandler::CreateMergedResources()
           mergedPOHandler.AddNumPOEntryByID(numID, *pPOEntryUpstr, *pcurrPOEntryEN, true); // we got this entry from a strings.xml file
           updTXPOHandler.AddNumPOEntryByID(numID, *pPOEntryUpstr, *pcurrPOEntryEN, false);
         }
-        else if (strLangCode != "en")
-          mergedPOHandler.AddNumPOEntryByID(numID, *pcurrPOEntryEN, *pcurrPOEntryEN, true);
+// We don't add untranslated entries to the non-English PO files
+//        else if (strLangCode != "en")
+//          mergedPOHandler.AddNumPOEntryByID(numID, *pcurrPOEntryEN, *pcurrPOEntryEN, true);
       }
 
       CPOHandler * pPOHandlerTX;
