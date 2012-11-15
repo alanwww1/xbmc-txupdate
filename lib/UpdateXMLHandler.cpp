@@ -71,7 +71,7 @@ bool CUpdateXMLHandler::LoadXMLToMem (std::string rootDir)
     CLog::Log(logINFO, "UpdXMLHandler: Found projectname in xbmc-txupdate.xml file: %s",strProjName.c_str());
     g_Settings.SetProjectname(strProjName);
   }
-  else    
+  else
     CLog::Log(logERROR, "UpdXMLHandler: No projectname specified in xbmc-txupdate.xml file. Cannot continue. "
                         "Please specify the Transifex projectname in the xml file");
 

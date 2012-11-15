@@ -395,27 +395,8 @@ void CPOHandler::SetPreHeader (std::string &strPreText)
   if (strPreText.empty())
     return;
 
-  std::string strOutHeader;
-  size_t startPos;
-
-  if ((startPos = m_strHeader.find("msgid \"\"")) != std::string::npos)
-    m_strHeader = m_strHeader.substr(startPos);
-
-  size_t pos1, pos2;
-  pos1 = m_strHeader.find("\"Last-Translator:") + 17;
-  pos2 = m_strHeader.find("\\n\"", pos1);
-
-  if (pos1 != std::string::npos && pos2 != std::string::npos)
-  {
-    std::string strCleanFromNames = m_strHeader.substr(0, pos1) + " XBMC Translation Team" +
-                                    m_strHeader.substr(pos2, m_strHeader.size() - pos2 + 1);
-    m_strHeader = strCleanFromNames;
-  }
-
-  strOutHeader += "# XBMC Media Center language file\n";
-
-  strOutHeader += strPreText + m_strHeader;
-  m_strHeader = strOutHeader;
+  m_strHeader = "# XBMC Media Center language file\n";
+  m_strHeader += strPreText;
 }
 
 void CPOHandler::SetHeaderNEW (std::string strLangCode)
@@ -426,12 +407,13 @@ void CPOHandler::SetHeaderNEW (std::string strLangCode)
 
   m_strHeader += "msgid \"\"\n";
   m_strHeader += "msgstr \"\"\n";
-  m_strHeader += "\"Project-Id-Version: XBMC-Addons\\n\"\n";
+  m_strHeader += "\"Project-Id-Version: " + g_Settings.GetProjectnameLong() + "\\n\"\n";
   m_strHeader += "\"Report-Msgid-Bugs-To: " + g_Settings.GetSupportEmailAdd() + "\\n\"\n";
-  m_strHeader += "\"POT-Creation-Date: " + g_File.GetCurrTime() + "\\n\"\n";
+  m_strHeader += "\"POT-Creation-Date: YEAR-MO-DA HO:MI+ZONE\\n\"\n";
   m_strHeader += "\"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\\n\"\n";
-  m_strHeader += "\"Last-Translator: FULL NAME <EMAIL@ADDRESS>\\n\"\n";
-  m_strHeader += "\"Language-Team: LANGUAGE\\n\"\n";
+  m_strHeader += "\"Last-Translator: XBMC Translation Team\\n\"\n";
+  m_strHeader += "\"Language-Team: " + g_LCodeHandler.FindLang(strLangCode) + " (http://www.transifex.com/projects/p/" + g_Settings.GetProjectname() +"/language/"
+                 + strLangCode +"/)" + "\\n\"\n";
   m_strHeader += "\"MIME-Version: 1.0\\n\"\n";
   m_strHeader += "\"Content-Type: text/plain; charset=UTF-8\\n\"\n";
   m_strHeader += "\"Content-Transfer-Encoding: 8bit\\n\"\n";

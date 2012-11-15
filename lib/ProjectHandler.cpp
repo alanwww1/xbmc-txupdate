@@ -230,34 +230,21 @@ bool CProjectHandler::CreateMergedResources()
           mergedPOHandler.AddNumPOEntryByID(numID, *pcurrPOEntryEN, *pcurrPOEntryEN, true);
       }
 
-      CPOHandler * pPOHandlerTX, * pPOHandlerUpst;
+      CPOHandler * pPOHandlerTX;
       pPOHandlerTX = SafeGetPOHandler(m_mapResourcesTX, *itResAvail, strLangCode);
-      pPOHandlerUpst = SafeGetPOHandler(m_mapResourcesUpstr, *itResAvail, strLangCode);
 
       if (mergedPOHandler.GetNumEntriesCount() !=0 || mergedPOHandler.GetClassEntriesCount() !=0)
       {
-        if (pPOHandlerTX && strLangCode != "en" && !g_HTTPHandler.ComparePOFilesInMem(&mergedPOHandler, pPOHandlerUpst, strLangCode == "en"))
-          mergedPOHandler.SetHeader(pPOHandlerTX->GetHeader());
-        else if (pPOHandlerUpst && !pcurrPOHandlerEN->GetIfSourceIsXML())
-          mergedPOHandler.SetHeader(pPOHandlerUpst->GetHeader());
-        else
-          mergedPOHandler.SetHeaderNEW(*itlang);
-
         mergedPOHandler.SetPreHeader(strResPreHeader);
+        mergedPOHandler.SetHeaderNEW(*itlang);
         mergedResHandler.AddPOData(mergedPOHandler, strLangCode);
       }
 
       if ((updTXPOHandler.GetNumEntriesCount() !=0 || updTXPOHandler.GetClassEntriesCount() !=0) &&
         (strLangCode != "en" || !g_HTTPHandler.ComparePOFilesInMem(&updTXPOHandler, pPOHandlerTX, strLangCode == "en")))
       {
-        if (pPOHandlerUpst && !pcurrPOHandlerEN->GetIfSourceIsXML())
-          updTXPOHandler.SetHeader(pPOHandlerUpst->GetHeader());
-        else if (pPOHandlerTX && strLangCode != "en")
-          updTXPOHandler.SetHeader(pPOHandlerTX->GetHeader());
-        else // no upstream nor on tx we have a valid header. Creating a new one
-          updTXPOHandler.SetHeaderNEW(*itlang);
-
         updTXPOHandler.SetPreHeader(strResPreHeader);
+        updTXPOHandler.SetHeaderNEW(*itlang);
         updTXResHandler.AddPOData(updTXPOHandler, strLangCode);
       }
 
@@ -398,9 +385,6 @@ void CProjectHandler::UploadTXUpdateFiles(std::string strProjRootDir)
   + "/resources/");
   if (strtemp.empty())
     CLog::Log(logERROR, "ProjectHandler::FetchResourcesFromTransifex: error getting resources from transifex.net");
-
-  char cstrtemp[strtemp.size()];
-  strcpy(cstrtemp, strtemp.c_str());
 
   std::list<std::string> listResourceNamesTX = g_Json.ParseResources(strtemp);
 

@@ -228,3 +228,18 @@ void CJSONHandler::ParseUploadedStrForNewRes(std::string const &strJSON, size_t 
 
   return;
 };
+
+std::string CJSONHandler::ParseLongProjectName(std::string const &strJSON)
+{
+  Json::Value root;   // will contains the root value after parsing.
+  Json::Reader reader;
+
+  bool parsingSuccessful = reader.parse(strJSON, root );
+  if ( !parsingSuccessful )
+  {
+    CLog::Log(logERROR, "JSONHandler::ParseLongProjectName: no valid JSON data");
+    return "";
+  }
+
+  return root.get("name", "").asString();
+}

@@ -44,6 +44,7 @@ public:
   std::string CreateNewresJSONStrFromPOStr(std::string strTXResname, std::string const &strPO);
   void ParseUploadedStringsData(std::string const &strJSON, size_t &stradded, size_t &strupd);
   void ParseUploadedStrForNewRes(std::string const &strJSON, size_t &stradded);
+  std::string ParseLongProjectName(std::string const &strJSON);
 };
 extern CJSONHandler g_Json;
 #endif
