@@ -70,6 +70,7 @@ protected:
   void GetXMLComment(std::string strXMLEncoding, const TiXmlNode *pCommentNode, CPOEntry &currEntry);
 
   std::string m_strHeader;
+  std::string m_strLangCode;
 
   std::map<uint32_t, CPOEntry> m_mapStrings;
   std::vector<CPOEntry> m_vecClassicEntries;
