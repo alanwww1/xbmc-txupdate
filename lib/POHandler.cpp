@@ -485,7 +485,8 @@ bool CPOHandler::WriteXMLFile(const std::string &strOutputPOFilename)
   strXMLDoc += "<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"yes\"?>\n";
   strXMLDoc += "<!-- Translated using Transifex web application. For support, or if you would like to to help out, please visit your language team! -->\n";
   strXMLDoc += "<!-- " + g_LCodeHandler.FindLang(m_strLangCode) + " language-Team URL: " + "http://www.transifex.com/projects/p/" + g_Settings.GetProjectname() +"/language/"
-  + m_strLangCode +"/ -->\n\n";
+  + m_strLangCode +"/ -->\n";
+  strXMLDoc += "<!-- Report language file syntax bugs at: " + g_Settings.GetSupportEmailAdd() + "-->\n\n";
   strXMLDoc += "<strings>\n";
 
   for (itStrings it = m_mapStrings.begin(); it != m_mapStrings.end(); it++)
