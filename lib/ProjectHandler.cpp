@@ -408,11 +408,11 @@ void CProjectHandler::UploadTXUpdateFiles(std::string strProjRootDir)
     switch (XMLResdata.Restype)
     {
       case ADDON: case ADDON_NOSTRINGS:
-        strResourceDir = strProjRootDir + strPrefixDir + DirSepChar + XMLResdata.strResDirectory + strResname +DirSepChar;
+        strResourceDir = strProjRootDir + strPrefixDir + DirSepChar + XMLResdata.strResDirectory + strResname + DirSepChar + XMLResdata.strDIRprefix + DirSepChar;
         strLangDir = strResourceDir + "resources" + DirSepChar + "language" + DirSepChar;
         break;
       case SKIN:
-        strResourceDir = strProjRootDir + strPrefixDir + DirSepChar  + XMLResdata.strResDirectory + strResname +DirSepChar;
+        strResourceDir = strProjRootDir + strPrefixDir + DirSepChar + XMLResdata.strResDirectory + strResname + DirSepChar + XMLResdata.strDIRprefix + DirSepChar;
         strLangDir = strResourceDir + "language" + DirSepChar;
         break;
       case CORE:
