@@ -146,12 +146,12 @@ bool CProjectHandler::CreateMergedResources()
 
     CResourceHandler mergedResHandler, updTXResHandler;
 
-    // Get available pretext for Resource Header. First use the upstream one, if not avail. the TX one
+    // Get available pretext for Resource Header. we use the upstream one
     std::string strResPreHeader;
     if (m_mapResourcesUpstr.find(*itResAvail) != m_mapResourcesUpstr.end())
       strResPreHeader = m_mapResourcesUpstr[*itResAvail].GetXMLHandler()->GetResHeaderPretext();
-    else if (m_mapResourcesTX.find(*itResAvail) != m_mapResourcesTX.end())
-      strResPreHeader = m_mapResourcesTX[*itResAvail].GetXMLHandler()->GetResHeaderPretext();
+    else
+      CLog::Log(logERROR, "CreateMergedResources: Not able to read addon data for header text");
 
     CAddonXMLEntry * pENAddonXMLEntry;
 
