@@ -175,7 +175,7 @@ bool CResourceHandler::FetchPOFilesUpstreamToMem(CXMLResdata XMLResdata, std::li
     if (XMLResdata.strLangFileType == "xml")
       bResult = POHandler.FetchXMLURLToMem(XMLResdata.strUpstreamURL + strLangdirPrefix + g_LCodeHandler.FindLang(*it) + DirSepChar + "strings.xml" + XMLResdata.strURLSuffix);
     else
-      bResult = POHandler.FetchPOURLToMem(XMLResdata.strUpstreamURL + strLangdirPrefix + g_LCodeHandler.FindLang(*it) + DirSepChar + "strings.po" + XMLResdata.strURLSuffix,true);
+      bResult = POHandler.FetchPOURLToMem(XMLResdata.strUpstreamURL + strLangdirPrefix + g_LCodeHandler.FindLang(*it) + DirSepChar + "strings.po" + XMLResdata.strURLSuffix,false);
     if (bResult)
     {
       m_mapPOFiles[*it] = POHandler;
