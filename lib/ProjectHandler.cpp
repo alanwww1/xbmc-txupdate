@@ -500,8 +500,9 @@ bool CProjectHandler::FindResInList(std::list<std::string> const &listResourceNa
 std::list<std::string> CProjectHandler::GetLangsFromDir(std::string const &strLangDir)
 {
   std::list<std::string> listDirs;
+  bool bEnglishExists = true;
   if (!g_File.DirExists(strLangDir + "English"))
-    return listDirs;
+    bEnglishExists = false;
 
   DIR* Dir;
   struct dirent *DirEntry;
@@ -518,7 +519,8 @@ std::list<std::string> CProjectHandler::GetLangsFromDir(std::string const &strLa
   }
 
   listDirs.sort();
-  listDirs.push_front("en");
+  if (bEnglishExists)
+    listDirs.push_front("en");
 
   return listDirs;
 };
