@@ -253,16 +253,6 @@ void CPODocument::ParseEntry()
         }
       }
 
-      else if (HasPrefix(strLine, "msgid") && strLine.size() > 7)
-      {
-        pPlaceToParse = &m_Entry.msgID;
-        if (!ReadStringLine(strLine, pPlaceToParse,6))
-        {
-          CLog::Log(logWARNING, "POParser: wrong msgid format. Failed entry: %s", m_Entry.Content.c_str());
-          pPlaceToParse = NULL;
-        }
-      }
-
       else if (HasPrefix(strLine, "msgid_plural") && strLine.size() > 14)
       {
         pPlaceToParse = &m_Entry.msgIDPlur;
@@ -273,12 +263,12 @@ void CPODocument::ParseEntry()
         }
       }
 
-      else if (HasPrefix(strLine, "msgstr") && strLine.size() > 8)
+      else if (HasPrefix(strLine, "msgid") && strLine.size() > 7)
       {
-        pPlaceToParse = &m_Entry.msgStr;
-        if (!ReadStringLine(strLine, pPlaceToParse,7))
+        pPlaceToParse = &m_Entry.msgID;
+        if (!ReadStringLine(strLine, pPlaceToParse,6))
         {
-          CLog::Log(logWARNING, "POParser: wrong msgstr format. Failed entry: %s", m_Entry.Content.c_str());
+          CLog::Log(logWARNING, "POParser: wrong msgid format. Failed entry: %s", m_Entry.Content.c_str());
           pPlaceToParse = NULL;
         }
       }
@@ -290,6 +280,16 @@ void CPODocument::ParseEntry()
         if (!ReadStringLine(strLine, pPlaceToParse,10))
         {
           CLog::Log(logWARNING, "POParser: wrong msgstr[] format. Failed entry: %s", m_Entry.Content.c_str());
+          pPlaceToParse = NULL;
+        }
+      }
+
+      else if (HasPrefix(strLine, "msgstr") && strLine.size() > 8)
+      {
+        pPlaceToParse = &m_Entry.msgStr;
+        if (!ReadStringLine(strLine, pPlaceToParse,7))
+        {
+          CLog::Log(logWARNING, "POParser: wrong msgstr format. Failed entry: %s", m_Entry.Content.c_str());
           pPlaceToParse = NULL;
         }
       }
