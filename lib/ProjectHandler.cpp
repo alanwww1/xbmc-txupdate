@@ -508,7 +508,7 @@ std::list<std::string> CProjectHandler::GetLangsFromDir(std::string const &strLa
   struct dirent *DirEntry;
   Dir = opendir(strLangDir.c_str());
 
-  while((DirEntry=readdir(Dir)))
+  while(Dir && (DirEntry=readdir(Dir)))
   {
     if (DirEntry->d_type == DT_DIR && DirEntry->d_name[0] != '.')
     {
