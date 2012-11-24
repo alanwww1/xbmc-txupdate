@@ -413,7 +413,11 @@ bool CHTTPHandler::ComparePOFilesInMem(CPOHandler * pPOHandler1, CPOHandler * pP
   for (size_t POEntryIdx = 0; POEntryIdx != pPOHandler1->GetNumEntriesCount(); POEntryIdx++)
   {
     CPOEntry POEntry1 = *(pPOHandler1->GetNumPOEntryByIdx(POEntryIdx));
-    CPOEntry POEntry2 = *(pPOHandler2->GetNumPOEntryByID(POEntry1.numID));
+    const CPOEntry * pPOEntry2 = pPOHandler2->GetNumPOEntryByID(POEntry1.numID);
+    if (!pPOEntry2)
+      return false;
+    CPOEntry POEntry2 = *pPOEntry2;
+
     if (bLangIsEN)
     {
       POEntry1.msgStr.clear();
