@@ -65,7 +65,7 @@ bool CProjectHandler::FetchResourcesFromTransifex()
 
     m_mapResourcesTX[strResname]=ResourceHandler;
     m_mapResourcesTX[strResname].FetchPOFilesTXToMem("https://www.transifex.com/api/2/project/" + g_Settings.GetProjectname() +
-                                              "/resource/" + *it + "/");
+                                              "/resource/" + *it + "/", strResname == "xbmc.core");
     CLog::DecIdent(4);
     printf(" )\n");
   }

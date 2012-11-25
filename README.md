@@ -62,7 +62,7 @@ Where:
   * projectname: The Transifex projectname. Use the exact same string as on Transifex.
     Optional attributes:
       * http_cache_expire - (default: 360) expirity time for cached files in minutes. If cache file is younger than the given time, no actual http download will happen. In that case the cached file gets used.
-      * min_completion - (default: 10%) a limit for the translated percentage to actually download a translation file.
+      * min_completion - (default: 10%) a limit for the translated percentage to actually download a translation file. Applies only for project xbmc.core ! 
       * merged_langfiledir - (default: merged-langfiles) the directory under PROJECTDIR, where the fresh merged, cleaned translations will be locally created.
       * temptxupdate_langfiledir - (default: tempfiles_txupdate) the directory under PROJECTDIR, where the language files to update Transifex will be locally created.
       * forcePOComm - (default: false) Force program to write comments into the non-English PO files, not only into the English ones.

@@ -46,7 +46,7 @@ CPOHandler* CResourceHandler::GetPOData(std::string strLang)
 
 // Download from Transifex related functions
 
-bool CResourceHandler::FetchPOFilesTXToMem(std::string strURL)
+bool CResourceHandler::FetchPOFilesTXToMem(std::string strURL, bool bIsXBMCCore)
 {
   g_HTTPHandler.Cleanup();
   g_HTTPHandler.ReInit();
@@ -59,7 +59,7 @@ bool CResourceHandler::FetchPOFilesTXToMem(std::string strURL)
   char cstrtemp[strtemp.size()];
   strcpy(cstrtemp, strtemp.c_str());
 
-  std::list<std::string> listLangsTX = g_Json.ParseAvailLanguagesTX(strtemp);
+  std::list<std::string> listLangsTX = g_Json.ParseAvailLanguagesTX(strtemp, bIsXBMCCore);
 
   CPOHandler POHandler;
 
