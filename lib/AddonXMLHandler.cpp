@@ -65,7 +65,7 @@ bool CAddonXMLHandler::FetchAddonXMLFileUpstr (std::string strURL)
 
   g_File.ConvertStrLineEnds(strXMLFile);
 
-  m_strAddonXMLFile = strXMLFile.substr(strXMLFile.find_last_of(">")+1) + "\n";
+  m_strAddonXMLFile = strXMLFile.substr(0,strXMLFile.find_last_of(">")+1) + "\n";
 
   if (!xmlAddonXML.Parse(m_strAddonXMLFile.c_str(), 0, TIXML_DEFAULT_ENCODING))
   {
