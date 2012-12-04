@@ -50,4 +50,5 @@ protected:
   std::map<std::string, CAddonXMLEntry>::iterator itAddonXMLData;
   std::string m_strResourceData;
   std::string m_strAddonXMLFile;
+  std::string m_strAddonVersion;
 };

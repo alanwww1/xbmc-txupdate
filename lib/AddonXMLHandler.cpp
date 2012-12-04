@@ -99,9 +99,13 @@ bool CAddonXMLHandler::ProcessAddonXMLFile (std::string AddonXMLFilename, TiXmlD
   {
     CLog::Log(logWARNING, "AddonXMLHandler: No addon name was available in addon.xml file: %s\n", AddonXMLFilename.c_str());
     m_strResourceData += "xbmc-unnamed\n";
+    m_strAddonVersion = "0.0.1";
   }
   else
+  {
     m_strResourceData += g_CharsetUtils.ToUTF8(addonXMLEncoding, CstrToString(pMainAttrId)) + "\n";
+    m_strAddonVersion = g_CharsetUtils.ToUTF8(addonXMLEncoding, CstrToString(pMainAttrId));
+  }
 
   pMainAttrId=pRootElement->Attribute("id");
   m_strResourceData += "# Addon id: ";
