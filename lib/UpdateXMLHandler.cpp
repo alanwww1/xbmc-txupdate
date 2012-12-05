@@ -167,6 +167,8 @@ bool CUpdateXMLHandler::LoadXMLToMem (std::string rootDir)
         currResData.strLangsFromUpstream = pChildUpstrLElement->FirstChild()->Value();
 
       const TiXmlElement *pChildResTypeElement = pChildResElement->FirstChildElement("resourceType");
+      if (pChildResElement->Attribute("AddonXMLSuffix"))
+        currResData.strAddonXMLSuffix = pChildURLElement->Attribute("AddonXMLSuffix"); // Some addons have unique addon.xml filename eg. pvr addons with .in suffix
       if (pChildResTypeElement && pChildResTypeElement->FirstChild())
       {
         strType = pChildResTypeElement->FirstChild()->Value();

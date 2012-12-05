@@ -82,6 +82,8 @@ Where:
       * addon_nostrings: Special addon with an addon.xml file, but NO language files
       * skin: A skin addon with an addon.xml file AND language files
       * xbmc-core: Language files for xbmc-core
+    Optional attributes:
+       * AddonXMLSuffix: (default: none) some addons need a special addon.xml filename. eg. pvr addons have addons.xml.in, so we use .in as a suffix here.
   * resourceSubdir: The subdirectory to put the language files of the resource in. (optional)
     Optional attributes:
       * writeXML: (default: false) write merged string files in the old XML file format.

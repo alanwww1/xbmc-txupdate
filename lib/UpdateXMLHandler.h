@@ -37,6 +37,7 @@ public:
   std::string strLangFileType;
   std::string strURLSuffix;
   std::string strDIRprefix;
+  std::string strAddonXMLSuffix;
   bool bWritePO, bWriteXML;
 };
 

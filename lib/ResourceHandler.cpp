@@ -96,7 +96,7 @@ bool CResourceHandler::FetchPOFilesUpstreamToMem(CXMLResdata XMLResdata, std::li
   }
   else
   {
-    m_AddonXMLHandler.FetchAddonXMLFileUpstr(XMLResdata.strUpstreamURL + "addon.xml" + XMLResdata.strURLSuffix);
+    m_AddonXMLHandler.FetchAddonXMLFileUpstr(XMLResdata.strUpstreamURL + "addon.xml" + XMLResdata.strAddonXMLSuffix + XMLResdata.strURLSuffix);
     if (XMLResdata.Restype == SKIN)
       strLangdirPrefix = "language/";
     else if (XMLResdata.Restype == ADDON)
@@ -234,7 +234,7 @@ bool CResourceHandler::WritePOToFiles(std::string strProjRootDir, std::string st
 
   // update local addon.xml file
   if (strResname != "xbmc.core" && strPrefixDir == g_Settings.GetMergedLangfilesDir())
-    m_AddonXMLHandler.UpdateAddonXMLFile(strResourceDir + "addon.xml");
+    m_AddonXMLHandler.UpdateAddonXMLFile(strResourceDir + "addon.xml" + XMLResdata.strAddonXMLSuffix);
 
   return true;
 }
