@@ -38,11 +38,15 @@ public:
   void SetMapAddonXMLData (std::map<std::string, CAddonXMLEntry> mapData) {m_mapAddonXMLData = mapData;}
   std::string GetStrAddonXMLFile() const {return m_strAddonXMLFile;}
   void SetStrAddonXMLFile(std::string const &strAddonXMLFile) {m_strAddonXMLFile = strAddonXMLFile;}
+  std::string GetAddonVersion () const {return m_strAddonVersion;}
+  void SetAddonVersion(std::string const &strAddonVersion) {m_strAddonVersion = strAddonVersion;}
 
 protected:
   bool ProcessAddonXMLFile (std::string AddonXMLFilename, TiXmlDocument &xmlAddonXML);
   bool ProcessCoreVersion(std::string filename, std::string &strBuffer);
   bool GetEncoding(const TiXmlDocument* pDoc, std::string& strEncoding);
+  void BumpVersionNumber();
+  void UpdateVersionNumber();
   std::string CstrToString(const char * StrToEscape);
   std::string GetXMLEntry (std::string const &strprefix, size_t &pos1, size_t &pos2);
   void CleanWSBetweenXMLEntries (std::string &strXMLString);

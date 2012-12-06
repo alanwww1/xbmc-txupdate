@@ -99,13 +99,9 @@ bool CAddonXMLHandler::ProcessAddonXMLFile (std::string AddonXMLFilename, TiXmlD
   {
     CLog::Log(logWARNING, "AddonXMLHandler: No addon name was available in addon.xml file: %s\n", AddonXMLFilename.c_str());
     m_strResourceData += "xbmc-unnamed\n";
-    m_strAddonVersion = "0.0.1";
   }
   else
-  {
     m_strResourceData += g_CharsetUtils.ToUTF8(addonXMLEncoding, CstrToString(pMainAttrId)) + "\n";
-    m_strAddonVersion = g_CharsetUtils.ToUTF8(addonXMLEncoding, CstrToString(pMainAttrId));
-  }
 
   pMainAttrId=pRootElement->Attribute("id");
   m_strResourceData += "# Addon id: ";
@@ -122,10 +118,15 @@ bool CAddonXMLHandler::ProcessAddonXMLFile (std::string AddonXMLFilename, TiXmlD
   if (!pMainAttrId)
   {
     CLog::Log(logWARNING, "AddonXMLHandler: No version name was available in addon.xml file: %s\n", AddonXMLFilename.c_str());
-    m_strResourceData += "rev_unknown\n";
+    m_strResourceData += "0.0.1\n";
+    m_strAddonVersion = "0.0.1";
   }
   else
-    m_strResourceData += g_CharsetUtils.ToUTF8(addonXMLEncoding, CstrToString(pMainAttrId)) + "\n";
+  {
+    m_strAddonVersion = g_CharsetUtils.ToUTF8(addonXMLEncoding, CstrToString(pMainAttrId));
+    BumpVersionNumber();
+    m_strResourceData += g_CharsetUtils.ToUTF8(addonXMLEncoding, m_strAddonVersion) + "\n";
+  }
 
   pMainAttrId=pRootElement->Attribute("provider-name");
   m_strResourceData += "# Addon Provider: ";
@@ -202,6 +203,7 @@ bool CAddonXMLHandler::ProcessAddonXMLFile (std::string AddonXMLFilename, TiXmlD
 
 bool CAddonXMLHandler::UpdateAddonXMLFile (std::string strAddonXMLFilename)
 {
+  UpdateVersionNumber();
 
   std::string strXMLEntry;
   size_t posS1, posE1, posS2, posE2;
@@ -305,6 +307,51 @@ std::string CAddonXMLHandler::GetXMLEntry (std::string const &strprefix, size_t 
   pos1 =   m_strAddonXMLFile.find(strprefix, pos1);
   pos2 =   m_strAddonXMLFile.find(">", pos1);
   return m_strAddonXMLFile.substr(pos1, pos2 - pos1 +1);
+}
+
+void CAddonXMLHandler::BumpVersionNumber()
+{
+  size_t posLastDot = m_strAddonVersion.find_last_of(".");
+  if (posLastDot == string::npos)
+  {
+    CLog::Log(logWARNING, "AddonXMLHandler::BumpVersionNumber: Wrong Version format, skipping versionbump");
+    return;
+  }
+  std::string strLastNumber = m_strAddonVersion.substr(posLastDot+1);
+  if (strLastNumber.find_first_not_of("0123456789") != std::string::npos)
+  {
+    CLog::Log(logWARNING, "AddonXMLHandler::BumpVersionNumber: Wrong Version format, skipping versionbump");
+    return;
+  }
+  int LastNum = atoi (strLastNumber.c_str());
+  strLastNumber = g_CharsetUtils.IntToStr(LastNum +1);
+  m_strAddonVersion = m_strAddonVersion.substr(0, posLastDot +1) +strLastNumber;
+}
+
+void CAddonXMLHandler::UpdateVersionNumber()
+{
+  size_t Pos1, Pos2;
+  Pos1 = 0;
+  std::string strAddonBasicData = GetXMLEntry("<addon", Pos1, Pos2);
+  if (strAddonBasicData.empty())
+  {
+    CLog::Log(logERROR, "AddonXMLHandler::UpdateVersionNumber: Wrong addon.xml file format.");
+    return;
+  }
+  size_t PosSub1, PosSub2;
+  PosSub1 = strAddonBasicData.find("version=");
+  if (PosSub1 == std::string::npos)
+  {
+    CLog::Log(logERROR, "AddonXMLHandler::UpdateVersionNumber: Wrong addon.xml file format.");
+    return;
+  }
+  PosSub2 = strAddonBasicData.find_first_of("\"'", PosSub1+10);
+  if (PosSub2 == std::string::npos)
+  {
+    CLog::Log(logERROR, "AddonXMLHandler::UpdateVersionNumber: Wrong addon.xml file format.");
+    return;
+  }
+  m_strAddonXMLFile.replace(Pos1 + PosSub1 + 9, PosSub2 - PosSub1 - 9, m_strAddonVersion.c_str());
 }
 
 void CAddonXMLHandler::CleanWSBetweenXMLEntries (std::string &strXMLString)
