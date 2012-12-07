@@ -38,7 +38,7 @@ public:
   std::string strURLSuffix;
   std::string strDIRprefix;
   std::string strAddonXMLSuffix;
-  bool bWritePO, bWriteXML;
+  bool bWritePO, bWriteXML, bHasChangelog;
 };
 
 class CUpdateXMLHandler

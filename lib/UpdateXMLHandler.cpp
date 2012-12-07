@@ -33,6 +33,7 @@ CXMLResdata::CXMLResdata()
   Restype = UNKNOWN;
   bWritePO = true;
   bWriteXML = false;
+  bHasChangelog = false;
 }
 
 CXMLResdata::~CXMLResdata()
@@ -161,6 +162,11 @@ bool CUpdateXMLHandler::LoadXMLToMem (std::string rootDir)
         currResData.strLangFileType = pChildURLElement->Attribute("filetype"); // For PO no need to explicitly specify. Only for XML.
       if (pChildURLElement->Attribute("URLsuffix"))
         currResData.strURLSuffix = pChildURLElement->Attribute("URLsuffix"); // Some http servers need suffix strings after filename(eg. gitweb)
+      if (pChildURLElement->Attribute("HasChangelog"))
+      {
+        std::string strHaschangelog = pChildURLElement->Attribute("HasChangelog"); // Note if the addon has upstream changelog
+        currResData.bHasChangelog = strHaschangelog == "true";
+      }
 
       const TiXmlElement *pChildUpstrLElement = pChildResElement->FirstChildElement("upstreamLangs");
       if (pChildUpstrLElement && pChildUpstrLElement->FirstChild())
