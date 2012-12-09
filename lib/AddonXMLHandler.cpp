@@ -297,9 +297,7 @@ bool CAddonXMLHandler::UpdateAddonXMLFile (std::string strAddonXMLFilename)
 
 
   m_strAddonXMLFile.replace(posMetaDataStart, posMetaDataEnd -posMetaDataStart +1, strNewMetadata);
-  g_File.WriteFileFromStr(strAddonXMLFilename, m_strAddonXMLFile.c_str());
-
-  return true;
+  return g_File.WriteFileFromStr(strAddonXMLFilename, m_strAddonXMLFile.c_str());
 }
 
 std::string CAddonXMLHandler::GetXMLEntry (std::string const &strprefix, size_t &pos1, size_t &pos2)
@@ -307,6 +305,29 @@ std::string CAddonXMLHandler::GetXMLEntry (std::string const &strprefix, size_t 
   pos1 =   m_strAddonXMLFile.find(strprefix, pos1);
   pos2 =   m_strAddonXMLFile.find(">", pos1);
   return m_strAddonXMLFile.substr(pos1, pos2 - pos1 +1);
+}
+
+bool CAddonXMLHandler::UpdateAddonChangelogFile (std::string strFilename, std::string strFormat)
+{
+  size_t pos1 = strFormat.find("%i");
+
+  if (pos1 == std::string::npos)
+    CLog::Log(logERROR, "CAddonXMLHandler::UpdateAddonChangelogFile: wrong changelog format");
+
+  strFormat.replace(pos1, 2, m_strAddonVersion.c_str());
+
+  m_strChangelogFile = strFormat + m_strChangelogFile;
+  return g_File.WriteFileFromStr(strFilename, m_strChangelogFile.c_str());
+}
+
+bool CAddonXMLHandler::FetchAddonChangelogFile (std::string strURL)
+{
+  std::string strChangelogFile = g_HTTPHandler.GetURLToSTR(strURL, true);
+
+  g_File.ConvertStrLineEnds(strChangelogFile);
+
+  m_strChangelogFile.swap(strChangelogFile);
+  return true;
 }
 
 void CAddonXMLHandler::BumpVersionNumber()

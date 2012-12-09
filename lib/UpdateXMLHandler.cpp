@@ -33,7 +33,8 @@ CXMLResdata::CXMLResdata()
   Restype = UNKNOWN;
   bWritePO = true;
   bWriteXML = false;
-  bHasChangelog = false;
+  bHasChangelog = true;
+  strLogFormat = "[B]%i[/B]\n\n- Updated language files from Transifex\n\n";
 }
 
 CXMLResdata::~CXMLResdata()
@@ -166,6 +167,11 @@ bool CUpdateXMLHandler::LoadXMLToMem (std::string rootDir)
       {
         std::string strHaschangelog = pChildURLElement->Attribute("HasChangelog"); // Note if the addon has upstream changelog
         currResData.bHasChangelog = strHaschangelog == "true";
+      }
+      if (pChildURLElement->Attribute("LogFormat"))
+      {
+        std::string strLogFormat = pChildURLElement->Attribute("LogFormat");
+        currResData.strLogFormat = strLogFormat;
       }
 
       const TiXmlElement *pChildUpstrLElement = pChildResElement->FirstChildElement("upstreamLangs");

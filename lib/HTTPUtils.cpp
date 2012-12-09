@@ -41,7 +41,7 @@ CHTTPHandler::~CHTTPHandler()
   Cleanup();
 };
 
-std::string CHTTPHandler::GetURLToSTR(std::string strURL)
+std::string CHTTPHandler::GetURLToSTR(std::string strURL, bool bSkiperror /*=false*/)
 {
   std::string strBuffer;
   std::string strCacheFile = CacheFileNameFromURL(strURL);
@@ -50,7 +50,7 @@ std::string CHTTPHandler::GetURLToSTR(std::string strURL)
 
   if (!g_File.FileExist(strCacheFile) || g_File.GetFileAge(strCacheFile) > g_Settings.GetHTTPCacheExpire() * 60)
   {
-    long result = curlURLToCache(strCacheFile, strURL);
+    long result = curlURLToCache(strCacheFile, strURL, bSkiperror);
     if (result < 200 || result >= 400)
       return "";
   }
@@ -62,7 +62,7 @@ std::string CHTTPHandler::GetURLToSTR(std::string strURL)
   return strBuffer;
 };
 
-long CHTTPHandler::curlURLToCache(std::string strCacheFile, std::string strURL)
+long CHTTPHandler::curlURLToCache(std::string strCacheFile, std::string strURL, bool bSkiperror)
 {
   CURLcode curlResult;
   FILE *dloadfile;
@@ -100,8 +100,11 @@ long CHTTPHandler::curlURLToCache(std::string strCacheFile, std::string strURL)
       else
       {
         g_File.DeleteFile(strCacheFile+"_dload");
+        if (!bSkiperror)
         CLog::Log(logERROR, "HTTPHandler: curlURLToCache finished with error code: %i from URL %s to localdir %s",
                   http_code, strURL.c_str(), strCacheFile.c_str());
+        CLog::Log(logINFO, "HTTPHandler: curlURLToCache finished with code: %i from URL %s", http_code, strURL.c_str());
+        return http_code;
       }
       g_File.CopyFile(strCacheFile+"_dload", strCacheFile);
       g_File.DeleteFile(strCacheFile+"_dload");

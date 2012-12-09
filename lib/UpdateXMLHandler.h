@@ -38,6 +38,7 @@ public:
   std::string strURLSuffix;
   std::string strDIRprefix;
   std::string strAddonXMLSuffix;
+  std::string strLogFormat;
   bool bWritePO, bWriteXML, bHasChangelog;
 };
 

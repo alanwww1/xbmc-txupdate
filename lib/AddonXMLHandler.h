@@ -31,6 +31,8 @@ public:
   bool LoadAddonXMLFile (std::string strAddonXMLFilename);
   bool UpdateAddonXMLFile (std::string strAddonXMLFilename);
   bool FetchAddonXMLFileUpstr (std::string strURL);
+  bool UpdateAddonChangelogFile (std::string strFilename, std::string strFormat);
+  bool FetchAddonChangelogFile (std::string strURL);
   bool LoadCoreVersion(std::string filename);
   bool FetchCoreVersionUpstr(std::string strURL);
   std::string GetResHeaderPretext () const {return m_strResourceData;}
@@ -40,6 +42,8 @@ public:
   void SetStrAddonXMLFile(std::string const &strAddonXMLFile) {m_strAddonXMLFile = strAddonXMLFile;}
   std::string GetAddonVersion () const {return m_strAddonVersion;}
   void SetAddonVersion(std::string const &strAddonVersion) {m_strAddonVersion = strAddonVersion;}
+  std::string GetAddonChangelogFile () const {return m_strChangelogFile;}
+  void SetAddonChangelogFile(std::string const &strAddonChangelogFile) {m_strChangelogFile = strAddonChangelogFile;}
 
 protected:
   bool ProcessAddonXMLFile (std::string AddonXMLFilename, TiXmlDocument &xmlAddonXML);
@@ -55,4 +59,5 @@ protected:
   std::string m_strResourceData;
   std::string m_strAddonXMLFile;
   std::string m_strAddonVersion;
+  std::string m_strChangelogFile;
 };
