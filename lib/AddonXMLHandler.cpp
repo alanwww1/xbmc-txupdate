@@ -309,12 +309,17 @@ std::string CAddonXMLHandler::GetXMLEntry (std::string const &strprefix, size_t 
 
 bool CAddonXMLHandler::UpdateAddonChangelogFile (std::string strFilename, std::string strFormat)
 {
-  size_t pos1 = strFormat.find("%i");
-
-  if (pos1 == std::string::npos)
-    CLog::Log(logERROR, "CAddonXMLHandler::UpdateAddonChangelogFile: wrong changelog format");
-
-  strFormat.replace(pos1, 2, m_strAddonVersion.c_str());
+  size_t pos1;
+  if ((pos1 = strFormat.find("%i")) != std::string::npos)
+    strFormat.replace(pos1, 2, m_strAddonVersion.c_str());
+  if ((pos1 = strFormat.find("%d")) != std::string::npos)
+    strFormat.replace(pos1, 2, g_File.GetCurrDay().c_str());
+  if ((pos1 = strFormat.find("%m")) != std::string::npos)
+    strFormat.replace(pos1, 2, g_File.GetCurrMonth().c_str());
+  if ((pos1 = strFormat.find("%y")) != std::string::npos)
+    strFormat.replace(pos1, 2, g_File.GetCurrYear().c_str());
+  if ((pos1 = strFormat.find("%M")) != std::string::npos)
+    strFormat.replace(pos1, 2, g_File.GetCurrMonthText().c_str());
 
   m_strChangelogFile = strFormat + m_strChangelogFile;
   return g_File.WriteFileFromStr(strFilename, m_strChangelogFile.c_str());
