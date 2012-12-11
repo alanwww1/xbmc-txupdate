@@ -39,6 +39,7 @@ public:
   std::string strDIRprefix;
   std::string strAddonXMLSuffix;
   std::string strLogFormat;
+  std::string strLogFilename;
   bool bWritePO, bWriteXML, bHasChangelog;
 };
 

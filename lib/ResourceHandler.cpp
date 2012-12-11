@@ -98,7 +98,7 @@ bool CResourceHandler::FetchPOFilesUpstreamToMem(CXMLResdata XMLResdata, std::li
   {
     m_AddonXMLHandler.FetchAddonXMLFileUpstr(XMLResdata.strUpstreamURL + "addon.xml" + XMLResdata.strAddonXMLSuffix + XMLResdata.strURLSuffix);
     if (XMLResdata.bHasChangelog)
-      m_AddonXMLHandler.FetchAddonChangelogFile(XMLResdata.strUpstreamURL + "changelog.txt" + XMLResdata.strURLSuffix);
+      m_AddonXMLHandler.FetchAddonChangelogFile(XMLResdata.strUpstreamURL + XMLResdata.strLogFilename + XMLResdata.strURLSuffix);
     if (XMLResdata.Restype == SKIN)
       strLangdirPrefix = "language/";
     else if (XMLResdata.Restype == ADDON)
@@ -239,7 +239,7 @@ bool CResourceHandler::WritePOToFiles(std::string strProjRootDir, std::string st
   {
     m_AddonXMLHandler.UpdateAddonXMLFile(strResourceDir + "addon.xml" + XMLResdata.strAddonXMLSuffix);
     if (XMLResdata.bHasChangelog)
-      m_AddonXMLHandler.UpdateAddonChangelogFile(strResourceDir + "changelog.txt", XMLResdata.strLogFormat);
+      m_AddonXMLHandler.UpdateAddonChangelogFile(strResourceDir + XMLResdata.strLogFilename, XMLResdata.strLogFormat);
   }
 
   return true;

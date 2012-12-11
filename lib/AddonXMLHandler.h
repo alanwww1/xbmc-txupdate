@@ -44,6 +44,8 @@ public:
   void SetAddonVersion(std::string const &strAddonVersion) {m_strAddonVersion = strAddonVersion;}
   std::string GetAddonChangelogFile () const {return m_strChangelogFile;}
   void SetAddonChangelogFile(std::string const &strAddonChangelogFile) {m_strChangelogFile = strAddonChangelogFile;}
+  std::string GetAddonLogFilename () const {return m_strLogFilename;}
+  void SetAddonLogFilename(std::string const &strAddonLogFilename) {m_strLogFilename = strAddonLogFilename;}
 
 protected:
   bool ProcessAddonXMLFile (std::string AddonXMLFilename, TiXmlDocument &xmlAddonXML);
@@ -60,4 +62,5 @@ protected:
   std::string m_strAddonXMLFile;
   std::string m_strAddonVersion;
   std::string m_strChangelogFile;
+  std::string m_strLogFilename;
 };

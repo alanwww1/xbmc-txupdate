@@ -75,6 +75,7 @@ Where:
       * URLsuffix - (default: no suffix needed) some websites need a suffix text after filename in the URL (eg. gitweb needs to specify the branch here)
       * HasChangelog - (default: false) if the addon has an upstream changeloh exists, which needs update.
       * LogFormat - (default: [B]%i[/B]&#10;&#10;- Updated language files from Transifex&#10;&#10;) Format of the Log entry XML escaped.
+      * LogFilename - (default: changelog.txt) In case addon has a custom logfilename (eg. upper case).
   * upstreamLangs: Specify what languages exist on the upstream repository to pull. Leaving this empty will mean English only. The best is if you have the upstream files at a github repo, because using the API, the util can fetch a directory listing to determine the possible languages.
     Special values:
       * github_all: If your repo is stored at github, you can fetch the available languages automatically.

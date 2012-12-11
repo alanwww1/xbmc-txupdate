@@ -35,6 +35,7 @@ CXMLResdata::CXMLResdata()
   bWriteXML = false;
   bHasChangelog = true;
   strLogFormat = "[B]%i[/B]\n\n- Updated language files from Transifex\n\n";
+  strLogFilename = "changelog.txt";
 }
 
 CXMLResdata::~CXMLResdata()
@@ -172,6 +173,11 @@ bool CUpdateXMLHandler::LoadXMLToMem (std::string rootDir)
       {
         std::string strLogFormat = pChildURLElement->Attribute("LogFormat");
         currResData.strLogFormat = strLogFormat;
+      }
+      if (pChildURLElement->Attribute("LogFilename"))
+      {
+        std::string strLogFilename = pChildURLElement->Attribute("LogFilename");
+        currResData.strLogFilename = strLogFilename;
       }
 
       const TiXmlElement *pChildUpstrLElement = pChildResElement->FirstChildElement("upstreamLangs");
