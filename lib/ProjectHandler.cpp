@@ -214,6 +214,10 @@ bool CProjectHandler::CreateMergedResources()
         pPOEntryTX = SafeGetPOEntry(m_mapResourcesTX, *itResAvail, strLangCode, numID);
         pPOEntryUpstr = SafeGetPOEntry(m_mapResourcesUpstr, *itResAvail, strLangCode, numID);
 
+        CheckPOEntrySyntax(pPOEntryTX, strLangCode, pcurrPOEntryEN);
+        CheckPOEntrySyntax(pPOEntryUpstr, strLangCode, pcurrPOEntryEN);
+
+
         if (strLangCode == "en")
         {
           mergedPOHandler.AddNumPOEntryByID(numID, *pcurrPOEntryEN, *pcurrPOEntryEN, true);
@@ -530,3 +534,28 @@ std::list<std::string> CProjectHandler::GetLangsFromDir(std::string const &strLa
 
   return listDirs;
 };
+
+void CProjectHandler::CheckPOEntrySyntax(const CPOEntry * pPOEntry, std::string const &strLangCode, const CPOEntry * pcurrPOEntryEN)
+{
+  if (!pPOEntry)
+    return;
+
+  // check '%' count in msgid and msgstr entries
+  size_t count = g_CharsetUtils.GetCharCountInStr(pcurrPOEntryEN->msgID, '%');
+  if (!pPOEntry->msgIDPlur.empty() && count != g_CharsetUtils.GetCharCountInStr(pPOEntry->msgIDPlur, '%'))
+    CLog::Log(logWARNING, "The count of \"%\" characters are not the same in msgid and msgid_plural entries. Wrong entry: %s", pPOEntry->Content.c_str());
+
+  if (strLangCode != "en")
+  {
+    if (!pPOEntry->msgStr.empty() && count != g_CharsetUtils.GetCharCountInStr(pPOEntry->msgStr, '%'))
+      CLog::Log(logWARNING, "The count of \"%\" characters are not the same in msgid and msgstr entries. Wrong entry: %s", pPOEntry->Content.c_str());
+
+    for (std::vector<std::string>::const_iterator it =  pPOEntry->msgStrPlural.begin() ; it != pPOEntry->msgStrPlural.end() ; it++)
+    {
+     if (count != g_CharsetUtils.GetCharCountInStr(*it, '%'))
+       CLog::Log(logWARNING, "The count of \"%\" characters are not the same in msgid and msgstr[x] entries. Wrong entry: %s", pPOEntry->Content.c_str());
+    }
+  }
+
+  return;
+}

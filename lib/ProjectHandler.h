@@ -57,6 +57,7 @@ protected:
                                            CAddonXMLEntry const &SourceENEntry, CAddonXMLEntry const &CurrENEntry);
   bool FindResInList(std::list<std::string> const &listResourceNamesTX, std::string strTXResName);
   std::list<std::string> GetLangsFromDir(std::string const &strLangDir);
+  void CheckPOEntrySyntax(const CPOEntry * pPOEntry, std::string const &strLangCode, const CPOEntry * pcurrPOEntryEN);
 
   std::map<std::string, CResourceHandler> m_mapResourcesTX;
   std::map<std::string, CResourceHandler> m_mapResourcesUpstr;

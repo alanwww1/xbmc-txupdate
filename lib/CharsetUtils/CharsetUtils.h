@@ -48,6 +48,7 @@ public:
   std::string UnWhitespace(std::string strInput);
   std::string stringCharsetToUtf8(const std::string& strCP, std::string strIn);
   bool IsValidUTF8(std::string const &strToCheck);
+  size_t GetCharCountInStr(std::string const &strToCheck, unsigned char chrToFInd);
 };
 
 extern CCharsetUtils g_CharsetUtils;

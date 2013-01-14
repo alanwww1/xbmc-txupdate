@@ -24,6 +24,7 @@
 #include <errno.h>
 #include "../Log.h"
 #include <sstream>
+#include <algorithm>
 
 CCharsetUtils g_CharsetUtils;
 
@@ -256,3 +257,8 @@ bool CCharsetUtils::IsValidUTF8(std::string const &strToCheck)
   }
   return true;
 };
+
+size_t CCharsetUtils::GetCharCountInStr(std::string const &strToCheck, unsigned char chrToFInd)
+{
+  return std::count(strToCheck.begin(), strToCheck.end(), chrToFInd);
+}
