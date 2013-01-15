@@ -141,6 +141,7 @@ bool CProjectHandler::CreateMergedResources()
   for (std::list<std::string>::iterator itResAvail = listMergedResource.begin(); itResAvail != listMergedResource.end(); itResAvail++)
   {
     printf("Merging resource: %s\n", itResAvail->c_str());
+    CLog::SetSyntaxAddon(*itResAvail);
     CLog::Log(logINFO, "CreateMergedResources: Merging resource:%s", itResAvail->c_str());
     CLog::IncIdent(4);
 
@@ -175,6 +176,7 @@ bool CProjectHandler::CreateMergedResources()
 
     for (std::list<std::string>::iterator itlang = listMergedLangs.begin(); itlang != listMergedLangs.end(); itlang++)
     {
+      CLog::SetSyntaxLang(*itlang);
       std::string strLangCode = *itlang;
       CPOHandler mergedPOHandler, updTXPOHandler;
       const CPOEntry* pPOEntryTX;
@@ -215,8 +217,6 @@ bool CProjectHandler::CreateMergedResources()
         pPOEntryUpstr = SafeGetPOEntry(m_mapResourcesUpstr, *itResAvail, strLangCode, numID);
 
         CheckPOEntrySyntax(pPOEntryTX, strLangCode, pcurrPOEntryEN);
-        CheckPOEntrySyntax(pPOEntryUpstr, strLangCode, pcurrPOEntryEN);
-
 
         if (strLangCode == "en")
         {
@@ -540,22 +540,54 @@ void CProjectHandler::CheckPOEntrySyntax(const CPOEntry * pPOEntry, std::string 
   if (!pPOEntry)
     return;
 
+  CheckCharCount(pPOEntry, strLangCode, pcurrPOEntryEN, '%');
+  CheckCharCount(pPOEntry, strLangCode, pcurrPOEntryEN, '\n');
+
+  return;
+}
+
+std::string CProjectHandler::GetEntryContent(const CPOEntry * pPOEntry, std::string const &strLangCode)
+{
+  if (!pPOEntry)
+    return "";
+
+  std::string strReturn;
+  strReturn += "\n";
+
+  if (pPOEntry->Type == ID_FOUND)
+    strReturn += "msgctxt \"#" + g_CharsetUtils.IntToStr(pPOEntry->numID) + "\"\n";
+  else if (!pPOEntry->msgCtxt.empty())
+    strReturn += "msgctxt \"" + g_CharsetUtils.EscapeStringCPP(pPOEntry->msgCtxt) + "\"\n";
+
+  strReturn += "msgid \""  + g_CharsetUtils.EscapeStringCPP(pPOEntry->msgID) +  "\"\n";
+
+  if (strLangCode != "en")
+    strReturn += "msgstr \"" + g_CharsetUtils.EscapeStringCPP(pPOEntry->msgStr) + "\"\n";
+  else
+    strReturn += "msgstr \"\"\n";
+
+  return strReturn;
+}
+
+void CProjectHandler::CheckCharCount(const CPOEntry * pPOEntry, std::string const &strLangCode, const CPOEntry * pcurrPOEntryEN, char chrToCheck)
+{
   // check '%' count in msgid and msgstr entries
-  size_t count = g_CharsetUtils.GetCharCountInStr(pcurrPOEntryEN->msgID, '%');
-  if (!pPOEntry->msgIDPlur.empty() && count != g_CharsetUtils.GetCharCountInStr(pPOEntry->msgIDPlur, '%'))
-    CLog::Log(logWARNING, "The count of \"%\" characters are not the same in msgid and msgid_plural entries. Wrong entry: %s", pPOEntry->Content.c_str());
+  size_t count = g_CharsetUtils.GetCharCountInStr(pcurrPOEntryEN->msgID, chrToCheck);
+  if (!pPOEntry->msgIDPlur.empty() && count != g_CharsetUtils.GetCharCountInStr(pPOEntry->msgIDPlur, chrToCheck))
+    CLog::SyntaxLog(logINFO, "Warning: count missmatch of char \"%c\"%s",
+                    chrToCheck, GetEntryContent(pPOEntry, strLangCode).c_str());
 
   if (strLangCode != "en")
   {
-    if (!pPOEntry->msgStr.empty() && count != g_CharsetUtils.GetCharCountInStr(pPOEntry->msgStr, '%'))
-      CLog::Log(logWARNING, "The count of \"%\" characters are not the same in msgid and msgstr entries. Wrong entry: %s", pPOEntry->Content.c_str());
+    if (!pPOEntry->msgStr.empty() && count != g_CharsetUtils.GetCharCountInStr(pPOEntry->msgStr, chrToCheck))
+      CLog::SyntaxLog(logINFO, "Warning: count missmatch of char \"%c\"%s",
+                      chrToCheck, GetEntryContent(pPOEntry, strLangCode).c_str());
 
-    for (std::vector<std::string>::const_iterator it =  pPOEntry->msgStrPlural.begin() ; it != pPOEntry->msgStrPlural.end() ; it++)
-    {
-     if (count != g_CharsetUtils.GetCharCountInStr(*it, '%'))
-       CLog::Log(logWARNING, "The count of \"%\" characters are not the same in msgid and msgstr[x] entries. Wrong entry: %s", pPOEntry->Content.c_str());
-    }
+      for (std::vector<std::string>::const_iterator it =  pPOEntry->msgStrPlural.begin() ; it != pPOEntry->msgStrPlural.end() ; it++)
+      {
+        if (count != g_CharsetUtils.GetCharCountInStr(*it, '%'))
+          CLog::SyntaxLog(logINFO, "Warning: count missmatch of char \"%c\"%s",
+                          chrToCheck, GetEntryContent(pPOEntry, strLangCode).c_str());
+      }
   }
-
-  return;
 }

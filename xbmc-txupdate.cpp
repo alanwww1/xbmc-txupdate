@@ -129,7 +129,7 @@ int main(int argc, char* argv[])
     if (WorkingDir[WorkingDir.length()-1] != DirSepChar)
       WorkingDir.append(&DirSepChar);
 
-    CLog::Init(WorkingDir + "xbmc-txupdate.log");
+    CLog::Init(WorkingDir + "xbmc-txupdate.log", WorkingDir + "txupdate-syntax.log");
     CLog::Log(logINFO, "Root Directory: %s", WorkingDir.c_str());
 
     g_HTTPHandler.LoadCredentials(WorkingDir + ".passwords.xml");
@@ -234,13 +234,17 @@ int main(int argc, char* argv[])
       printf("\n");
       printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
       printf("PROCESS FINISHED WITH %i WARNINGS\n", CLog::GetWarnCount());
+      printf("SYNTAX WARNINGS %i\n", CLog::GetSyntaxWarnCount());
       printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n\n");
     }
 
+    CLog::Close();
+    g_HTTPHandler.Cleanup();
   }
   catch (const int calcError)
   {
     g_HTTPHandler.Cleanup();
+    CLog::Close();
     return 0;
   }
 }

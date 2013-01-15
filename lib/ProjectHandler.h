@@ -58,6 +58,8 @@ protected:
   bool FindResInList(std::list<std::string> const &listResourceNamesTX, std::string strTXResName);
   std::list<std::string> GetLangsFromDir(std::string const &strLangDir);
   void CheckPOEntrySyntax(const CPOEntry * pPOEntry, std::string const &strLangCode, const CPOEntry * pcurrPOEntryEN);
+  std::string GetEntryContent(const CPOEntry * pPOEntry, std::string const &strLangCode);
+  void CheckCharCount(const CPOEntry * pPOEntry, std::string const &strLangCode, const CPOEntry * pcurrPOEntryEN, char chrToCheck);
 
   std::map<std::string, CResourceHandler> m_mapResourcesTX;
   std::map<std::string, CResourceHandler> m_mapResourcesUpstr;

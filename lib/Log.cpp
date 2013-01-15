@@ -23,8 +23,12 @@
 #include "FileUtils/FileUtils.h"
 
 static FILE * m_pLogFile;
+static FILE * m_pLogSyntaxFile;
 static int m_numWarnings;
+static int m_numSyntaxWarnings;
 static int m_ident;
+static std::string m_currLang;
+static std::string m_currAddon;
 static std::map<std::string, std::string> m_mapStrResultTable;
 
 using namespace std;
@@ -33,12 +37,13 @@ CLog::CLog()
 {
   m_numWarnings = 0;
   m_ident = 0;
+  m_numSyntaxWarnings = 0;
 }
 
 CLog::~CLog()
 {}
 
-bool CLog::Init(std::string logfile)
+bool CLog::Init(std::string logfile, std::string syntaxlogfile)
 {
    m_pLogFile = fopen (logfile.c_str(),"wb");
   if (m_pLogFile == NULL)
@@ -48,6 +53,15 @@ bool CLog::Init(std::string logfile)
     return false;
   }
   fprintf(m_pLogFile, "XBMC-TXUPDATE v%s Logfile\n\n", VERSION.c_str());
+
+  m_pLogSyntaxFile = fopen (syntaxlogfile.c_str(),"wb");
+  if (m_pLogSyntaxFile == NULL)
+  {
+    fclose(m_pLogFile);
+    printf("Error creating syntax logfile: %s\n", syntaxlogfile.c_str());
+    return false;
+  }
+  fprintf(m_pLogSyntaxFile, "XBMC-TXUPDATE v%s Syntax-Check Logfile\n\n", VERSION.c_str());
 
   return true;
 };
@@ -100,6 +114,44 @@ void CLog::Log(TLogLevel loglevel, const char *format, ... )
   return;
 };
 
+void CLog::SyntaxLog(TLogLevel loglevel, const char *format, ... )
+{
+  if (!m_pLogSyntaxFile)
+    return;
+
+  if (loglevel == logLINEFEED)
+  {
+    fprintf(m_pLogSyntaxFile, "\n");
+    return;
+  }
+
+  fprintf(m_pLogSyntaxFile, "Addon: %s, Lang: %s, ", m_currAddon.c_str(), m_currLang.c_str());
+  std::string strLogType;
+
+  va_list va;
+  va_start(va, format);
+
+  std::string strFormat = format;
+
+  vfprintf(m_pLogSyntaxFile, strFormat.c_str(), va);
+  fprintf(m_pLogSyntaxFile, "\n\n");
+  va_end(va);
+
+  m_numSyntaxWarnings++;
+
+  return;
+};
+
+void CLog::SetSyntaxLang(std::string const &strLang)
+{
+  m_currLang = strLang;
+}
+
+void CLog::SetSyntaxAddon(std::string const &strAddon)
+{
+  m_currAddon = strAddon;
+}
+
 void CLog::LogTable(TLogLevel loglevel, std::string strTableName, const char *format, ... )
 {
   if (loglevel == logADDTABLEHEADER)
@@ -143,8 +195,14 @@ void CLog::LogTable(TLogLevel loglevel, std::string strTableName, const char *fo
 
 void CLog::Close()
 {
+  fprintf(m_pLogSyntaxFile, "Total Syntax Warnings: %i\n", m_numSyntaxWarnings);
+
   if (m_pLogFile)
     fclose(m_pLogFile);
+  return;
+
+  if (m_pLogSyntaxFile)
+    fclose(m_pLogSyntaxFile);
   return;
 };
 
@@ -172,4 +230,9 @@ void CLog::ResetWarnCounter()
 int CLog::GetWarnCount()
 {
   return m_numWarnings;
+};
+
+int CLog::GetSyntaxWarnCount()
+{
+  return m_numSyntaxWarnings;
 };
