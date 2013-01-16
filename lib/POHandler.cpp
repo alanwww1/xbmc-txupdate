@@ -392,9 +392,6 @@ void CPOHandler::GetAddonMetaData (CAddonXMLEntry &AddonXMLEntry, CAddonXMLEntry
 
 void CPOHandler::SetPreHeader (std::string &strPreText)
 {
-  if (strPreText.empty())
-    return;
-
   m_strHeader = "# XBMC Media Center language file\n";
   m_strHeader += strPreText;
 }
