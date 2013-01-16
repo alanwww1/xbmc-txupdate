@@ -574,20 +574,20 @@ void CProjectHandler::CheckCharCount(const CPOEntry * pPOEntry, std::string cons
   // check '%' count in msgid and msgstr entries
   size_t count = g_CharsetUtils.GetCharCountInStr(pcurrPOEntryEN->msgID, chrToCheck);
   if (!pPOEntry->msgIDPlur.empty() && count != g_CharsetUtils.GetCharCountInStr(pPOEntry->msgIDPlur, chrToCheck))
-    CLog::SyntaxLog(logINFO, "Warning: count missmatch of char \"%c\"%s",
-                    chrToCheck, GetEntryContent(pPOEntry, strLangCode).c_str());
+    CLog::SyntaxLog(logINFO, "Warning: count missmatch of char \"%s\"%s",
+                   g_CharsetUtils.EscapeStringCPP(g_CharsetUtils.ChrToStr(chrToCheck)).c_str(), GetEntryContent(pPOEntry, strLangCode).c_str());
 
   if (strLangCode != "en")
   {
     if (!pPOEntry->msgStr.empty() && count != g_CharsetUtils.GetCharCountInStr(pPOEntry->msgStr, chrToCheck))
-      CLog::SyntaxLog(logINFO, "Warning: count missmatch of char \"%c\"%s",
-                      chrToCheck, GetEntryContent(pPOEntry, strLangCode).c_str());
+      CLog::SyntaxLog(logINFO, "Warning: count missmatch of char \"%s\"%s",
+                      g_CharsetUtils.EscapeStringCPP(g_CharsetUtils.ChrToStr(chrToCheck)).c_str(), GetEntryContent(pPOEntry, strLangCode).c_str());
 
       for (std::vector<std::string>::const_iterator it =  pPOEntry->msgStrPlural.begin() ; it != pPOEntry->msgStrPlural.end() ; it++)
       {
         if (count != g_CharsetUtils.GetCharCountInStr(*it, '%'))
-          CLog::SyntaxLog(logINFO, "Warning: count missmatch of char \"%c\"%s",
-                          chrToCheck, GetEntryContent(pPOEntry, strLangCode).c_str());
+          CLog::SyntaxLog(logINFO, "Warning: count missmatch of char \"%s\"%s",
+                          g_CharsetUtils.EscapeStringCPP(g_CharsetUtils.ChrToStr(chrToCheck)).c_str(), GetEntryContent(pPOEntry, strLangCode).c_str());
       }
   }
 }

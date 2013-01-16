@@ -227,6 +227,7 @@ int main(int argc, char* argv[])
       printf("\n");
       printf("--------------------------------------------\n");
       printf("PROCESS FINISHED SUCCESFULLY WITHOUT WARNINGS\n");
+      printf("SYNTAX WARNINGS %i\n", CLog::GetSyntaxWarnCount());
       printf("--------------------------------------------\n\n");
     }
     else

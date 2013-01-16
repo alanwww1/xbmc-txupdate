@@ -35,6 +35,13 @@ std::string CCharsetUtils::IntToStr(int number)
   return ss.str();//return a string with the contents of the stream
 };
 
+std::string CCharsetUtils::ChrToStr(char chr)
+{
+  std::stringstream ss;
+  ss << chr;
+  return ss.str(); //return a string with the contents of the stream
+};
+
 std::string CCharsetUtils::UnescapeCPPString(const std::string &strInput)
 {
   std::string strOutput;

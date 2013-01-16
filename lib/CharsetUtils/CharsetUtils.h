@@ -41,6 +41,7 @@ class CCharsetUtils
 {
 public:
   std::string IntToStr(int number);
+  std::string ChrToStr(char chr);
   std::string UnescapeCPPString(const std::string &strInput);
   std::string EscapeStringCPP(const std::string &strInput);
   std::string EscapeStringXML(const std::string &strInput);
