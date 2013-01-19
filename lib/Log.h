@@ -54,4 +54,6 @@ public:
   static void ResetWarnCounter();
   static int GetWarnCount();
   static int GetSyntaxWarnCount();
+  static bool GetbWriteSyntaxLog();
+  static void SetbWriteSyntaxLog(bool bWriteSyntaxLog);
 };

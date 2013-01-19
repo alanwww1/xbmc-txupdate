@@ -24,6 +24,7 @@
 
 static FILE * m_pLogFile;
 static FILE * m_pLogSyntaxFile;
+static bool m_bWriteSyntaxLog;
 static int m_numWarnings;
 static int m_numSyntaxWarnings;
 static int m_ident;
@@ -38,6 +39,7 @@ CLog::CLog()
   m_numWarnings = 0;
   m_ident = 0;
   m_numSyntaxWarnings = 0;
+  m_bWriteSyntaxLog = false;
 }
 
 CLog::~CLog()
@@ -54,14 +56,17 @@ bool CLog::Init(std::string logfile, std::string syntaxlogfile)
   }
   fprintf(m_pLogFile, "XBMC-TXUPDATE v%s Logfile\n\n", VERSION.c_str());
 
-  m_pLogSyntaxFile = fopen (syntaxlogfile.c_str(),"wb");
-  if (m_pLogSyntaxFile == NULL)
+  if (m_bWriteSyntaxLog)
   {
-    fclose(m_pLogFile);
-    printf("Error creating syntax logfile: %s\n", syntaxlogfile.c_str());
-    return false;
+    m_pLogSyntaxFile = fopen (syntaxlogfile.c_str(),"wb");
+    if (m_pLogSyntaxFile == NULL)
+    {
+      fclose(m_pLogFile);
+      printf("Error creating syntax logfile: %s\n", syntaxlogfile.c_str());
+      return false;
+    }
+    fprintf(m_pLogSyntaxFile, "XBMC-TXUPDATE v%s Syntax-Check Logfile\n\n", VERSION.c_str());
   }
-  fprintf(m_pLogSyntaxFile, "XBMC-TXUPDATE v%s Syntax-Check Logfile\n\n", VERSION.c_str());
 
   return true;
 };
@@ -116,7 +121,7 @@ void CLog::Log(TLogLevel loglevel, const char *format, ... )
 
 void CLog::SyntaxLog(TLogLevel loglevel, const char *format, ... )
 {
-  if (!m_pLogSyntaxFile)
+  if (!m_bWriteSyntaxLog && !m_pLogSyntaxFile)
     return;
 
   if (loglevel == logLINEFEED)
@@ -137,7 +142,8 @@ void CLog::SyntaxLog(TLogLevel loglevel, const char *format, ... )
   fprintf(m_pLogSyntaxFile, "\n\n");
   va_end(va);
 
-  m_numSyntaxWarnings++;
+  if (loglevel == logWARNING)
+    m_numSyntaxWarnings++;
 
   return;
 };
@@ -235,4 +241,15 @@ int CLog::GetWarnCount()
 int CLog::GetSyntaxWarnCount()
 {
   return m_numSyntaxWarnings;
+};
+
+bool CLog::GetbWriteSyntaxLog()
+{
+  return m_bWriteSyntaxLog;
+};
+
+void CLog::SetbWriteSyntaxLog(bool bWriteSyntaxLog)
+{
+  m_bWriteSyntaxLog = bWriteSyntaxLog;
+  return;
 };

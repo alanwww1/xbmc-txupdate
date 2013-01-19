@@ -129,6 +129,7 @@ int main(int argc, char* argv[])
     if (WorkingDir[WorkingDir.length()-1] != DirSepChar)
       WorkingDir.append(&DirSepChar);
 
+    CLog::SetbWriteSyntaxLog(bDownloadNeeded);
     CLog::Init(WorkingDir + "xbmc-txupdate.log", WorkingDir + "txupdate-syntax.log");
     CLog::Log(logINFO, "Root Directory: %s", WorkingDir.c_str());
 
@@ -207,6 +208,7 @@ int main(int argc, char* argv[])
 
     if (bUploadNeeded)
     {
+      CLog::SetbWriteSyntaxLog(false);
       if (!bForceUpload && g_File.ReadFileToStrE(WorkingDir + ".httpcache" + DirSepChar + ".dload_merge_status") != "ok")
         CLog::Log(logERROR, "There was no successful download and merge run before. Please (re)run download and merge.");
 
@@ -221,6 +223,8 @@ int main(int argc, char* argv[])
 
       TXProject.UploadTXUpdateFiles(WorkingDir);
     }
+
+    CLog::SetbWriteSyntaxLog(bDownloadNeeded);
 
     if (CLog::GetWarnCount() ==0)
     {
