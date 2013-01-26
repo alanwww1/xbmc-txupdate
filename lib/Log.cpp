@@ -201,7 +201,8 @@ void CLog::LogTable(TLogLevel loglevel, std::string strTableName, const char *fo
 
 void CLog::Close()
 {
-  fprintf(m_pLogSyntaxFile, "Total Syntax Warnings: %i\n", m_numSyntaxWarnings);
+  if (m_bWriteSyntaxLog)
+    fprintf(m_pLogSyntaxFile, "Total Syntax Warnings: %i\n", m_numSyntaxWarnings);
 
   if (m_pLogFile)
     fclose(m_pLogFile);
