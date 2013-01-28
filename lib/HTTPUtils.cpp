@@ -186,8 +186,8 @@ void CHTTPHandler::SetCacheDir(std::string strCacheDir)
 std::string CHTTPHandler::CacheFileNameFromURL(std::string strURL)
 {
   std::string strResult;
-  std::string strCharsToKeep  = "/.-=?_() ";
-  std::string strReplaceChars = "/.-=?_() ";
+  std::string strCharsToKeep  = "/.-=_() ";
+  std::string strReplaceChars = "/.-=_() ";
 
   std::string hexChars = "01234567890abcdef"; 
 
