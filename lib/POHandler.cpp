@@ -265,8 +265,13 @@ bool CPOHandler::WritePOFile(const std::string &strOutputPOFilename)
 
   for (itStrings it = m_mapStrings.begin(); it != m_mapStrings.end(); it++)
   {
-    CPOEntry currEntry = it->second;
-    PODoc.WritePOEntry(currEntry);
+    PODoc.WritePOEntry(it->second);
+  }
+
+  for (itClassicEntries itclass = m_vecClassicEntries.begin(); itclass != m_vecClassicEntries.end(); itclass++)
+  {
+    if (itclass->msgCtxt != "Addon Summary" && itclass->msgCtxt != "Addon Description" && itclass->msgCtxt != "Addon Disclaimer")
+      PODoc.WritePOEntry(*itclass);
   }
 
   PODoc.SaveFile(strOutputPOFilename);
@@ -289,9 +294,45 @@ bool CPOHandler::LookforClassicEntry (CPOEntry &EntryToFind)
   return false;
 }
 
-void CPOHandler::AddClassicEntry (CPOEntry &EntryToAdd)
+const CPOEntry*  CPOHandler::PLookforClassicEntry (CPOEntry &EntryToFind)
 {
+  for (itClassicEntries it = m_vecClassicEntries.begin(); it != m_vecClassicEntries.end(); it++)
+  {
+    if (*it == EntryToFind)
+    {
+      EntryToFind = *it;
+      return &(*it);
+    }
+  }
+  return NULL;
+}
+
+bool CPOHandler::AddClassicEntry (CPOEntry EntryToAdd, CPOEntry const &POEntryEN, bool bCopyComments)
+{
+  CPOEntry EntryToFind;
+  EntryToFind.msgCtxt = EntryToAdd.msgCtxt;
+  EntryToFind.msgID = EntryToAdd.msgID;
+  EntryToFind.msgIDPlur = EntryToAdd.msgIDPlur;
+  if (LookforClassicEntry(EntryToFind))  // The entry already exists
+    return false;
+
+  if (bCopyComments)
+  {
+    EntryToAdd.extractedComm = POEntryEN.extractedComm;
+    EntryToAdd.interlineComm = POEntryEN.interlineComm;
+    EntryToAdd.referenceComm = POEntryEN.referenceComm;
+    EntryToAdd.translatorComm = POEntryEN.translatorComm;
+  }
+  else
+  {
+    EntryToAdd.extractedComm.clear();
+    EntryToAdd.interlineComm.clear();
+    EntryToAdd.referenceComm.clear();
+    EntryToAdd.translatorComm.clear();
+  }
+
   m_vecClassicEntries.push_back(EntryToAdd);
+  return true;
 };
 
 bool CPOHandler::ModifyClassicEntry (CPOEntry &EntryToFind, CPOEntry EntryNewValue)

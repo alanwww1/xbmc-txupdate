@@ -45,9 +45,11 @@ public:
 
 protected:
   const CPOEntry * SafeGetPOEntry(std::map<std::string, CResourceHandler> &mapResHandl, const std::string &strResname,
-                            std::string &strLangCode, size_t numID);
+                                  std::string &strLangCode, size_t numID);
+  const CPOEntry * SafeGetPOEntry(std::map<std::string, CResourceHandler> &mapResHandl, const std::string &strResname,
+                                  std::string &strLangCode, CPOEntry const &currPOEntryEN);
   CPOHandler * SafeGetPOHandler(std::map<std::string, CResourceHandler> &mapResHandl, const std::string &strResname,
-                                      std::string &strLangCode);
+                                std::string &strLangCode);
   std::list<std::string> CreateMergedLanguageList(std::string strResname, bool bOnlyTX);
   std::map<std::string, CResourceHandler> * ChoosePrefResMap(std::string strResname);
   std::list<std::string> CreateResourceList();

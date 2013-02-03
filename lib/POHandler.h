@@ -39,7 +39,8 @@ public:
   bool WritePOFile(const std::string &strOutputPOFilename);
   bool WriteXMLFile(const std::string &strOutputPOFilename);
   bool LookforClassicEntry (CPOEntry &EntryToFind);
-  void AddClassicEntry (CPOEntry &EntryToAdd);
+  const CPOEntry*  PLookforClassicEntry (CPOEntry &EntryToFind);
+  bool AddClassicEntry (CPOEntry EntryToAdd, CPOEntry const &POEntryEN, bool bCopyComments);
   bool ModifyClassicEntry (CPOEntry &EntryToFind, CPOEntry EntryNewValue);
   bool DeleteClassicEntry (CPOEntry &EntryToFind);
 

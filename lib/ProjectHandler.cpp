@@ -241,6 +241,42 @@ bool CProjectHandler::CreateMergedResources()
 //          mergedPOHandler.AddNumPOEntryByID(numID, *pcurrPOEntryEN, *pcurrPOEntryEN, true);
       }
 
+
+      
+      
+      
+      for (size_t POEntryIdx = 0; pcurrPOHandlerEN && POEntryIdx != pcurrPOHandlerEN->GetClassEntriesCount(); POEntryIdx++)
+      {
+
+        CPOEntry currPOEntryEN = *(pcurrPOHandlerEN->GetClassicPOEntryByIdx(POEntryIdx));
+        currPOEntryEN.msgStr.clear();
+        CPOEntry* pcurrPOEntryEN = &currPOEntryEN;
+
+        pPOEntryTX = SafeGetPOEntry(m_mapResourcesTX, *itResAvail, strLangCode, currPOEntryEN);
+        pPOEntryUpstr = SafeGetPOEntry(m_mapResourcesUpstr, *itResAvail, strLangCode, currPOEntryEN);
+
+        CheckPOEntrySyntax(pPOEntryTX, strLangCode, pcurrPOEntryEN);
+
+        if (strLangCode == "en")
+        {
+          mergedPOHandler.AddClassicEntry(*pcurrPOEntryEN, *pcurrPOEntryEN, true);
+          updTXPOHandler.AddClassicEntry(*pcurrPOEntryEN, *pcurrPOEntryEN, true);
+        }
+
+        if (strLangCode != "en" && pPOEntryTX && ((pcurrPOEntryEN->msgIDPlur.empty() && !pPOEntryTX->msgStr.empty())
+                                               || (!pcurrPOEntryEN->msgIDPlur.empty() && !pPOEntryTX->msgStrPlural.empty())))
+          mergedPOHandler.AddClassicEntry(*pPOEntryTX, *pcurrPOEntryEN, true);
+        else if (strLangCode != "en" && pPOEntryUpstr && ((pcurrPOEntryEN->msgIDPlur.empty() && !pPOEntryUpstr->msgStr.empty())
+                                   || (!pcurrPOEntryEN->msgIDPlur.empty() && !pPOEntryUpstr->msgStrPlural.empty())))
+        {
+          mergedPOHandler.AddClassicEntry(*pPOEntryUpstr, *pcurrPOEntryEN, true);
+          updTXPOHandler.AddClassicEntry(*pPOEntryUpstr, *pcurrPOEntryEN, false);
+        }
+
+      }
+      
+      
+      
       CPOHandler * pPOHandlerTX;
       pPOHandlerTX = SafeGetPOHandler(m_mapResourcesTX, *itResAvail, strLangCode);
 
@@ -357,6 +393,21 @@ const CPOEntry * CProjectHandler::SafeGetPOEntry(std::map<std::string, CResource
   if (!mapResHandl[strResname].GetPOData(strLangCode))
     return NULL;
   return mapResHandl[strResname].GetPOData(strLangCode)->GetNumPOEntryByID(numID);
+}
+
+const CPOEntry * CProjectHandler::SafeGetPOEntry(std::map<std::string, CResourceHandler> &mapResHandl, const std::string &strResname,
+                                                 std::string &strLangCode, CPOEntry const &currPOEntryEN)
+{
+  CPOEntry POEntryToFind;
+  POEntryToFind.msgCtxt = currPOEntryEN.msgCtxt;
+  POEntryToFind.msgID = currPOEntryEN.msgID;
+  POEntryToFind.msgIDPlur = currPOEntryEN.msgIDPlur;
+
+  if (mapResHandl.find(strResname) == mapResHandl.end())
+    return NULL;
+  if (!mapResHandl[strResname].GetPOData(strLangCode))
+    return NULL;
+  return mapResHandl[strResname].GetPOData(strLangCode)->PLookforClassicEntry(POEntryToFind);
 }
 
 CPOHandler * CProjectHandler::SafeGetPOHandler(std::map<std::string, CResourceHandler> &mapResHandl, const std::string &strResname,
