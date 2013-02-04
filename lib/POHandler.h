@@ -72,6 +72,7 @@ protected:
 
   std::string m_strHeader;
   std::string m_strLangCode;
+  int m_nplurals;
 
   std::map<uint32_t, CPOEntry> m_mapStrings;
   std::vector<CPOEntry> m_vecClassicEntries;

@@ -251,27 +251,27 @@ bool CPOHandler::WritePOFile(const std::string &strOutputPOFilename)
   CPOEntry POEntry;
   POEntry.msgCtxt = "Addon Summary";
   if (LookforClassicEntry(POEntry))
-    PODoc.WritePOEntry(POEntry);
+    PODoc.WritePOEntry(POEntry, m_nplurals);
 
   ClearCPOEntry(POEntry);
   POEntry.msgCtxt = "Addon Description";
   if (LookforClassicEntry(POEntry))
-    PODoc.WritePOEntry(POEntry);
+    PODoc.WritePOEntry(POEntry, m_nplurals);
 
   ClearCPOEntry(POEntry);
   POEntry.msgCtxt = "Addon Disclaimer";
   if (LookforClassicEntry(POEntry))
-    PODoc.WritePOEntry(POEntry);
+    PODoc.WritePOEntry(POEntry, m_nplurals);
 
   for (itStrings it = m_mapStrings.begin(); it != m_mapStrings.end(); it++)
   {
-    PODoc.WritePOEntry(it->second);
+    PODoc.WritePOEntry(it->second, m_nplurals);
   }
 
   for (itClassicEntries itclass = m_vecClassicEntries.begin(); itclass != m_vecClassicEntries.end(); itclass++)
   {
     if (itclass->msgCtxt != "Addon Summary" && itclass->msgCtxt != "Addon Description" && itclass->msgCtxt != "Addon Disclaimer")
-      PODoc.WritePOEntry(*itclass);
+      PODoc.WritePOEntry(*itclass, m_nplurals);
   }
 
   PODoc.SaveFile(strOutputPOFilename);
@@ -441,7 +441,8 @@ void CPOHandler::SetHeaderNEW (std::string strLangCode)
 {
   m_strLangCode = strLangCode;
   std::stringstream ss;//create a stringstream
-  ss << g_LCodeHandler.GetnPlurals(strLangCode);
+  m_nplurals = g_LCodeHandler.GetnPlurals(strLangCode);
+  ss << m_nplurals;
   std::string strnplurals = ss.str();
 
   m_strHeader += "msgid \"\"\n";
