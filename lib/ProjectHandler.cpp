@@ -399,6 +399,7 @@ const CPOEntry * CProjectHandler::SafeGetPOEntry(std::map<std::string, CResource
                                                  std::string &strLangCode, CPOEntry const &currPOEntryEN)
 {
   CPOEntry POEntryToFind;
+  POEntryToFind.Type = currPOEntryEN.Type;
   POEntryToFind.msgCtxt = currPOEntryEN.msgCtxt;
   POEntryToFind.msgID = currPOEntryEN.msgID;
   POEntryToFind.msgIDPlur = currPOEntryEN.msgIDPlur;
