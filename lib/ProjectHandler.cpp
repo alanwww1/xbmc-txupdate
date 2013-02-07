@@ -224,9 +224,11 @@ bool CProjectHandler::CreateMergedResources()
           updTXPOHandler.AddNumPOEntryByID(numID, *pcurrPOEntryEN, *pcurrPOEntryEN, true);
         }
 
-        if (strLangCode != "en" && pPOEntryTX && pPOEntryTX->msgID == pcurrPOEntryEN->msgID && !pPOEntryTX->msgStr.empty())
+        if (strLangCode != "en" && pPOEntryTX && ((pcurrPOEntryEN->msgIDPlur.empty() && !pPOEntryTX->msgStr.empty())
+          || (!pcurrPOEntryEN->msgIDPlur.empty() && !pPOEntryTX->msgStrPlural.empty())))
           mergedPOHandler.AddNumPOEntryByID(numID, *pPOEntryTX, *pcurrPOEntryEN, true);
-        else if (strLangCode != "en" && pPOEntryUpstr && (pPOEntryUpstr->msgID == pcurrPOEntryEN->msgID) && !pPOEntryUpstr->msgStr.empty())
+        else if (strLangCode != "en" && pPOEntryUpstr && ((pcurrPOEntryEN->msgIDPlur.empty() && !pPOEntryUpstr->msgStr.empty())
+          || (!pcurrPOEntryEN->msgIDPlur.empty() && !pPOEntryUpstr->msgStrPlural.empty())))
         {
           mergedPOHandler.AddNumPOEntryByID(numID, *pPOEntryUpstr, *pcurrPOEntryEN, true);
           updTXPOHandler.AddNumPOEntryByID(numID, *pPOEntryUpstr, *pcurrPOEntryEN, false);
