@@ -218,22 +218,38 @@ bool CProjectHandler::CreateMergedResources()
 
         CheckPOEntrySyntax(pPOEntryTX, strLangCode, pcurrPOEntryEN);
 
-        if (strLangCode == "en")
+        if (strLangCode == "en") // English entry
         {
           mergedPOHandler.AddNumPOEntryByID(numID, *pcurrPOEntryEN, *pcurrPOEntryEN, true);
           updTXPOHandler.AddNumPOEntryByID(numID, *pcurrPOEntryEN, *pcurrPOEntryEN, true);
         }
-
-        if (strLangCode != "en" && pPOEntryTX && ((pcurrPOEntryEN->msgIDPlur.empty() && !pPOEntryTX->msgStr.empty())
-          || (!pcurrPOEntryEN->msgIDPlur.empty() && !pPOEntryTX->msgStrPlural.empty())))
-          mergedPOHandler.AddNumPOEntryByID(numID, *pPOEntryTX, *pcurrPOEntryEN, true);
-        else if (strLangCode != "en" && pPOEntryUpstr && ((pcurrPOEntryEN->msgIDPlur.empty() && !pPOEntryUpstr->msgStr.empty())
-          || (!pcurrPOEntryEN->msgIDPlur.empty() && !pPOEntryUpstr->msgStrPlural.empty())))
+        else if (pPOEntryTX && pcurrPOEntryEN->msgIDPlur.empty() && !pPOEntryTX->msgStr.empty()) //Tx entry single
         {
-          mergedPOHandler.AddNumPOEntryByID(numID, *pPOEntryUpstr, *pcurrPOEntryEN, true);
-          updTXPOHandler.AddNumPOEntryByID(numID, *pPOEntryUpstr, *pcurrPOEntryEN, false);
+          if (pPOEntryTX->msgID == pcurrPOEntryEN->msgID)
+            mergedPOHandler.AddNumPOEntryByID(numID, *pPOEntryTX, *pcurrPOEntryEN, true);
         }
-        else if (strLangCode != "en" && pPOEntryUpstr && pPOEntryUpstr->msgID.empty() && !pPOEntryUpstr->msgStr.empty())
+        else if (pPOEntryTX && !pcurrPOEntryEN->msgIDPlur.empty() && !pPOEntryTX->msgStrPlural.empty()) // Tx entry plural
+        {
+          if (pPOEntryTX->msgIDPlur == pcurrPOEntryEN->msgIDPlur)
+            mergedPOHandler.AddNumPOEntryByID(numID, *pPOEntryTX, *pcurrPOEntryEN, true);
+        }
+        else if (pPOEntryUpstr && pcurrPOEntryEN->msgIDPlur.empty() && !pPOEntryUpstr->msgStr.empty()) // Upstr entry single
+        {
+          if (pPOEntryUpstr->msgID == pcurrPOEntryEN->msgID)
+          {
+            mergedPOHandler.AddNumPOEntryByID(numID, *pPOEntryUpstr, *pcurrPOEntryEN, true);
+            updTXPOHandler.AddNumPOEntryByID(numID, *pPOEntryUpstr, *pcurrPOEntryEN, false);
+          }
+        }
+        else if (pPOEntryUpstr && !pcurrPOEntryEN->msgIDPlur.empty() && !pPOEntryUpstr->msgStrPlural.empty()) // Upstr entry plural
+        {
+          if (pPOEntryUpstr->msgIDPlur == pcurrPOEntryEN->msgIDPlur)
+          {
+            mergedPOHandler.AddNumPOEntryByID(numID, *pPOEntryUpstr, *pcurrPOEntryEN, true);
+            updTXPOHandler.AddNumPOEntryByID(numID, *pPOEntryUpstr, *pcurrPOEntryEN, false);
+          }
+        }
+        else if (pPOEntryUpstr && pPOEntryUpstr->msgID.empty() && !pPOEntryUpstr->msgStr.empty())
         {
           mergedPOHandler.AddNumPOEntryByID(numID, *pPOEntryUpstr, *pcurrPOEntryEN, true); // we got this entry from a strings.xml file
           updTXPOHandler.AddNumPOEntryByID(numID, *pPOEntryUpstr, *pcurrPOEntryEN, false);
@@ -246,7 +262,7 @@ bool CProjectHandler::CreateMergedResources()
 
       
       
-      
+      // Handle classic non-id based po entries
       for (size_t POEntryIdx = 0; pcurrPOHandlerEN && POEntryIdx != pcurrPOHandlerEN->GetClassEntriesCount(); POEntryIdx++)
       {
 
@@ -264,17 +280,20 @@ bool CProjectHandler::CreateMergedResources()
           mergedPOHandler.AddClassicEntry(*pcurrPOEntryEN, *pcurrPOEntryEN, true);
           updTXPOHandler.AddClassicEntry(*pcurrPOEntryEN, *pcurrPOEntryEN, true);
         }
-
-        if (strLangCode != "en" && pPOEntryTX && ((pcurrPOEntryEN->msgIDPlur.empty() && !pPOEntryTX->msgStr.empty())
-                                               || (!pcurrPOEntryEN->msgIDPlur.empty() && !pPOEntryTX->msgStrPlural.empty())))
+        else if (pPOEntryTX && pcurrPOEntryEN->msgIDPlur.empty() && !pPOEntryTX->msgStr.empty()) // Tx entry single
           mergedPOHandler.AddClassicEntry(*pPOEntryTX, *pcurrPOEntryEN, true);
-        else if (strLangCode != "en" && pPOEntryUpstr && ((pcurrPOEntryEN->msgIDPlur.empty() && !pPOEntryUpstr->msgStr.empty())
-                                   || (!pcurrPOEntryEN->msgIDPlur.empty() && !pPOEntryUpstr->msgStrPlural.empty())))
+        else if (pPOEntryTX && !pcurrPOEntryEN->msgIDPlur.empty() && !pPOEntryTX->msgStrPlural.empty()) // Tx entry plural
+          mergedPOHandler.AddClassicEntry(*pPOEntryTX, *pcurrPOEntryEN, true);
+        else if (pPOEntryUpstr && pcurrPOEntryEN->msgIDPlur.empty() && !pPOEntryUpstr->msgStr.empty()) // Upstr entry single
         {
           mergedPOHandler.AddClassicEntry(*pPOEntryUpstr, *pcurrPOEntryEN, true);
           updTXPOHandler.AddClassicEntry(*pPOEntryUpstr, *pcurrPOEntryEN, false);
         }
-
+        else if (pPOEntryUpstr && !pcurrPOEntryEN->msgIDPlur.empty() && !pPOEntryUpstr->msgStrPlural.empty()) // Upstr entry plural
+        {
+          mergedPOHandler.AddClassicEntry(*pPOEntryUpstr, *pcurrPOEntryEN, true);
+          updTXPOHandler.AddClassicEntry(*pPOEntryUpstr, *pcurrPOEntryEN, false);
+        }
       }
       
       
