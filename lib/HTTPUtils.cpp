@@ -412,7 +412,9 @@ bool CHTTPHandler::ComparePOFilesInMem(CPOHandler * pPOHandler1, CPOHandler * pP
     if (bLangIsEN)
     {
       POEntry1.msgStr.clear();
+      POEntry1.msgStrPlural.clear();
       POEntry2.msgStr.clear();
+      POEntry2.msgStrPlural.clear();
     }
 
     if (!(POEntry1 == POEntry2))
