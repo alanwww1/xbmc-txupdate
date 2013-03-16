@@ -69,6 +69,8 @@ protected:
   itStrings IterateToMapIndex(itStrings it, size_t index);
   bool GetXMLEncoding(const TiXmlDocument* pDoc, std::string& strEncoding);
   void GetXMLComment(std::string strXMLEncoding, const TiXmlNode *pCommentNode, CPOEntry &currEntry);
+  int GetPluralNumOfVec(std::vector<std::string> &vecPluralStrings);
+  void ParsePOHeader();
 
   std::string m_strHeader;
   std::string m_strLangCode;

@@ -57,6 +57,8 @@ bool CPOHandler::ProcessPOFile(CPODocument &PODoc)
 
   m_strHeader = PODoc.GetEntryData().Content.substr(1);
 
+  ParsePOHeader();
+
   m_mapStrings.clear();
   m_vecClassicEntries.clear();
   m_CommsCntr = 0;
@@ -93,6 +95,12 @@ bool CPOHandler::ProcessPOFile(CPODocument &PODoc)
       currEntry.interlineComm = vecILCommnts;
       bMultipleComment = false;
       vecILCommnts.clear();
+
+      if (!currEntry.msgIDPlur.empty())
+      {
+        if (GetPluralNumOfVec(currEntry.msgStrPlural) != m_nplurals)
+          currEntry.msgStrPlural.clear(); // in case there is insufficient number of translated plurals we completely clear it
+      }
 
       if (currType == ID_FOUND)
         m_mapStrings[currEntry.numID] = currEntry;
@@ -566,3 +574,28 @@ bool CPOHandler::WriteXMLFile(const std::string &strOutputPOFilename)
 
   return true;
 };
+
+int CPOHandler::GetPluralNumOfVec(std::vector<std::string> &vecPluralStrings)
+{
+  int num = 0;
+  for (std::vector<std::string>::iterator it = vecPluralStrings.begin(); it != vecPluralStrings.end(); it++)
+  {
+    if (!it->empty())
+      num++;
+  }
+  return num;
+}
+
+void CPOHandler::ParsePOHeader() // extract nplurals number from the PO file header
+{
+  size_t pos1, pos2;
+  pos1 = m_strHeader.find("nplurals=",0)+9;
+  if (pos1 == std::string::npos)
+    CLog::Log(logERROR, "POHandler: No valid nplurals entry found in PO header");
+  pos2 = m_strHeader.find(";",pos1);
+  if (pos2 == std::string::npos)
+    CLog::Log(logERROR, "POHandler: No valid nplurals entry found in PO header");
+  std::stringstream ss;//create a stringstream
+  ss << m_strHeader.substr(pos1, pos2-pos1);
+  ss >> m_nplurals;
+}
