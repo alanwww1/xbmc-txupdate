@@ -546,9 +546,14 @@ void CProjectHandler::UploadTXUpdateFiles(std::string strProjRootDir)
 
       bool buploaded = false;
       size_t stradded, strupd;
-      g_HTTPHandler.PutFileToURL(strFilePath, "https://www.transifex.com/api/2/project/" + g_Settings.GetProjectname() +
-                                              "/resource/" + XMLResdata.strTXResName + "/translation/" + strLangCode + "/",
-                                              buploaded, stradded, strupd);
+      if (*it == "en")
+        g_HTTPHandler.PutFileToURL(strFilePath, "https://www.transifex.com/api/2/project/" + g_Settings.GetProjectname() +
+                                                "/resource/" + XMLResdata.strTXResName + "/content/",
+                                                buploaded, stradded, strupd);
+      else
+        g_HTTPHandler.PutFileToURL(strFilePath, "https://www.transifex.com/api/2/project/" + g_Settings.GetProjectname() +
+                                                "/resource/" + XMLResdata.strTXResName + "/translation/" + strLangCode + "/",
+                                                buploaded, stradded, strupd);
       if (buploaded)
       {
         printf ("\tlangcode: %s:\t added strings:%i, updated strings:%i\n", it->c_str(), stradded, strupd);
