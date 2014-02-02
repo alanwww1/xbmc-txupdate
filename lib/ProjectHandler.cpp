@@ -184,6 +184,7 @@ bool CProjectHandler::CreateMergedResources()
 
       mergedPOHandler.SetIfIsEnglish(strLangCode == "en");
       updTXPOHandler.SetIfIsEnglish(strLangCode == "en");
+      updTXPOHandler.SetIfPOIsUpdTX(true);
 
       CAddonXMLEntry MergedAddonXMLEntry, MergedAddonXMLEntryTX;
       CAddonXMLEntry * pAddonXMLEntry;
