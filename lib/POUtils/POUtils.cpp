@@ -452,7 +452,7 @@ void CPODocument::WritePOEntry(const CPOEntry &currEntry, unsigned int nplurals)
   }
   m_bhasLFWritten = false;
 
-  if ( (!m_bIsForeignLang || g_Settings.GetForcePOComments()) && !m_bIsUpdateTxDoc)
+  if (!m_bIsForeignLang || g_Settings.GetForcePOComments())
   {
     WriteMultilineComment(currEntry.translatorComm, "# ");
     WriteMultilineComment(currEntry.extractedComm,  "#.");
