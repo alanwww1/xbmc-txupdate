@@ -345,38 +345,60 @@ long CHTTPHandler::curlPUTPOFileToURL(std::string const &strFilePath, std::strin
 
   if(m_curlHandle) 
   {
-    struct curl_httppost *post1;
-    struct curl_httppost *postend;
 
-    post1 = NULL;
-    postend = NULL;
-    curl_formadd(&post1, &postend,
-                 CURLFORM_COPYNAME, "file",
-                 CURLFORM_FILE, strFilePath.c_str(),
-                 CURLFORM_CONTENTTYPE, "application/octet-stream",
-                 CURLFORM_END);
-
-    curl_easy_setopt(m_curlHandle, CURLOPT_WRITEFUNCTION, Write_CurlData_String);
-    curl_easy_setopt(m_curlHandle, CURLOPT_URL, strURL.c_str());
-    curl_easy_setopt(m_curlHandle, CURLOPT_NOPROGRESS, 1L);
-    curl_easy_setopt(m_curlHandle, CURLOPT_HEADER, 1L);
-    curl_easy_setopt(m_curlHandle, CURLOPT_FOLLOWLOCATION, 1L);
-    curl_easy_setopt(m_curlHandle, CURLOPT_HTTPPOST, post1);
-    curl_easy_setopt(m_curlHandle, CURLOPT_USERAGENT, "Mozilla/5.0");
-    curl_easy_setopt(m_curlHandle, CURLOPT_MAXREDIRS, 50L);
-    curl_easy_setopt(m_curlHandle, CURLOPT_CUSTOMREQUEST, "PUT");
-//    curl_easy_setopt(m_curlHandle, CURLOPT_TCP_KEEPALIVE, 1L);
-
-    if (!LoginData.strLogin.empty())
+    int nretry = 0;
+    bool bSuccess;
+    long http_code = 0;
+    do
     {
-      curl_easy_setopt(m_curlHandle, CURLOPT_USERNAME, LoginData.strLogin.c_str());
-      curl_easy_setopt(m_curlHandle, CURLOPT_PASSWORD, LoginData.strPassword.c_str());
-    }
-    curl_easy_setopt(m_curlHandle, CURLOPT_WRITEDATA, &strServerResp);
-    curl_easy_setopt(m_curlHandle, CURLOPT_SSL_VERIFYPEER, 0);
-    curl_easy_setopt(m_curlHandle, CURLOPT_VERBOSE, 0);
+      struct curl_httppost *post1;
+      struct curl_httppost *postend;
 
-    curlResult = curl_easy_perform(m_curlHandle);
+      post1 = NULL;
+      postend = NULL;
+      curl_formadd(&post1, &postend,
+                  CURLFORM_COPYNAME, "file",
+                  CURLFORM_FILE, strFilePath.c_str(),
+                  CURLFORM_CONTENTTYPE, "application/octet-stream",
+                  CURLFORM_END);
+
+      curl_easy_setopt(m_curlHandle, CURLOPT_WRITEFUNCTION, Write_CurlData_String);
+      curl_easy_setopt(m_curlHandle, CURLOPT_URL, strURL.c_str());
+      curl_easy_setopt(m_curlHandle, CURLOPT_NOPROGRESS, 1L);
+      curl_easy_setopt(m_curlHandle, CURLOPT_HEADER, 1L);
+      curl_easy_setopt(m_curlHandle, CURLOPT_FOLLOWLOCATION, 1L);
+      curl_easy_setopt(m_curlHandle, CURLOPT_HTTPPOST, post1);
+      curl_easy_setopt(m_curlHandle, CURLOPT_USERAGENT, "Mozilla/5.0");
+      curl_easy_setopt(m_curlHandle, CURLOPT_MAXREDIRS, 50L);
+      curl_easy_setopt(m_curlHandle, CURLOPT_CUSTOMREQUEST, "PUT");
+
+      if (!LoginData.strLogin.empty())
+      {
+        curl_easy_setopt(m_curlHandle, CURLOPT_USERNAME, LoginData.strLogin.c_str());
+        curl_easy_setopt(m_curlHandle, CURLOPT_PASSWORD, LoginData.strPassword.c_str());
+      }
+      curl_easy_setopt(m_curlHandle, CURLOPT_WRITEDATA, &strServerResp);
+      curl_easy_setopt(m_curlHandle, CURLOPT_SSL_VERIFYPEER, 0);
+      curl_easy_setopt(m_curlHandle, CURLOPT_VERBOSE, 0);
+
+      curlResult = curl_easy_perform(m_curlHandle);
+
+      curl_easy_getinfo (m_curlHandle, CURLINFO_RESPONSE_CODE, &http_code);
+
+      curl_formfree(post1);
+      post1 = NULL;
+
+      bSuccess = (curlResult == 0 && http_code >= 200 && http_code < 400);
+      nretry++;
+    }
+    while (nretry < 5 && !bSuccess);
+
+    if (bSuccess)
+      CLog::Log(logINFO, "HTTPHandler::curlFileToURL finished with success from File %s to URL %s",
+                strFilePath.c_str(), strURL.c_str());
+    else
+      CLog::Log(logERROR, "HTTPHandler::curlFileToURL finished with: \ncurl error: %i, %s\nhttp error: %i\nURL: %s\nlocaldir: %s",
+                curlResult, curl_easy_strerror(curlResult), http_code, strURL.c_str(), strFilePath.c_str());
 
     size_t jsonPos = strServerResp.find_first_of("{");
     if (jsonPos == std::string::npos)
@@ -385,20 +407,6 @@ long CHTTPHandler::curlPUTPOFileToURL(std::string const &strFilePath, std::strin
     strServerResp = strServerResp.substr(jsonPos);
     g_Json.ParseUploadedStringsData(strServerResp, stradded, strupd);
 
-    long http_code = 0;
-    curl_easy_getinfo (m_curlHandle, CURLINFO_RESPONSE_CODE, &http_code);
-
-    curl_formfree(post1);
-    post1 = NULL;
-
-    if (curlResult == 0 && http_code >= 200 && http_code < 400)
-      CLog::Log(logINFO, "HTTPHandler::curlFileToURL finished with success from File %s to URL %s",
-                strFilePath.c_str(), strURL.c_str());
-    else
-    {
-      CLog::Log(logINFO, "HTTPHandler::curlFileToURL finished with error code: %i from file %s to URL %s",
-                http_code, strFilePath.c_str(), strURL.c_str());
-    }
     return http_code;
   }
   else
