@@ -345,12 +345,19 @@ long CHTTPHandler::curlPUTPOFileToURL(std::string const &strFilePath, std::strin
 
   if(m_curlHandle) 
   {
-
     int nretry = 0;
     bool bSuccess;
     long http_code = 0;
     do
     {
+      strServerResp.clear();
+      if (nretry > 2)
+      {
+        sleep(3);
+        g_HTTPHandler.Cleanup();
+        g_HTTPHandler.ReInit();
+        printf ("\n\nRetry\n\n");
+      }
       struct curl_httppost *post1;
       struct curl_httppost *postend;
 
@@ -397,7 +404,7 @@ long CHTTPHandler::curlPUTPOFileToURL(std::string const &strFilePath, std::strin
       CLog::Log(logINFO, "HTTPHandler::curlFileToURL finished with success from File %s to URL %s",
                 strFilePath.c_str(), strURL.c_str());
     else
-      CLog::Log(logERROR, "HTTPHandler::curlFileToURL finished with: \ncurl error: %i, %s\nhttp error: %i\nURL: %s\nlocaldir: %s",
+      CLog::Log(logERROR, "HTTPHandler::curlFileToURL finished with error: \ncurl error: %i, %s\nhttp error: %i\nURL: %s\nlocaldir: %s",
                 curlResult, curl_easy_strerror(curlResult), http_code, strURL.c_str(), strFilePath.c_str());
 
     size_t jsonPos = strServerResp.find_first_of("{");
@@ -475,53 +482,68 @@ bool CHTTPHandler::CreateNewResource(std::string strResname, std::string strENPO
 
   std::string strPOJson = g_Json.CreateNewresJSONStrFromPOStr(strResname, strPO);
 
-  Tputstrdata PutStrData;
-  PutStrData.pPOString = &strPOJson;
-  PutStrData.pos = 0;
-
   std::string strServerResp;
   CLoginData LoginData = GetCredentials(strURL);
 
   if(m_curlHandle) 
   {
-    struct curl_slist *headers=NULL;
-    headers = curl_slist_append( headers, "Content-Type: application/json");
-    headers = curl_slist_append( headers, "charsets: utf-8");
-
-    curl_easy_setopt(m_curlHandle, CURLOPT_READFUNCTION, Read_CurlData_String);
-    curl_easy_setopt(m_curlHandle, CURLOPT_WRITEFUNCTION, Write_CurlData_String);
-    curl_easy_setopt(m_curlHandle, CURLOPT_URL, strURL.c_str());
-    curl_easy_setopt(m_curlHandle, CURLOPT_POST, 1L);
-    if (!LoginData.strLogin.empty())
-    {
-      curl_easy_setopt(m_curlHandle, CURLOPT_USERNAME, LoginData.strLogin.c_str());
-      curl_easy_setopt(m_curlHandle, CURLOPT_PASSWORD, LoginData.strPassword.c_str());
-    }
-    curl_easy_setopt(m_curlHandle, CURLOPT_FAILONERROR, true);
-    curl_easy_setopt(m_curlHandle, CURLOPT_READDATA, &PutStrData);
-    curl_easy_setopt(m_curlHandle, CURLOPT_WRITEDATA, &strServerResp);
-    curl_easy_setopt(m_curlHandle, CURLOPT_POSTFIELDSIZE_LARGE, (curl_off_t)strPOJson.size());
-    curl_easy_setopt(m_curlHandle, CURLOPT_USERAGENT, "Mozilla/5.0");
-    curl_easy_setopt(m_curlHandle, CURLOPT_HTTPHEADER, headers);
-    curl_easy_setopt(m_curlHandle, CURLOPT_SSL_VERIFYPEER, 0);
-
-    curlResult = curl_easy_perform(m_curlHandle);
-
+    int nretry = 0;
+    bool bSuccess;
     long http_code = 0;
-    curl_easy_getinfo (m_curlHandle, CURLINFO_RESPONSE_CODE, &http_code);
-
-    if (curlResult == 0 && http_code >= 200 && http_code < 400)
+    do
     {
+      Tputstrdata PutStrData;
+      PutStrData.pPOString = &strPOJson;
+      PutStrData.pos = 0;
+      strServerResp.clear();
+
+      if (nretry > 2)
+      {
+        sleep(3);
+        g_HTTPHandler.Cleanup();
+        g_HTTPHandler.ReInit();
+        printf ("\n\nRetry\n\n");
+      }
+      struct curl_slist *headers=NULL;
+      headers = curl_slist_append( headers, "Content-Type: application/json");
+      headers = curl_slist_append( headers, "charsets: utf-8");
+
+      curl_easy_setopt(m_curlHandle, CURLOPT_READFUNCTION, Read_CurlData_String);
+      curl_easy_setopt(m_curlHandle, CURLOPT_WRITEFUNCTION, Write_CurlData_String);
+      curl_easy_setopt(m_curlHandle, CURLOPT_URL, strURL.c_str());
+      curl_easy_setopt(m_curlHandle, CURLOPT_POST, 1L);
+      if (!LoginData.strLogin.empty())
+      {
+        curl_easy_setopt(m_curlHandle, CURLOPT_USERNAME, LoginData.strLogin.c_str());
+        curl_easy_setopt(m_curlHandle, CURLOPT_PASSWORD, LoginData.strPassword.c_str());
+      }
+      curl_easy_setopt(m_curlHandle, CURLOPT_FAILONERROR, true);
+      curl_easy_setopt(m_curlHandle, CURLOPT_READDATA, &PutStrData);
+      curl_easy_setopt(m_curlHandle, CURLOPT_WRITEDATA, &strServerResp);
+      curl_easy_setopt(m_curlHandle, CURLOPT_POSTFIELDSIZE_LARGE, (curl_off_t)strPOJson.size());
+      curl_easy_setopt(m_curlHandle, CURLOPT_USERAGENT, "Mozilla/5.0");
+      curl_easy_setopt(m_curlHandle, CURLOPT_HTTPHEADER, headers);
+      curl_easy_setopt(m_curlHandle, CURLOPT_SSL_VERIFYPEER, 0);
+
+      curlResult = curl_easy_perform(m_curlHandle);
+
+      curl_easy_getinfo (m_curlHandle, CURLINFO_RESPONSE_CODE, &http_code);
+
+      bSuccess = (curlResult == 0 && http_code >= 200 && http_code < 400);
+      nretry++;
+    }
+    while (nretry < 5 && !bSuccess);
+
+    if (bSuccess)
       CLog::Log(logINFO, "CHTTPHandler::CreateNewResource finished with success for resource %s from EN PO file %s to URL %s",
                 strResname.c_str(), strENPOFilePath.c_str(), strURL.c_str());
-      g_File.CopyFile(strENPOFilePath, strCacheFile);
-      g_Json.ParseUploadedStrForNewRes(strServerResp, stradded);
-    }
     else
-    {
-      CLog::Log(logINFO, "CHTTPHandler::CreateNewResource finished with error code %i, for resource %s from EN PO file %s to URL %s ",
-                http_code, strResname.c_str(), strENPOFilePath.c_str(), strURL.c_str());
-    }
+      CLog::Log(logERROR, "CHTTPHandler::CreateNewResource finished with error:\ncurl error: %i, %s\nhttp error: %i\nURL: %s\nlocaldir: %s\nREsource: %s",
+                curlResult, curl_easy_strerror(curlResult), http_code, strURL.c_str(), strENPOFilePath.c_str(), strResname.c_str());
+
+    g_File.CopyFile(strENPOFilePath, strCacheFile);
+    g_Json.ParseUploadedStrForNewRes(strServerResp, stradded);
+
     return http_code;
   }
   else
