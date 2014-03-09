@@ -79,7 +79,7 @@ long CHTTPHandler::curlURLToCache(std::string strCacheFile, std::string strURL, 
       }
       curl_easy_setopt(m_curlHandle, CURLOPT_FAILONERROR, true);
       curl_easy_setopt(m_curlHandle, CURLOPT_WRITEDATA, &strBuffer);
-      curl_easy_setopt(m_curlHandle, CURLOPT_USERAGENT, "libcurl-agent/1.0");
+      curl_easy_setopt(m_curlHandle, CURLOPT_USERAGENT, "Mozilla/5.0");
       curl_easy_setopt(m_curlHandle, CURLOPT_SSL_VERIFYPEER, 0);
 
       curlResult = curl_easy_perform(m_curlHandle);
@@ -92,9 +92,8 @@ long CHTTPHandler::curlURLToCache(std::string strCacheFile, std::string strURL, 
       else
       {
         if (!bSkiperror)
-        CLog::Log(logERROR, "HTTPHandler: curlURLToCache finished with error code: %i from URL %s to localdir %s",
-                  http_code, strURL.c_str(), strCacheFile.c_str());
-        CLog::Log(logINFO, "HTTPHandler: curlURLToCache finished with code: %i from URL %s", http_code, strURL.c_str());
+        CLog::Log(logERROR, "HTTPHandler: curlURLToCache finished with error: \ncurl error: %i, %s\nhttp error: %i\nURL: %s\nlocaldir: %s",
+                  curlResult, curl_easy_strerror(curlResult), http_code, strURL.c_str(), strCacheFile.c_str());
         return http_code;
       }
       g_File.WriteFileFromStr(strCacheFile, strBuffer);
