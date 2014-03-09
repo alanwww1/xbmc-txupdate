@@ -62,31 +62,45 @@ std::string CHTTPHandler::GetURLToSTR(std::string strURL, bool bSkiperror /*=fal
 long CHTTPHandler::curlURLToCache(std::string strCacheFile, std::string strURL, bool bSkiperror, std::string &strBuffer)
 {
   CURLcode curlResult;
-  strBuffer.clear();
-
   strURL = URLEncode(strURL);
 
   CLoginData LoginData = GetCredentials(strURL);
 
     if(m_curlHandle) 
     {
-      curl_easy_setopt(m_curlHandle, CURLOPT_URL, strURL.c_str());
-      curl_easy_setopt(m_curlHandle, CURLOPT_WRITEFUNCTION, Write_CurlData_String);
-      if (!LoginData.strLogin.empty())
-      {
-        curl_easy_setopt(m_curlHandle, CURLOPT_USERNAME, LoginData.strLogin.c_str());
-        curl_easy_setopt(m_curlHandle, CURLOPT_PASSWORD, LoginData.strPassword.c_str());
-      }
-      curl_easy_setopt(m_curlHandle, CURLOPT_FAILONERROR, true);
-      curl_easy_setopt(m_curlHandle, CURLOPT_WRITEDATA, &strBuffer);
-      curl_easy_setopt(m_curlHandle, CURLOPT_USERAGENT, "Mozilla/5.0");
-      curl_easy_setopt(m_curlHandle, CURLOPT_SSL_VERIFYPEER, 0);
-
-      curlResult = curl_easy_perform(m_curlHandle);
+      int nretry = 0;
+      bool bSuccess;
       long http_code = 0;
-      curl_easy_getinfo (m_curlHandle, CURLINFO_RESPONSE_CODE, &http_code);
+      do
+      {
+        strBuffer.clear();
+        if (nretry > 2)
+        {
+          sleep(3);
+          g_HTTPHandler.Cleanup();
+          g_HTTPHandler.ReInit();
+          printf ("\n\nRetry\n\n");
+        }
+        curl_easy_setopt(m_curlHandle, CURLOPT_URL, strURL.c_str());
+        curl_easy_setopt(m_curlHandle, CURLOPT_WRITEFUNCTION, Write_CurlData_String);
+        if (!LoginData.strLogin.empty())
+        {
+          curl_easy_setopt(m_curlHandle, CURLOPT_USERNAME, LoginData.strLogin.c_str());
+          curl_easy_setopt(m_curlHandle, CURLOPT_PASSWORD, LoginData.strPassword.c_str());
+        }
+        curl_easy_setopt(m_curlHandle, CURLOPT_FAILONERROR, true);
+        curl_easy_setopt(m_curlHandle, CURLOPT_WRITEDATA, &strBuffer);
+        curl_easy_setopt(m_curlHandle, CURLOPT_USERAGENT, "Mozilla/5.0");
+        curl_easy_setopt(m_curlHandle, CURLOPT_SSL_VERIFYPEER, 0);
 
-      if (curlResult == 0 && http_code >= 200 && http_code < 400)
+        curlResult = curl_easy_perform(m_curlHandle);
+        curl_easy_getinfo (m_curlHandle, CURLINFO_RESPONSE_CODE, &http_code);
+        nretry++;
+        bSuccess = (curlResult == 0 && http_code >= 200 && http_code < 400);
+      }
+      while (nretry < 5 && !bSuccess);
+
+      if (bSuccess)
         CLog::Log(logINFO, "HTTPHandler: curlURLToCache finished with success from URL %s to cachefile %s, read filesize: %ibytes",
                   strURL.c_str(), strCacheFile.c_str(), strBuffer.size());
       else
@@ -96,6 +110,7 @@ long CHTTPHandler::curlURLToCache(std::string strCacheFile, std::string strURL, 
                   curlResult, curl_easy_strerror(curlResult), http_code, strURL.c_str(), strCacheFile.c_str());
         return http_code;
       }
+
       g_File.WriteFileFromStr(strCacheFile, strBuffer);
       return http_code;
     }
@@ -347,7 +362,7 @@ long CHTTPHandler::curlPUTPOFileToURL(std::string const &strFilePath, std::strin
     curl_easy_setopt(m_curlHandle, CURLOPT_HEADER, 1L);
     curl_easy_setopt(m_curlHandle, CURLOPT_FOLLOWLOCATION, 1L);
     curl_easy_setopt(m_curlHandle, CURLOPT_HTTPPOST, post1);
-    curl_easy_setopt(m_curlHandle, CURLOPT_USERAGENT, "curl/7.29.0");
+    curl_easy_setopt(m_curlHandle, CURLOPT_USERAGENT, "Mozilla/5.0");
     curl_easy_setopt(m_curlHandle, CURLOPT_MAXREDIRS, 50L);
     curl_easy_setopt(m_curlHandle, CURLOPT_CUSTOMREQUEST, "PUT");
 //    curl_easy_setopt(m_curlHandle, CURLOPT_TCP_KEEPALIVE, 1L);
@@ -478,7 +493,7 @@ bool CHTTPHandler::CreateNewResource(std::string strResname, std::string strENPO
     curl_easy_setopt(m_curlHandle, CURLOPT_READDATA, &PutStrData);
     curl_easy_setopt(m_curlHandle, CURLOPT_WRITEDATA, &strServerResp);
     curl_easy_setopt(m_curlHandle, CURLOPT_POSTFIELDSIZE_LARGE, (curl_off_t)strPOJson.size());
-    curl_easy_setopt(m_curlHandle, CURLOPT_USERAGENT, "libcurl-agent/1.0");
+    curl_easy_setopt(m_curlHandle, CURLOPT_USERAGENT, "Mozilla/5.0");
     curl_easy_setopt(m_curlHandle, CURLOPT_HTTPHEADER, headers);
     curl_easy_setopt(m_curlHandle, CURLOPT_SSL_VERIFYPEER, 0);
 

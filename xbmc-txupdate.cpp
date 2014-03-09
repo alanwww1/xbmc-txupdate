@@ -245,11 +245,12 @@ int main(int argc, char* argv[])
 
     CLog::Close();
     g_HTTPHandler.Cleanup();
+    return 0;
   }
   catch (const int calcError)
   {
     g_HTTPHandler.Cleanup();
     CLog::Close();
-    return 0;
+    return 100;
   }
 }
