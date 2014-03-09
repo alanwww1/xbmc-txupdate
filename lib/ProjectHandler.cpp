@@ -519,7 +519,7 @@ void CProjectHandler::UploadTXUpdateFiles(std::string strProjRootDir)
 
       CLog::Log(logINFO, "CProjectHandler::UploadTXUpdateFiles: Resource %s was succesfully created with %i English strings.",
                 itres->first.c_str(), straddednew);
-      printf (", newly created on Transifex with %i English strings.\n", straddednew);
+      printf (", newly created on Transifex with %lu English strings.\n", straddednew);
 
       g_HTTPHandler.Cleanup();
       g_HTTPHandler.ReInit();
@@ -558,7 +558,7 @@ void CProjectHandler::UploadTXUpdateFiles(std::string strProjRootDir)
                                                 buploaded, stradded, strupd);
       if (buploaded)
       {
-        printf ("\tlangcode: %s:\t added strings:%i, updated strings:%i\n", it->c_str(), stradded, strupd);
+        printf ("\tlangcode: %s:\t added strings:%lu, updated strings:%lu\n", it->c_str(), stradded, strupd);
         g_HTTPHandler.DeleteCachedFile("https://www.transifex.com/api/2/project/" + g_Settings.GetProjectname() +
                                        "/resource/" + strResname + "/stats/", "GET");
         g_HTTPHandler.DeleteCachedFile("https://www.transifex.com/api/2/project/" + g_Settings.GetProjectname() +
