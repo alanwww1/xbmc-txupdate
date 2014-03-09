@@ -36,12 +36,16 @@ struct CLoginData
   std::string strPassword;
 };
 
+const std::string strUserAgent = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1870.2 Safari/537.36";
+
 class CHTTPHandler
 {
 public:
   CHTTPHandler();
   ~CHTTPHandler();
   void ReInit();
+  std::string GetHTTPErrorFromCode(int http_code);
+  void HTTPRetry(int nretry);
   std::string GetURLToSTR(std::string strURL, bool bSkiperror = false);
   void Cleanup();
   void SetCacheDir(std::string strCacheDir);

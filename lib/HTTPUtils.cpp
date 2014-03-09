@@ -41,6 +41,31 @@ CHTTPHandler::~CHTTPHandler()
   Cleanup();
 };
 
+std::string CHTTPHandler::GetHTTPErrorFromCode(int http_code)
+{
+  if (http_code == 503) return ": Service Unavailable (probably TX server maintenance) please try later.";
+  else if (http_code == 400) return ": Bad request (probably an error in the utility or the API changed. Please contact the Developer.";
+  else if (http_code == 401) return ": Unauthorized. Please create a .passwords file in the project root dir with credentials.";
+  else if (http_code == 403) return ": Forbidden. Service is currently forbidden.";
+  else if (http_code == 404) return ": File not found on the URL.";
+  else if (http_code == 500) return ": Internal server error. Try again later, or contact the Utility Developer.";
+  return "";
+}
+
+void CHTTPHandler::HTTPRetry(int nretry)
+{
+  for (int i = 0; i < nretry*6; i++)
+  {
+    printf (" Retry %i: %i  \b\b\b\b\b\b\b\b\b\b\b\b\b", nretry, nretry*6-i);
+    if (nretry*6-i > 9)
+      printf("\b");
+    usleep(300000);
+  }
+  printf ("             \b\b\b\b\b\b\b\b\b\b\b\b\b");
+  g_HTTPHandler.Cleanup();
+  g_HTTPHandler.ReInit();
+}
+
 std::string CHTTPHandler::GetURLToSTR(std::string strURL, bool bSkiperror /*=false*/)
 {
   std::string strBuffer;
@@ -74,13 +99,9 @@ long CHTTPHandler::curlURLToCache(std::string strCacheFile, std::string strURL, 
       do
       {
         strBuffer.clear();
-        if (nretry > 2)
-        {
-          sleep(3);
-          g_HTTPHandler.Cleanup();
-          g_HTTPHandler.ReInit();
-          printf ("\n\nRetry\n\n");
-        }
+        if (nretry > 0)
+          HTTPRetry(nretry);
+
         curl_easy_setopt(m_curlHandle, CURLOPT_URL, strURL.c_str());
         curl_easy_setopt(m_curlHandle, CURLOPT_WRITEFUNCTION, Write_CurlData_String);
         if (!LoginData.strLogin.empty())
@@ -90,7 +111,7 @@ long CHTTPHandler::curlURLToCache(std::string strCacheFile, std::string strURL, 
         }
         curl_easy_setopt(m_curlHandle, CURLOPT_FAILONERROR, true);
         curl_easy_setopt(m_curlHandle, CURLOPT_WRITEDATA, &strBuffer);
-        curl_easy_setopt(m_curlHandle, CURLOPT_USERAGENT, "Mozilla/5.0");
+        curl_easy_setopt(m_curlHandle, CURLOPT_USERAGENT, strUserAgent.c_str());
         curl_easy_setopt(m_curlHandle, CURLOPT_SSL_VERIFYPEER, 0);
 
         curlResult = curl_easy_perform(m_curlHandle);
@@ -106,8 +127,10 @@ long CHTTPHandler::curlURLToCache(std::string strCacheFile, std::string strURL, 
       else
       {
         if (!bSkiperror)
-        CLog::Log(logERROR, "HTTPHandler: curlURLToCache finished with error: \ncurl error: %i, %s\nhttp error: %i\nURL: %s\nlocaldir: %s",
-                  curlResult, curl_easy_strerror(curlResult), http_code, strURL.c_str(), strCacheFile.c_str());
+        CLog::Log(logERROR, "HTTPHandler: curlURLToCache finished with error: \ncurl error: %i, %s\nhttp error: %i%s\nURL: %s\nlocaldir: %s",
+                  curlResult, curl_easy_strerror(curlResult), http_code, GetHTTPErrorFromCode(http_code).c_str(),  strURL.c_str(), strCacheFile.c_str());
+        else
+          printf("\n\n\n***********************%li\n\n\n", http_code);
         return http_code;
       }
 
@@ -351,13 +374,9 @@ long CHTTPHandler::curlPUTPOFileToURL(std::string const &strFilePath, std::strin
     do
     {
       strServerResp.clear();
-      if (nretry > 2)
-      {
-        sleep(3);
-        g_HTTPHandler.Cleanup();
-        g_HTTPHandler.ReInit();
-        printf ("\n\nRetry\n\n");
-      }
+      if (nretry > 0)
+        HTTPRetry(nretry);
+
       struct curl_httppost *post1;
       struct curl_httppost *postend;
 
@@ -375,7 +394,7 @@ long CHTTPHandler::curlPUTPOFileToURL(std::string const &strFilePath, std::strin
       curl_easy_setopt(m_curlHandle, CURLOPT_HEADER, 1L);
       curl_easy_setopt(m_curlHandle, CURLOPT_FOLLOWLOCATION, 1L);
       curl_easy_setopt(m_curlHandle, CURLOPT_HTTPPOST, post1);
-      curl_easy_setopt(m_curlHandle, CURLOPT_USERAGENT, "Mozilla/5.0");
+      curl_easy_setopt(m_curlHandle, CURLOPT_USERAGENT, strUserAgent.c_str());
       curl_easy_setopt(m_curlHandle, CURLOPT_MAXREDIRS, 50L);
       curl_easy_setopt(m_curlHandle, CURLOPT_CUSTOMREQUEST, "PUT");
 
@@ -404,8 +423,8 @@ long CHTTPHandler::curlPUTPOFileToURL(std::string const &strFilePath, std::strin
       CLog::Log(logINFO, "HTTPHandler::curlFileToURL finished with success from File %s to URL %s",
                 strFilePath.c_str(), strURL.c_str());
     else
-      CLog::Log(logERROR, "HTTPHandler::curlFileToURL finished with error: \ncurl error: %i, %s\nhttp error: %i\nURL: %s\nlocaldir: %s",
-                curlResult, curl_easy_strerror(curlResult), http_code, strURL.c_str(), strFilePath.c_str());
+      CLog::Log(logERROR, "HTTPHandler::curlFileToURL finished with error: \ncurl error: %i, %s\nhttp error: %i%s\nURL: %s\nlocaldir: %s",
+                curlResult, curl_easy_strerror(curlResult), http_code, GetHTTPErrorFromCode(http_code).c_str(), strURL.c_str(), strFilePath.c_str());
 
     size_t jsonPos = strServerResp.find_first_of("{");
     if (jsonPos == std::string::npos)
@@ -497,13 +516,9 @@ bool CHTTPHandler::CreateNewResource(std::string strResname, std::string strENPO
       PutStrData.pos = 0;
       strServerResp.clear();
 
-      if (nretry > 2)
-      {
-        sleep(3);
-        g_HTTPHandler.Cleanup();
-        g_HTTPHandler.ReInit();
-        printf ("\n\nRetry\n\n");
-      }
+      if (nretry > 0)
+        HTTPRetry(nretry);
+
       struct curl_slist *headers=NULL;
       headers = curl_slist_append( headers, "Content-Type: application/json");
       headers = curl_slist_append( headers, "charsets: utf-8");
@@ -521,7 +536,7 @@ bool CHTTPHandler::CreateNewResource(std::string strResname, std::string strENPO
       curl_easy_setopt(m_curlHandle, CURLOPT_READDATA, &PutStrData);
       curl_easy_setopt(m_curlHandle, CURLOPT_WRITEDATA, &strServerResp);
       curl_easy_setopt(m_curlHandle, CURLOPT_POSTFIELDSIZE_LARGE, (curl_off_t)strPOJson.size());
-      curl_easy_setopt(m_curlHandle, CURLOPT_USERAGENT, "Mozilla/5.0");
+      curl_easy_setopt(m_curlHandle, CURLOPT_USERAGENT, strUserAgent.c_str());
       curl_easy_setopt(m_curlHandle, CURLOPT_HTTPHEADER, headers);
       curl_easy_setopt(m_curlHandle, CURLOPT_SSL_VERIFYPEER, 0);
 
@@ -538,8 +553,8 @@ bool CHTTPHandler::CreateNewResource(std::string strResname, std::string strENPO
       CLog::Log(logINFO, "CHTTPHandler::CreateNewResource finished with success for resource %s from EN PO file %s to URL %s",
                 strResname.c_str(), strENPOFilePath.c_str(), strURL.c_str());
     else
-      CLog::Log(logERROR, "CHTTPHandler::CreateNewResource finished with error:\ncurl error: %i, %s\nhttp error: %i\nURL: %s\nlocaldir: %s\nREsource: %s",
-                curlResult, curl_easy_strerror(curlResult), http_code, strURL.c_str(), strENPOFilePath.c_str(), strResname.c_str());
+      CLog::Log(logERROR, "CHTTPHandler::CreateNewResource finished with error:\ncurl error: %i, %s\nhttp error: %i%s\nURL: %s\nlocaldir: %s\nREsource: %s",
+                curlResult, curl_easy_strerror(curlResult), http_code, GetHTTPErrorFromCode(http_code).c_str(), strURL.c_str(), strENPOFilePath.c_str(), strResname.c_str());
 
     g_File.CopyFile(strENPOFilePath, strCacheFile);
     g_Json.ParseUploadedStrForNewRes(strServerResp, stradded);
