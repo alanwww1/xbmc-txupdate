@@ -66,7 +66,7 @@ void CHTTPHandler::HTTPRetry(int nretry)
   g_HTTPHandler.ReInit();
 }
 
-std::string CHTTPHandler::GetURLToSTR(std::string strURL, bool bSkiperror /*=false*/)
+std::string CHTTPHandler::GetURLToSTR(std::string strURL)
 {
   std::string strBuffer;
   std::string strCacheFile = CacheFileNameFromURL(strURL);
@@ -74,7 +74,7 @@ std::string CHTTPHandler::GetURLToSTR(std::string strURL, bool bSkiperror /*=fal
 
   if (!g_File.FileExist(strCacheFile) || g_File.GetFileAge(strCacheFile) > g_Settings.GetHTTPCacheExpire() * 60)
   {
-    long result = curlURLToCache(strCacheFile, strURL, bSkiperror, strBuffer);
+    long result = curlURLToCache(strCacheFile, strURL, strBuffer);
     if (result < 200 || result >= 400)
       return "";
   }
@@ -84,7 +84,7 @@ std::string CHTTPHandler::GetURLToSTR(std::string strURL, bool bSkiperror /*=fal
   return strBuffer;
 };
 
-long CHTTPHandler::curlURLToCache(std::string strCacheFile, std::string strURL, bool bSkiperror, std::string &strBuffer)
+long CHTTPHandler::curlURLToCache(std::string strCacheFile, std::string strURL, std::string &strBuffer)
 {
   CURLcode curlResult;
   strURL = URLEncode(strURL);
@@ -128,14 +128,8 @@ long CHTTPHandler::curlURLToCache(std::string strCacheFile, std::string strURL, 
         CLog::Log(logINFO, "HTTPHandler: curlURLToCache finished with success from URL %s to cachefile %s, read filesize: %ibytes",
                   strURL.c_str(), strCacheFile.c_str(), strBuffer.size());
       else
-      {
-        if (!bSkiperror)
         CLog::Log(logERROR, "HTTPHandler: curlURLToCache finished with error: \ncurl error: %i, %s\nhttp error: %i%s\nURL: %s\nlocaldir: %s",
                   curlResult, curl_easy_strerror(curlResult), http_code, GetHTTPErrorFromCode(http_code).c_str(),  strURL.c_str(), strCacheFile.c_str());
-        else
-          printf("\n\n\n***********************%li\n\n\n", http_code);
-        return http_code;
-      }
 
       g_File.WriteFileFromStr(strCacheFile, strBuffer);
       return http_code;

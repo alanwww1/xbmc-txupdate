@@ -388,7 +388,7 @@ bool CAddonXMLHandler::UpdateAddonChangelogFile (std::string strFilename, std::s
 
 bool CAddonXMLHandler::FetchAddonChangelogFile (std::string strURL)
 {
-  std::string strChangelogFile = g_HTTPHandler.GetURLToSTR(strURL, true);
+  std::string strChangelogFile = g_HTTPHandler.GetURLToSTR(strURL);
 
   g_File.ConvertStrLineEnds(strChangelogFile);
 

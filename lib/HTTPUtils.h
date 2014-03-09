@@ -46,7 +46,7 @@ public:
   void ReInit();
   std::string GetHTTPErrorFromCode(int http_code);
   void HTTPRetry(int nretry);
-  std::string GetURLToSTR(std::string strURL, bool bSkiperror = false);
+  std::string GetURLToSTR(std::string strURL);
   void Cleanup();
   void SetCacheDir(std::string strCacheDir);
   bool LoadCredentials (std::string CredentialsFilename);
@@ -60,7 +60,7 @@ public:
 private:
   CURL *m_curlHandle;
   std::string m_strCacheDir;
-  long curlURLToCache(std::string strCacheFile, std::string strURL, bool bSkiperror, std::string &strBuffer);
+  long curlURLToCache(std::string strCacheFile, std::string strURL, std::string &strBuffer);
   long curlPUTPOFileToURL(std::string const &strFilePath, std::string const &strURL, size_t &stradded, size_t &strupd);
 
   CLoginData GetCredentials (std::string strURL);
