@@ -48,7 +48,9 @@ public:
   void SetTXUpdateLangfilesDir(std::string const &strTXUpdateLangfilesDir);
   std::string GetTXUpdateLangfilesDir();
   void SetForcePOComments(bool bForceComm);
+  void SetRebrand(bool bRebrand);
   bool GetForcePOComments();
+  bool GetRebrand();
   void SetSupportEmailAdd(std::string const &strEmailAdd);
   std::string GetSupportEmailAdd();
 private:
@@ -60,6 +62,7 @@ private:
   std::string m_strSupportEmailAdd;
   std::string m_strProjectnameLong;
   bool m_bForceComm;
+  bool m_bRebrand;
 };
 
 extern CSettings g_Settings;

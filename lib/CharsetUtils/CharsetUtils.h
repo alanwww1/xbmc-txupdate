@@ -50,6 +50,8 @@ public:
   std::string stringCharsetToUtf8(const std::string& strCP, std::string strIn);
   bool IsValidUTF8(std::string const &strToCheck);
   size_t GetCharCountInStr(std::string const &strToCheck, unsigned char chrToFInd);
+  void replaceAllStrParts(std::string * pstr, const std::string& from, const std::string& to);
+  void reBrandXBMCToKodi(std::string * pstrtorebrand);
 };
 
 extern CCharsetUtils g_CharsetUtils;

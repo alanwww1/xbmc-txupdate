@@ -160,9 +160,19 @@ void CPOHandler::GetXMLComment(std::string strXMLEncoding, const TiXmlNode *pCom
     if (nodeType == TiXmlNode::TINYXML_COMMENT)
     {
       if (pCommentNode->m_CommentLFPassed)
-        prevCommEntry.interlineComm.push_back(g_CharsetUtils.ToUTF8(strXMLEncoding, g_CharsetUtils.UnWhitespace(pCommentNode->Value())));
+      {
+        std::string strComm = g_CharsetUtils.ToUTF8(strXMLEncoding, g_CharsetUtils.UnWhitespace(pCommentNode->Value()));
+        if (g_Settings.GetRebrand())
+          g_CharsetUtils.reBrandXBMCToKodi(&strComm);
+        prevCommEntry.interlineComm.push_back(strComm);
+      }
       else
-        currEntry.extractedComm.push_back(g_CharsetUtils.ToUTF8(strXMLEncoding, g_CharsetUtils.UnWhitespace(pCommentNode->Value())));
+      {
+        std::string strComm = g_CharsetUtils.ToUTF8(strXMLEncoding, g_CharsetUtils.UnWhitespace(pCommentNode->Value()));
+        if (g_Settings.GetRebrand())
+          g_CharsetUtils.reBrandXBMCToKodi(&strComm);
+        currEntry.extractedComm.push_back(strComm);
+      }
     }
     pCommentNode = pCommentNode->NextSibling();
   }
@@ -235,6 +245,12 @@ bool CPOHandler::FetchXMLURLToMem (std::string strURL)
 
         if (m_bPOIsEnglish)
           GetXMLComment(strXMLEncoding, pChildElement->NextSibling(), currEntry);
+
+        if (g_Settings.GetRebrand())
+        {
+          g_CharsetUtils.reBrandXBMCToKodi(&currEntry.msgID);
+	  g_CharsetUtils.reBrandXBMCToKodi(&currEntry.msgStr);
+        }
 
         m_mapStrings[id] = currEntry;
       }

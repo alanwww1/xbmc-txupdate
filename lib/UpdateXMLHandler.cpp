@@ -134,6 +134,13 @@ bool CUpdateXMLHandler::LoadXMLToMem (std::string rootDir)
     CLog::Log(logINFO, "UpdXMLHandler: Forced PO file comments for non English languages.", strMergedLangfileDir.c_str());
     g_Settings.SetForcePOComments(true);
   }
+  
+  std::string strRebrand;
+  if (pRootElement->Attribute("Rebrand") && (strForcePOComm = pRootElement->Attribute("Rebrand")) == "true")
+  {
+    CLog::Log(logINFO, "UpdXMLHandler: Rebrand of XBMC strings to Kodi strings turned on.");
+    g_Settings.SetRebrand(true);
+  }
 
   const TiXmlElement *pChildResElement = pRootElement->FirstChildElement("resource");
   if (!pChildResElement || pChildResElement->NoChildren())

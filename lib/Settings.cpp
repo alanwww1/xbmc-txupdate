@@ -34,6 +34,7 @@ CSettings::CSettings()
   m_strMergedLangfilesDir = DEFAULTMERGEDLANGDIR;
   m_strTXUpdateLangfilesDir = DEFAULTTXUPDLANGDIR;
   m_bForceComm = false;
+  m_bRebrand = false;  
   m_strSupportEmailAdd = "anonymus";
 };
 
@@ -117,7 +118,17 @@ void CSettings::SetForcePOComments(bool bForceComm)
   m_bForceComm = bForceComm;
 };
 
+void CSettings::SetRebrand(bool bRebrand)
+{
+  m_bRebrand = bRebrand;
+};
+
 bool CSettings::GetForcePOComments()
 {
   return m_bForceComm;
+};
+
+bool CSettings::GetRebrand()
+{
+  return m_bRebrand;
 };

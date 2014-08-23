@@ -269,3 +269,21 @@ size_t CCharsetUtils::GetCharCountInStr(std::string const &strToCheck, unsigned 
 {
   return std::count(strToCheck.begin(), strToCheck.end(), chrToFInd);
 }
+
+void CCharsetUtils::replaceAllStrParts(std::string * pstr, const std::string& from, const std::string& to)
+{
+  size_t start_pos = 0;
+  while((start_pos = pstr->find(from, start_pos)) != std::string::npos)
+  {
+    size_t end_pos = start_pos + from.length();
+    pstr->replace(start_pos, end_pos, to);
+    start_pos += to.length();
+  }
+};
+
+void CCharsetUtils::reBrandXBMCToKodi(std::string * pstrtorebrand)
+{
+  replaceAllStrParts(pstrtorebrand, "XBMC", "Kodi");
+  replaceAllStrParts(pstrtorebrand, "xbmc", "Kodi");
+  replaceAllStrParts(pstrtorebrand, "Xbmc", "Kodi");
+}

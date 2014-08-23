@@ -301,12 +301,16 @@ void CPODocument::ParseEntry()
       else if (HasPrefix(strLine, "#:") && strLine.size() > 2)
       {
         std::string strCommnt = strLine.substr(2);
+        if (g_Settings.GetRebrand())
+          g_CharsetUtils.reBrandXBMCToKodi(&strCommnt);
         m_Entry.referenceComm.push_back(strCommnt);
       }
 
       else if (HasPrefix(strLine, "#.") && strLine.size() > 2)
       {
         std::string strCommnt = strLine.substr(2);
+        if (g_Settings.GetRebrand())
+          g_CharsetUtils.reBrandXBMCToKodi(&strCommnt);
         m_Entry.extractedComm.push_back(strCommnt);
       }
 
@@ -314,12 +318,16 @@ void CPODocument::ParseEntry()
         strLine[1] != ':' && strLine[1] != ' ')
       {
         std::string strCommnt = strLine.substr(1);
+        if (g_Settings.GetRebrand())
+          g_CharsetUtils.reBrandXBMCToKodi(&strCommnt);
         if (strCommnt.substr(0,5) != "empty")
           m_Entry.interlineComm.push_back(strCommnt);
       }
       else if (HasPrefix(strLine, "# "))
       {
         std::string strCommnt = strLine.substr(2);
+        if (g_Settings.GetRebrand())
+          g_CharsetUtils.reBrandXBMCToKodi(&strCommnt);
         m_Entry.translatorComm.push_back(strCommnt);
       }
       else
@@ -337,6 +345,8 @@ bool CPODocument::ReadStringLine(const std::string &line, std::string * pStrToAp
   if (!g_CharsetUtils.IsValidUTF8(strToAppend))
     CLog::Log(logERROR, "POUtils::ReadStringLine: wrong utf8 sequence found in string: %s", strToAppend.c_str());
   pStrToAppend->append(g_CharsetUtils.UnescapeCPPString(strToAppend));
+  if (g_Settings.GetRebrand())
+    g_CharsetUtils.reBrandXBMCToKodi(pStrToAppend);
   return true;
 };
 
