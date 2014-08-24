@@ -288,6 +288,7 @@ void CCharsetUtils::replaceAllStrParts(std::string * pstr, const std::string& fr
 void CCharsetUtils::reBrandXBMCToKodi(std::string * pstrtorebrand)
 {
   replaceAllStrParts(pstrtorebrand, "XBMC", "Kodi");
+  replaceAllStrParts(pstrtorebrand, "XMBC", "Kodi");
   replaceAllStrParts(pstrtorebrand, "xbmc", "Kodi");
   replaceAllStrParts(pstrtorebrand, "Xbmc", "Kodi");
 }

@@ -337,6 +337,8 @@ void CPODocument::ParseEntry()
     else
       CLog::Log(logWARNING, "POParser: unknown line type found. Failed entry: %s", m_Entry.Content.c_str());
   }
+  if (g_Settings.GetRebrand() && pPlaceToParse)
+    g_CharsetUtils.reBrandXBMCToKodi(pPlaceToParse);
   return;
 };
 
