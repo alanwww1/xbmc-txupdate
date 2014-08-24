@@ -24,7 +24,7 @@
 #include <vector>
 #include <algorithm>
 #include "HTTPUtils.h"
-
+#include "Settings.h"
 
 using namespace std;
 
@@ -157,7 +157,10 @@ bool CAddonXMLHandler::ProcessAddonXMLFile (std::string AddonXMLFilename, TiXmlD
     if (pChildSummElement->FirstChild())
     {
       std::string strValue = CstrToString(pChildSummElement->FirstChild()->Value());
-      m_mapAddonXMLData[strLang].strSummary = g_CharsetUtils.ToUTF8(addonXMLEncoding, strValue);
+            strValue = g_CharsetUtils.ToUTF8(addonXMLEncoding, strValue);
+      if (g_Settings.GetRebrand())
+        g_CharsetUtils.reBrandXBMCToKodi(&strValue);
+      m_mapAddonXMLData[strLang].strSummary = strValue;
     }
     pChildSummElement = pChildSummElement->NextSiblingElement("summary");
   }
@@ -175,7 +178,10 @@ bool CAddonXMLHandler::ProcessAddonXMLFile (std::string AddonXMLFilename, TiXmlD
     if (pChildDescElement->FirstChild())
     {
       std::string strValue = CstrToString(pChildDescElement->FirstChild()->Value());
-      m_mapAddonXMLData[strLang].strDescription = g_CharsetUtils.ToUTF8(addonXMLEncoding, strValue);
+      strValue = g_CharsetUtils.ToUTF8(addonXMLEncoding, strValue);
+      if (g_Settings.GetRebrand())
+        g_CharsetUtils.reBrandXBMCToKodi(&strValue);
+      m_mapAddonXMLData[strLang].strDescription = strValue;
     }
     pChildDescElement = pChildDescElement->NextSiblingElement("description");
   }
@@ -193,7 +199,10 @@ bool CAddonXMLHandler::ProcessAddonXMLFile (std::string AddonXMLFilename, TiXmlD
     if (pChildDisclElement->FirstChild())
     {
       std::string strValue = CstrToString(pChildDisclElement->FirstChild()->Value());
-      m_mapAddonXMLData[strLang].strDisclaimer = g_CharsetUtils.ToUTF8(addonXMLEncoding, strValue);
+      strValue = g_CharsetUtils.ToUTF8(addonXMLEncoding, strValue);
+      if (g_Settings.GetRebrand())
+        g_CharsetUtils.reBrandXBMCToKodi(&strValue);
+      m_mapAddonXMLData[strLang].strDisclaimer = strValue;
     }
     pChildDisclElement = pChildDisclElement->NextSiblingElement("disclaimer");
   }
