@@ -1,5 +1,5 @@
 /*
- *      Copyright (C) 2012 Team XBMC
+ *      Copyright (C) 2014 Team Kodi
  *      http://www.xbmc.org
  *
  *  This Program is free software; you can redistribute it and/or modify
@@ -13,7 +13,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with XBMC; see the file COPYING.  If not, write to
+ *  along with Kodi; see the file COPYING.  If not, write to
  *  the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
  *  http://www.gnu.org/copyleft/gpl.html
  *
@@ -98,7 +98,7 @@ bool CAddonXMLHandler::ProcessAddonXMLFile (std::string AddonXMLFilename, TiXmlD
   if (!pMainAttrId)
   {
     CLog::Log(logWARNING, "AddonXMLHandler: No addon name was available in addon.xml file: %s\n", AddonXMLFilename.c_str());
-    m_strResourceData += "xbmc-unnamed\n";
+    m_strResourceData += "kodi-unnamed\n";
   }
   else
     m_strResourceData += g_CharsetUtils.ToUTF8(addonXMLEncoding, CstrToString(pMainAttrId)) + "\n";
@@ -482,7 +482,7 @@ bool CAddonXMLHandler::FetchCoreVersionUpstr(std::string strURL)
 {
   std::string strGuiInfoFile = g_HTTPHandler.GetURLToSTR(strURL);
   if (strGuiInfoFile.empty())
-    CLog::Log(logERROR, "CAddonXMLHandler::FetchCoreVersionUpstr: http error getting xbmc version file from upstream url: %s", strURL.c_str());
+    CLog::Log(logERROR, "CAddonXMLHandler::FetchCoreVersionUpstr: http error getting kodi version file from upstream url: %s", strURL.c_str());
   return ProcessCoreVersion(strURL, strGuiInfoFile);
 }
 
@@ -527,7 +527,7 @@ bool CAddonXMLHandler::ProcessCoreVersion(std::string filename, std::string &str
 
   size_t startpos = strBuffer.find("#define VERSION_MAJOR ") + 22;
   size_t endpos = strBuffer.find_first_of(" \n\r", startpos);
-  m_strResourceData += "# XBMC-core v" + strBuffer.substr(startpos, endpos-startpos);
+  m_strResourceData += "# Kodi-core v" + strBuffer.substr(startpos, endpos-startpos);
   m_strResourceData += ".";
 
   startpos = strBuffer.find("#define VERSION_MINOR ") + 22;

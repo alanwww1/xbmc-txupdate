@@ -1,5 +1,5 @@
 /*
- *      Copyright (C) 2012 Team XBMC
+ *      Copyright (C) 2014 Team Kodi
  *      http://www.xbmc.org
  *
  *  This Program is free software; you can redistribute it and/or modify
@@ -13,7 +13,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with XBMC; see the file COPYING.  If not, write to
+ *  along with Kodi; see the file COPYING.  If not, write to
  *  the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
  *  http://www.gnu.org/copyleft/gpl.html
  *
@@ -459,7 +459,7 @@ void CPOHandler::GetAddonMetaData (CAddonXMLEntry &AddonXMLEntry, CAddonXMLEntry
 
 void CPOHandler::SetPreHeader (std::string &strPreText)
 {
-  m_strHeader = "# XBMC Media Center language file\n";
+  m_strHeader = "# Kodi Media Center language file\n";
   m_strHeader += strPreText;
 }
 
@@ -477,7 +477,7 @@ void CPOHandler::SetHeaderNEW (std::string strLangCode)
   m_strHeader += "\"Report-Msgid-Bugs-To: " + g_Settings.GetSupportEmailAdd() + "\\n\"\n";
   m_strHeader += "\"POT-Creation-Date: YEAR-MO-DA HO:MI+ZONE\\n\"\n";
   m_strHeader += "\"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\\n\"\n";
-  m_strHeader += "\"Last-Translator: XBMC Translation Team\\n\"\n";
+  m_strHeader += "\"Last-Translator: Kodi Translation Team\\n\"\n";
   m_strHeader += "\"Language-Team: " + g_LCodeHandler.FindLang(strLangCode) + " (http://www.transifex.com/projects/p/" + g_Settings.GetProjectname() +"/language/"
                  + strLangCode +"/)" + "\\n\"\n";
   m_strHeader += "\"MIME-Version: 1.0\\n\"\n";
