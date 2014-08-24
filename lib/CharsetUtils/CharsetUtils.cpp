@@ -275,10 +275,9 @@ void CCharsetUtils::replaceAllStrParts(std::string * pstr, const std::string& fr
   size_t start_pos = 0;
   while((start_pos = pstr->find(from, start_pos)) != std::string::npos)
   {
-    size_t end_pos = start_pos + from.length();
     if (pstr->find(".org", start_pos + from.length() != start_pos +from.length()))
     {
-      pstr->replace(start_pos, end_pos, to);
+      pstr->replace(start_pos, from.length(), to);
       start_pos += to.length();
     }
     else
