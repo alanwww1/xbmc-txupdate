@@ -128,18 +128,23 @@ bool CUpdateXMLHandler::LoadXMLToMem (std::string rootDir)
     CLog::Log(logINFO, "UpdXMLHandler: No support email address specified in xbmc-txupdate.xml file. Using default value: %s",
               g_Settings.GetSupportEmailAdd().c_str());
 
-  std::string strForcePOComm;
-  if (pRootElement->Attribute("forcePOComm") && (strForcePOComm = pRootElement->Attribute("forcePOComm")) == "true")
+  std::string strAttr;
+  if (pRootElement->Attribute("forcePOComm") && (strAttr = pRootElement->Attribute("forcePOComm")) == "true")
   {
     CLog::Log(logINFO, "UpdXMLHandler: Forced PO file comments for non English languages.", strMergedLangfileDir.c_str());
     g_Settings.SetForcePOComments(true);
   }
   
-  std::string strRebrand;
-  if (pRootElement->Attribute("Rebrand") && (strForcePOComm = pRootElement->Attribute("Rebrand")) == "true")
+  if (pRootElement->Attribute("Rebrand") && (strAttr = pRootElement->Attribute("Rebrand")) == "true")
   {
     CLog::Log(logINFO, "UpdXMLHandler: Rebrand of XBMC strings to Kodi strings turned on.");
     g_Settings.SetRebrand(true);
+  }
+
+  if (pRootElement->Attribute("ForceTXUpd") && (strAttr = pRootElement->Attribute("ForceTXUpd")) == "true")
+  {
+    CLog::Log(logINFO, "UpdXMLHandler: Create of TX update files is forced.");
+    g_Settings.SetForceTXUpdate(true);
   }
 
   const TiXmlElement *pChildResElement = pRootElement->FirstChildElement("resource");

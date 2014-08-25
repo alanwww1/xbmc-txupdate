@@ -53,6 +53,8 @@ public:
   bool GetRebrand();
   void SetSupportEmailAdd(std::string const &strEmailAdd);
   std::string GetSupportEmailAdd();
+  bool GetForceTXUpdate();
+  void SetForceTXUpdate(bool bForceTXUpd);
 private:
   size_t m_CacheExpire;
   int m_minComplPercentage;
@@ -63,6 +65,7 @@ private:
   std::string m_strProjectnameLong;
   bool m_bForceComm;
   bool m_bRebrand;
+  bool m_bForceTXUpd;
 };
 
 extern CSettings g_Settings;
