@@ -409,11 +409,11 @@ void CPOHandler::SetAddonMetaData (CAddonXMLEntry const &AddonXMLEntry, CAddonXM
 
   if (strLang != "en")
   {
-    if (!AddonXMLEntry.strDescription.empty() && AddonXMLEntry.strDescription != PrevAddonXMLEntry.strDescription)
+    if (!AddonXMLEntry.strDescription.empty() && (g_Settings.GetForceTXUpdate() || AddonXMLEntry.strDescription != PrevAddonXMLEntry.strDescription))
       newPOEntryDesc.msgStr = AddonXMLEntry.strDescription;
-    if (!AddonXMLEntry.strDisclaimer.empty() && AddonXMLEntry.strDisclaimer != PrevAddonXMLEntry.strDisclaimer)
+    if (!AddonXMLEntry.strDisclaimer.empty() && (g_Settings.GetForceTXUpdate() || AddonXMLEntry.strDisclaimer != PrevAddonXMLEntry.strDisclaimer))
       newPOEntryDisc.msgStr = AddonXMLEntry.strDisclaimer;
-    if (!AddonXMLEntry.strSummary.empty() && AddonXMLEntry.strSummary != PrevAddonXMLEntry.strSummary)
+    if (!AddonXMLEntry.strSummary.empty() && (g_Settings.GetForceTXUpdate() || AddonXMLEntry.strSummary != PrevAddonXMLEntry.strSummary))
       newPOEntrySumm.msgStr = AddonXMLEntry.strSummary;
   }
 
