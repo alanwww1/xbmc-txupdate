@@ -26,6 +26,8 @@
 #include <cctype>
 #include "Settings.h"
 #include "JSONHandler.h"
+#include "Fileversioning.h"
+
 
 CHTTPHandler g_HTTPHandler;
 
@@ -72,11 +74,29 @@ std::string CHTTPHandler::GetURLToSTR(std::string strURL)
   std::string strCacheFile = CacheFileNameFromURL(strURL);
   strCacheFile = m_strCacheDir + "GET/" + strCacheFile;
 
-  if (!g_File.FileExist(strCacheFile) || g_File.GetFileAge(strCacheFile) > g_Settings.GetHTTPCacheExpire() * 60)
+  bool bCacheFileExists = g_File.FileExist(strCacheFile);
+  bool bCacheFileExpired = (g_File.GetFileAge(strCacheFile) > g_Settings.GetHTTPCacheExpire() * 60);
+  bool bFileChangedOnWeb = false;
+  std::string strCachedFileVersion, strWebFileVersion;
+  strWebFileVersion = g_Fileversion.GetVersionForURL(strURL);
+
+
+  if (strWebFileVersion != "" && g_File.FileExist(strCacheFile + ".version"))
   {
+    strCachedFileVersion = g_File.ReadFileToStr(strCacheFile + ".version");
+    bFileChangedOnWeb = strCachedFileVersion != strWebFileVersion;
+  }
+
+  if (!bCacheFileExists || (bCacheFileExpired && (strWebFileVersion == "" || bFileChangedOnWeb)))
+  {
+    g_File.DeleteFile(strCacheFile + ".version");
+
     long result = curlURLToCache(strCacheFile, strURL, strBuffer);
     if (result < 200 || result >= 400)
       return "";
+
+    if (strWebFileVersion != "")
+      g_File.WriteFileFromStr(strCacheFile + ".version", strWebFileVersion);
   }
   else
     strBuffer = g_File.ReadFileToStr(strCacheFile);

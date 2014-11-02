@@ -59,7 +59,7 @@ bool CResourceHandler::FetchPOFilesTXToMem(std::string strURL, bool bIsXBMCCore)
   char cstrtemp[strtemp.size()];
   strcpy(cstrtemp, strtemp.c_str());
 
-  std::list<std::string> listLangsTX = g_Json.ParseAvailLanguagesTX(strtemp, bIsXBMCCore);
+  std::list<std::string> listLangsTX = g_Json.ParseAvailLanguagesTX(strtemp, bIsXBMCCore, strURL);
 
   CPOHandler POHandler;
 
@@ -107,17 +107,10 @@ bool CResourceHandler::FetchPOFilesUpstreamToMem(CXMLResdata XMLResdata, std::li
       return true;
   }
 
-  std::list<std::string> listLangs;
+  std::list<std::string> listLangs, listGithubLangs;
 
-  if (XMLResdata.strLangsFromUpstream == "tx_all")
+  if (XMLResdata.strUpstreamURL.find(".github") != std::string::npos)  //if URL is github, we download a directory tree to get SHA versions
   {
-    CLog::Log(logINFO, "ResHandler: using language list previously got from Transifex");
-    listLangs = listLangsTX;
-  }
-  else if (XMLResdata.strLangsFromUpstream == "github_all")
-  {
-    CLog::Log(logINFO, "ResHandler: using language list dwonloaded with github API");
-
     std::string strGitHubURL = g_HTTPHandler.GetGitHUBAPIURL(XMLResdata.strUpstreamURL, (XMLResdata.Restype == SKIN || XMLResdata.Restype == CORE)?
                                                              "/language":"/resources/language");
 
@@ -128,7 +121,19 @@ bool CResourceHandler::FetchPOFilesUpstreamToMem(CXMLResdata XMLResdata, std::li
     char cstrtemp[strtemp.size()];
     strcpy(cstrtemp, strtemp.c_str());
 
-    listLangs = g_Json.ParseAvailLanguagesGITHUB(strtemp);
+    listGithubLangs = g_Json.ParseAvailLanguagesGITHUB(strtemp, XMLResdata.strUpstreamURL + strLangdirPrefix, XMLResdata.strLangFileType != "xml");
+  }
+
+
+  if (XMLResdata.strLangsFromUpstream == "tx_all")
+  {
+    CLog::Log(logINFO, "ResHandler: using language list previously got from Transifex");
+    listLangs = listLangsTX;
+  }
+  else if (XMLResdata.strLangsFromUpstream == "github_all")
+  {
+    CLog::Log(logINFO, "ResHandler: using language list dwonloaded with github API");
+    listLangs=listGithubLangs;
   }
   else
   {
@@ -152,6 +157,7 @@ bool CResourceHandler::FetchPOFilesUpstreamToMem(CXMLResdata XMLResdata, std::li
     }
     while (posEnd != std::string::npos);
   }
+
   bool bResult;
 
   for (std::list<std::string>::iterator it = listLangs.begin(); it != listLangs.end(); it++)

@@ -24,6 +24,7 @@
 #include <list>
 #include <stdlib.h>
 #include "Settings.h"
+#include "Fileversioning.h"
 
 CJSONHandler g_Json;
 
@@ -63,7 +64,7 @@ std::list<std::string> CJSONHandler::ParseResources(std::string strJSON)
   return listResources;
 };
 
-std::list<std::string> CJSONHandler::ParseAvailLanguagesTX(std::string strJSON, bool bIsXBMCCore)
+std::list<std::string> CJSONHandler::ParseAvailLanguagesTX(std::string strJSON, bool bIsXBMCCore, std::string strURL)
 {
   Json::Value root;   // will contains the root value after parsing.
   Json::Reader reader;
@@ -89,6 +90,7 @@ std::list<std::string> CJSONHandler::ParseAvailLanguagesTX(std::string strJSON, 
 
     Json::Value valu = *itr;
     std::string strCompletedPerc = valu.get("completed", "unknown").asString();
+    std::string strModTime = valu.get("last_update", "unknown").asString();
 
     // we only add language codes to the list which has a minimum ready percentage defined in the xml file
     // we make an exception with all English derived languages, as they can have only a few srings changed
@@ -96,6 +98,7 @@ std::list<std::string> CJSONHandler::ParseAvailLanguagesTX(std::string strJSON, 
     {
       strLangsToFetch += lang + ": " + strCompletedPerc + ", ";
       listLangs.push_back(lang);
+      g_Fileversion.SetVersionForURL(strURL + "translation/" + lang + "/?file", strModTime);
     }
     else
       strLangsToDrop += lang + ": " + strCompletedPerc + ", ";
@@ -106,11 +109,11 @@ std::list<std::string> CJSONHandler::ParseAvailLanguagesTX(std::string strJSON, 
   return listLangs;
 };
 
-std::list<std::string> CJSONHandler::ParseAvailLanguagesGITHUB(std::string strJSON)
+std::list<std::string> CJSONHandler::ParseAvailLanguagesGITHUB(std::string strJSON, std::string strURL, bool bisPO)
 {
   Json::Value root;   // will contains the root value after parsing.
   Json::Reader reader;
-  std::string lang;
+  std::string lang, strVersion;
   std::list<std::string> listLangs;
 
   bool parsingSuccessful = reader.parse(strJSON, root );
@@ -133,7 +136,14 @@ std::list<std::string> CJSONHandler::ParseAvailLanguagesGITHUB(std::string strJS
     lang =JValu.get("name", "unknown").asString();
     if (strType == "unknown")
       CLog::Log(logERROR, "CJSONHandler::ParseAvailLanguagesGITHUB: no valid JSON data downloaded from Github");
+
+    strVersion =JValu.get("sha", "unknown").asString();
+    if (strType == "unknown")
+      CLog::Log(logERROR, "CJSONHandler::ParseAvailLanguagesGITHUB: no valid sha JSON data downloaded from Github");
+
     listLangs.push_back(g_LCodeHandler.FindLangCode(lang));
+
+    g_Fileversion.SetVersionForURL(strURL + lang + "/strings." + (bisPO ? "po" : "xml"), strVersion);
   };
 
   return listLangs;
