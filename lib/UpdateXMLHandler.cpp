@@ -68,16 +68,6 @@ bool CUpdateXMLHandler::LoadXMLToMem (std::string rootDir)
     return false;
   }
 
-  std::string strProjName ;
-  if (pRootElement->Attribute("projectname") && (strProjName = pRootElement->Attribute("projectname")) != "")
-  {
-    CLog::Log(logINFO, "UpdXMLHandler: Found projectname in xbmc-txupdate.xml file: %s",strProjName.c_str());
-    g_Settings.SetProjectname(strProjName);
-  }
-  else
-    CLog::Log(logERROR, "UpdXMLHandler: No projectname specified in xbmc-txupdate.xml file. Cannot continue. "
-                        "Please specify the Transifex projectname in the xml file");
-
   std::string strHTTPCacheExp;
   if (pRootElement->Attribute("http_cache_expire") && (strHTTPCacheExp = pRootElement->Attribute("http_cache_expire")) != "")
   {
@@ -87,6 +77,16 @@ bool CUpdateXMLHandler::LoadXMLToMem (std::string rootDir)
   else
     CLog::Log(logINFO, "UpdXMLHandler: No http cache expire time specified in xbmc-txupdate.xml file. Using default value: %iminutes",
               DEFAULTCACHEEXPIRE);
+
+  std::string strProjName ;
+  if (pRootElement->Attribute("projectname") && (strProjName = pRootElement->Attribute("projectname")) != "")
+  {
+    CLog::Log(logINFO, "UpdXMLHandler: Found projectname in xbmc-txupdate.xml file: %s",strProjName.c_str());
+    g_Settings.SetProjectname(strProjName);
+  }
+  else
+    CLog::Log(logERROR, "UpdXMLHandler: No projectname specified in xbmc-txupdate.xml file. Cannot continue. "
+                        "Please specify the Transifex projectname in the xml file");
 
   std::string strMinCompletion;
   if (pRootElement->Attribute("min_completion") && (strMinCompletion = pRootElement->Attribute("min_completion")) != "")
