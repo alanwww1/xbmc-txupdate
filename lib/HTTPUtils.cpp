@@ -80,16 +80,15 @@ std::string CHTTPHandler::GetURLToSTR(std::string strURL)
   size_t MaxCacheFileAge = g_Settings.GetHTTPCacheExpire() * 60; // in seconds
 
   bool bCacheFileExpired = CacheFileAge > MaxCacheFileAge;
-  bool bFileChangedOnWeb = false;
+
   std::string strCachedFileVersion, strWebFileVersion;
   strWebFileVersion = g_Fileversion.GetVersionForURL(strURL);
 
 
   if (strWebFileVersion != "" && g_File.FileExist(strCacheFile + ".version"))
-  {
     strCachedFileVersion = g_File.ReadFileToStr(strCacheFile + ".version");
-    bFileChangedOnWeb = strCachedFileVersion != strWebFileVersion;
-  }
+
+  bool bFileChangedOnWeb = strCachedFileVersion != strWebFileVersion;
 
   if (!bCacheFileExists || (bCacheFileExpired && (strWebFileVersion == "" || bFileChangedOnWeb)))
   {
