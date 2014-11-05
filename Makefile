@@ -35,6 +35,7 @@ lib/Settings.h \
 lib/CharsetUtils/CharsetUtils.cpp \
 lib/POUtils/POUtils.cpp \
 lib/FileUtils/FileUtils.cpp \
+lib/Fileversioning.cpp \
 lib/Log.cpp \
 lib/POHandler.cpp \
 lib/ResourceHandler.cpp \
@@ -71,6 +72,7 @@ ResourceHandler.o: ResourceHandler.h ResourceHandler.cpp POHandler.h POHandler.c
 ProjectHandler.o: ProjectHandler.h ProjectHandler.cpp ResourceHandler.h ResourceHandler.cpp Log.cpp Log.h
 UpdateXMLHandler.o: UpdateXMLHandler.h Log.cpp Log.h tinyxml.o
 HTTPUtils.o: HTTPUtils.h Log.h Log.cpp
+Fileversioning.o: Fileversioning.h HTTPUtils.h HTTPUtils.cpp
 JSONHandler.o: JSONHandler.h JSONHandler.cpp
 Settings.o: Settings.h Settings.cpp
 AddonXMLHandler.cpp: AddonXMLHandler.h

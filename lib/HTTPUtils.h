@@ -56,6 +56,7 @@ public:
                          std::string const &strURLENTransl);
   void DeleteCachedFile(std::string const &strURL, std::string strPrefix);
   bool ComparePOFilesInMem(CPOHandler * pPOHandler1, CPOHandler * pPOHandler2, bool bLangIsEN) const;
+  std::string GetGitHUBAPIURL(std::string const & strURL, std::string const & strPath);
 
 private:
   CURL *m_curlHandle;

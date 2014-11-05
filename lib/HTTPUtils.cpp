@@ -26,6 +26,8 @@
 #include <cctype>
 #include "Settings.h"
 #include "JSONHandler.h"
+#include "Fileversioning.h"
+
 
 CHTTPHandler g_HTTPHandler;
 
@@ -72,11 +74,33 @@ std::string CHTTPHandler::GetURLToSTR(std::string strURL)
   std::string strCacheFile = CacheFileNameFromURL(strURL);
   strCacheFile = m_strCacheDir + "GET/" + strCacheFile;
 
-  if (!g_File.FileExist(strCacheFile) || g_File.GetFileAge(strCacheFile) > g_Settings.GetHTTPCacheExpire() * 60)
+  bool bCacheFileExists = g_File.FileExist(strCacheFile);
+
+  size_t CacheFileAge = bCacheFileExists ? g_File.GetFileAge(strCacheFile): -1; //in seconds
+  size_t MaxCacheFileAge = g_Settings.GetHTTPCacheExpire() * 60; // in seconds
+
+  bool bCacheFileExpired = CacheFileAge > MaxCacheFileAge;
+  bool bFileChangedOnWeb = false;
+  std::string strCachedFileVersion, strWebFileVersion;
+  strWebFileVersion = g_Fileversion.GetVersionForURL(strURL);
+
+
+  if (strWebFileVersion != "" && g_File.FileExist(strCacheFile + ".version"))
   {
+    strCachedFileVersion = g_File.ReadFileToStr(strCacheFile + ".version");
+    bFileChangedOnWeb = strCachedFileVersion != strWebFileVersion;
+  }
+
+  if (!bCacheFileExists || (bCacheFileExpired && (strWebFileVersion == "" || bFileChangedOnWeb)))
+  {
+    g_File.DeleteFile(strCacheFile + ".version");
+
     long result = curlURLToCache(strCacheFile, strURL, strBuffer);
     if (result < 200 || result >= 400)
       return "";
+
+    if (strWebFileVersion != "")
+      g_File.WriteFileFromStr(strCacheFile + ".version", strWebFileVersion);
   }
   else
     strBuffer = g_File.ReadFileToStr(strCacheFile);
@@ -576,4 +600,38 @@ void CHTTPHandler::DeleteCachedFile (std::string const &strURL, std::string strP
   strCacheFile = m_strCacheDir + strPrefix + "/" + strCacheFile;
   if (g_File.FileExist(strCacheFile))
     g_File.DeleteFile(strCacheFile);
+}
+
+std::string CHTTPHandler::GetGitHUBAPIURL(std::string const & strURL, std::string const & strPathSuffix)
+{
+    if (strURL.find("//") >> 7)
+      CLog::Log(logERROR, "CHTTPHandler::ParseGitHUBURL: Internal error: // found in Github URL");
+
+    size_t pos1, pos2, pos3, pos4;
+    std::string strGitHubURL;
+
+    if (strURL.find("raw.github.com/") != std::string::npos)
+      pos1 = strURL.find("raw.github.com/")+15;
+    else if (strURL.find("raw2.github.com/") != std::string::npos)
+      pos1 = strURL.find("raw2.github.com/")+16;
+    else if (strURL.find("raw.githubusercontent.com/") != std::string::npos)
+      pos1 = strURL.find("raw.githubusercontent.com/")+26;
+    else
+      CLog::Log(logERROR, "ResHandler: Wrong Github URL format given");
+
+    pos2 = strURL.find("/", pos1+1);
+    pos3 = strURL.find("/", pos2+1);
+    pos4 = strURL.find("/", pos3+1);
+
+    std::string strOwner = strURL.substr(pos1, pos2-pos1);
+    std::string strRepo = strURL.substr(pos2, pos3-pos2);
+    std::string strPath = strURL.substr(pos4, strURL.size() - pos4 - 1);
+    std::string strGitBranch = strURL.substr(pos3+1, pos4-pos3-1);
+
+    strGitHubURL = "https://api.github.com/repos/" + strOwner + strRepo;
+    strGitHubURL += "/contents";
+    strGitHubURL += strPath + strPathSuffix;
+    strGitHubURL += "?ref=" + strGitBranch;
+
+    return strGitHubURL;
 }

@@ -59,7 +59,7 @@ bool CResourceHandler::FetchPOFilesTXToMem(std::string strURL, bool bIsXBMCCore)
   char cstrtemp[strtemp.size()];
   strcpy(cstrtemp, strtemp.c_str());
 
-  std::list<std::string> listLangsTX = g_Json.ParseAvailLanguagesTX(strtemp, bIsXBMCCore);
+  std::list<std::string> listLangsTX = g_Json.ParseAvailLanguagesTX(strtemp, bIsXBMCCore, strURL);
 
   CPOHandler POHandler;
 
@@ -107,7 +107,23 @@ bool CResourceHandler::FetchPOFilesUpstreamToMem(CXMLResdata XMLResdata, std::li
       return true;
   }
 
-  std::list<std::string> listLangs;
+  std::list<std::string> listLangs, listGithubLangs;
+
+  if (XMLResdata.strUpstreamURL.find(".github") != std::string::npos)  //if URL is github, we download a directory tree to get SHA versions
+  {
+    std::string strGitHubURL = g_HTTPHandler.GetGitHUBAPIURL(XMLResdata.strUpstreamURL, (XMLResdata.Restype == SKIN || XMLResdata.Restype == CORE)?
+                                                             "/language":"/resources/language");
+
+    std::string strtemp = g_HTTPHandler.GetURLToSTR(strGitHubURL);
+    if (strtemp.empty())
+      CLog::Log(logERROR, "ResHandler::FetchPOFilesUpstreamToMem: error getting po file list from github.com");
+
+    char cstrtemp[strtemp.size()];
+    strcpy(cstrtemp, strtemp.c_str());
+
+    listGithubLangs = g_Json.ParseAvailLanguagesGITHUB(strtemp, XMLResdata.strUpstreamURL + strLangdirPrefix, XMLResdata.strLangFileType != "xml");
+  }
+
 
   if (XMLResdata.strLangsFromUpstream == "tx_all")
   {
@@ -117,36 +133,7 @@ bool CResourceHandler::FetchPOFilesUpstreamToMem(CXMLResdata XMLResdata, std::li
   else if (XMLResdata.strLangsFromUpstream == "github_all")
   {
     CLog::Log(logINFO, "ResHandler: using language list dwonloaded with github API");
-    size_t pos1, pos2, pos3;
-    std::string strGitHubURL, strGitBranch;
-    if (XMLResdata.strUpstreamURL.find("raw.github.com/") != std::string::npos)
-      pos1 = XMLResdata.strUpstreamURL.find("raw.github.com/")+15;
-    else if (XMLResdata.strUpstreamURL.find("raw2.github.com/") != std::string::npos)
-      pos1 = XMLResdata.strUpstreamURL.find("raw2.github.com/")+16;
-    else
-      CLog::Log(logERROR, "ResHandler: Wrong Github URL format given");
-
-    pos2 = XMLResdata.strUpstreamURL.find("/", pos1+1);
-    pos2 = XMLResdata.strUpstreamURL.find("/", pos2+1);
-    pos3 = XMLResdata.strUpstreamURL.find("/", pos2+1);
-    strGitHubURL = "https://api.github.com/repos/" + XMLResdata.strUpstreamURL.substr(pos1, pos2-pos1);
-    strGitHubURL += "/contents";
-    strGitHubURL += XMLResdata.strUpstreamURL.substr(pos3, XMLResdata.strUpstreamURL.size() - pos3 - 1);
-    strGitBranch = XMLResdata.strUpstreamURL.substr(pos2+1, pos3-pos2-1);
-    if (XMLResdata.Restype == SKIN || XMLResdata.Restype == CORE)
-      strGitHubURL += "/language";
-    else if (XMLResdata.Restype == ADDON)
-      strGitHubURL += "/resources/language";
-    strGitHubURL += "?ref=" + strGitBranch;
-
-    std::string strtemp = g_HTTPHandler.GetURLToSTR(strGitHubURL);
-    if (strtemp.empty())
-      CLog::Log(logERROR, "ResHandler::FetchPOFilesTXToMem: error getting po file list from transifex.net");
-
-    char cstrtemp[strtemp.size()];
-    strcpy(cstrtemp, strtemp.c_str());
-
-    listLangs = g_Json.ParseAvailLanguagesGITHUB(strtemp);
+    listLangs=listGithubLangs;
   }
   else
   {
@@ -170,6 +157,7 @@ bool CResourceHandler::FetchPOFilesUpstreamToMem(CXMLResdata XMLResdata, std::li
     }
     while (posEnd != std::string::npos);
   }
+
   bool bResult;
 
   for (std::list<std::string>::iterator it = listLangs.begin(); it != listLangs.end(); it++)
