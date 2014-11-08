@@ -87,7 +87,7 @@ bool CResourceHandler::FetchPOFilesUpstreamToMem(CXMLResdata XMLResdata, std::li
   g_HTTPHandler.ReInit();
   CLog::Log(logINFO, "ResHandler: Starting to load resource from Upsream URL: %s into memory",XMLResdata.strUpstreamURL.c_str());
 
-  std::string strLangdirPrefix;
+  std::string strLangdirPrefix, strGitHubURL, strtemp;
 
   if (XMLResdata.Restype == CORE)
   {
@@ -96,6 +96,14 @@ bool CResourceHandler::FetchPOFilesUpstreamToMem(CXMLResdata XMLResdata, std::li
   }
   else
   {
+    // We get the version of the addon.xml and changelog.txt files here
+    strGitHubURL = g_HTTPHandler.GetGitHUBAPIURL(XMLResdata.strUpstreamURL, "");
+    strtemp = g_HTTPHandler.GetURLToSTR(strGitHubURL);
+    if (strtemp.empty())
+      CLog::Log(logERROR, "ResHandler::FetchPOFilesUpstreamToMem: error getting addon.xml file version from github.com");
+
+    g_Json.ParseAddonXMLVersionGITHUB(strtemp, XMLResdata.strUpstreamURL);
+
     m_AddonXMLHandler.FetchAddonXMLFileUpstr(XMLResdata.strUpstreamURL + "addon.xml" + XMLResdata.strAddonXMLSuffix + XMLResdata.strURLSuffix);
     if (XMLResdata.bHasChangelog)
       m_AddonXMLHandler.FetchAddonChangelogFile(XMLResdata.strUpstreamURL + XMLResdata.strLogFilename + XMLResdata.strURLSuffix);
@@ -111,23 +119,16 @@ bool CResourceHandler::FetchPOFilesUpstreamToMem(CXMLResdata XMLResdata, std::li
 
   if (XMLResdata.strUpstreamURL.find(".github") != std::string::npos)  //if URL is github, we download a directory tree to get SHA versions
   {
-    std::string strGitHubURL = g_HTTPHandler.GetGitHUBAPIURL(XMLResdata.strUpstreamURL, (XMLResdata.Restype == SKIN || XMLResdata.Restype == CORE)?
+    strtemp.clear();
+    strGitHubURL.clear();
+    strGitHubURL = g_HTTPHandler.GetGitHUBAPIURL(XMLResdata.strUpstreamURL, (XMLResdata.Restype == SKIN || XMLResdata.Restype == CORE)?
                                                              "/language":"/resources/language");
 
-    std::string strtemp = g_HTTPHandler.GetURLToSTR(strGitHubURL);
+    strtemp = g_HTTPHandler.GetURLToSTR(strGitHubURL);
     if (strtemp.empty())
       CLog::Log(logERROR, "ResHandler::FetchPOFilesUpstreamToMem: error getting po file list from github.com");
 
     listGithubLangs = g_Json.ParseAvailLanguagesGITHUB(strtemp, XMLResdata.strUpstreamURL + strLangdirPrefix, XMLResdata.strLangFileType != "xml");
-
-    // We also get the version of the addon.xml and changelog.txt files this here
-    strGitHubURL = g_HTTPHandler.GetGitHUBAPIURL(XMLResdata.strUpstreamURL, "");
-    strtemp.clear();
-    strtemp = g_HTTPHandler.GetURLToSTR(strGitHubURL);
-    if (strtemp.empty())
-      CLog::Log(logERROR, "ResHandler::FetchPOFilesUpstreamToMem: error getting addon.xml file version from github.com");
-
-    g_Json.ParseAddonXMLVersionGITHUB(strtemp, XMLResdata.strUpstreamURL);
   }
 
 

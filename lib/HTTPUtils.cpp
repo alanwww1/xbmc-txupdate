@@ -92,6 +92,7 @@ std::string CHTTPHandler::GetURLToSTR(std::string strURL)
 
   if (!bCacheFileExists || (bCacheFileExpired && (strWebFileVersion == "" || bFileChangedOnWeb)))
   {
+    printf("*");
     g_File.DeleteFile(strCacheFile + ".version");
 
     long result = curlURLToCache(strCacheFile, strURL, strBuffer);
@@ -102,7 +103,10 @@ std::string CHTTPHandler::GetURLToSTR(std::string strURL)
       g_File.WriteFileFromStr(strCacheFile + ".version", strWebFileVersion);
   }
   else
+  {
     strBuffer = g_File.ReadFileToStr(strCacheFile);
+    printf (bCacheFileExpired?"-":".");
+  }
 
   return strBuffer;
 };
