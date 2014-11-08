@@ -118,10 +118,16 @@ bool CResourceHandler::FetchPOFilesUpstreamToMem(CXMLResdata XMLResdata, std::li
     if (strtemp.empty())
       CLog::Log(logERROR, "ResHandler::FetchPOFilesUpstreamToMem: error getting po file list from github.com");
 
-    char cstrtemp[strtemp.size()];
-    strcpy(cstrtemp, strtemp.c_str());
-
     listGithubLangs = g_Json.ParseAvailLanguagesGITHUB(strtemp, XMLResdata.strUpstreamURL + strLangdirPrefix, XMLResdata.strLangFileType != "xml");
+
+    // We also get the version of the addon.xml and changelog.txt files this here
+    strGitHubURL = g_HTTPHandler.GetGitHUBAPIURL(XMLResdata.strUpstreamURL, "");
+    strtemp.clear();
+    strtemp = g_HTTPHandler.GetURLToSTR(strGitHubURL);
+    if (strtemp.empty())
+      CLog::Log(logERROR, "ResHandler::FetchPOFilesUpstreamToMem: error getting addon.xml file version from github.com");
+
+    g_Json.ParseAddonXMLVersionGITHUB(strtemp, XMLResdata.strUpstreamURL);
   }
 
 

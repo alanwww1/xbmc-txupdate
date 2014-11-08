@@ -39,6 +39,7 @@ public:
   std::list<std::string> ParseResources(std::string strJSON);
   std::list<std::string> ParseAvailLanguagesTX(std::string strJSON, bool bIsXBMCCore, std::string strURL);
   std::list<std::string> ParseAvailLanguagesGITHUB(std::string strJSON, std::string strURL, bool bisPO);
+  void ParseAddonXMLVersionGITHUB(std::string strJSON, std::string strURL);
   std::map<std::string, CLangcodes> ParseTransifexLanguageDatabase(std::string strJSON);
   std::string CreateJSONStrFromPOStr(std::string const &strPO);
   std::string CreateNewresJSONStrFromPOStr(std::string strTXResname, std::string const &strPO);

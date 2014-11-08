@@ -134,11 +134,11 @@ std::list<std::string> CJSONHandler::ParseAvailLanguagesGITHUB(std::string strJS
       continue;
     }
     lang =JValu.get("name", "unknown").asString();
-    if (strType == "unknown")
+    if (lang == "unknown")
       CLog::Log(logERROR, "CJSONHandler::ParseAvailLanguagesGITHUB: no valid JSON data downloaded from Github");
 
     strVersion =JValu.get("sha", "unknown").asString();
-    if (strType == "unknown")
+    if (strVersion == "unknown")
       CLog::Log(logERROR, "CJSONHandler::ParseAvailLanguagesGITHUB: no valid sha JSON data downloaded from Github");
 
     listLangs.push_back(g_LCodeHandler.FindLangCode(lang));
@@ -253,3 +253,40 @@ std::string CJSONHandler::ParseLongProjectName(std::string const &strJSON)
 
   return root.get("name", "").asString();
 }
+
+void CJSONHandler::ParseAddonXMLVersionGITHUB(std::string strJSON, std::string strURL)
+{
+  Json::Value root;   // will contains the root value after parsing.
+  Json::Reader reader;
+  std::string strName, strVersion;
+
+  bool parsingSuccessful = reader.parse(strJSON, root );
+  if ( !parsingSuccessful )
+    CLog::Log(logERROR, "CJSONHandler::ParseAddonXMLVersionGITHUB: no valid JSON data downloaded from Github");
+
+  const Json::Value JLangs = root;
+
+  for(Json::ValueIterator itr = JLangs.begin() ; itr !=JLangs.end() ; itr++)
+  {
+    Json::Value JValu = *itr;
+    std::string strType =JValu.get("type", "unknown").asString();
+
+    if (strType == "unknown")
+      CLog::Log(logERROR, "CJSONHandler::ParseAddonXMLVersionGITHUB: no valid JSON data downloaded from Github");
+
+    strName =JValu.get("name", "unknown").asString();
+
+    if (strName == "unknown")
+      CLog::Log(logERROR, "CJSONHandler::ParseAddonXMLVersionGITHUB: no valid JSON data downloaded from Github");
+
+    if (strType == "file" && (strName == "addon.xml" || strName == "changelog.txt"))
+    {
+    strVersion =JValu.get("sha", "unknown").asString();
+
+    if (strVersion == "unknown")
+      CLog::Log(logERROR, "CJSONHandler::ParseAddonXMLVersionGITHUB: no valid sha JSON data downloaded from Github");
+
+    g_Fileversion.SetVersionForURL(strURL + strName, strVersion);
+    }
+  };
+};
