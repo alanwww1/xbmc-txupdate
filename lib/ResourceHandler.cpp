@@ -51,6 +51,7 @@ bool CResourceHandler::FetchPOFilesTXToMem(std::string strURL, bool bIsXBMCCore)
   g_HTTPHandler.Cleanup();
   g_HTTPHandler.ReInit();
   CLog::Log(logINFO, "ResHandler: Starting to load resource from TX URL: %s into memory",strURL.c_str());
+  printf(" Langlist");
 
   std::string strtemp = g_HTTPHandler.GetURLToSTR(strURL + "stats/");
   if (strtemp.empty())
@@ -97,16 +98,24 @@ bool CResourceHandler::FetchPOFilesUpstreamToMem(CXMLResdata XMLResdata, std::li
   else
   {
     // We get the version of the addon.xml and changelog.txt files here
-    strGitHubURL = g_HTTPHandler.GetGitHUBAPIURL(XMLResdata.strUpstreamURL, "");
-    strtemp = g_HTTPHandler.GetURLToSTR(strGitHubURL);
-    if (strtemp.empty())
-      CLog::Log(logERROR, "ResHandler::FetchPOFilesUpstreamToMem: error getting addon.xml file version from github.com");
+    if (XMLResdata.strUpstreamURL.find(".github") != std::string::npos)  //if URL is github, we download a directory tree to get SHA versions
+    {
+      strGitHubURL = g_HTTPHandler.GetGitHUBAPIURL(XMLResdata.strUpstreamURL, "");
+      printf(" Dir");
+      strtemp = g_HTTPHandler.GetURLToSTR(strGitHubURL);
+      if (strtemp.empty())
+        CLog::Log(logERROR, "ResHandler::FetchPOFilesUpstreamToMem: error getting addon.xml file version from github.com");
 
-    g_Json.ParseAddonXMLVersionGITHUB(strtemp, XMLResdata.strUpstreamURL);
+      g_Json.ParseAddonXMLVersionGITHUB(strtemp, XMLResdata.strUpstreamURL);
+    }
 
+    printf(" Addxml");
     m_AddonXMLHandler.FetchAddonXMLFileUpstr(XMLResdata.strUpstreamURL + "addon.xml" + XMLResdata.strAddonXMLSuffix + XMLResdata.strURLSuffix);
     if (XMLResdata.bHasChangelog)
+    {
+      printf(" Chlog");
       m_AddonXMLHandler.FetchAddonChangelogFile(XMLResdata.strUpstreamURL + XMLResdata.strLogFilename + XMLResdata.strURLSuffix);
+    }
     if (XMLResdata.Restype == SKIN)
       strLangdirPrefix = "language/";
     else if (XMLResdata.Restype == ADDON)
@@ -119,6 +128,7 @@ bool CResourceHandler::FetchPOFilesUpstreamToMem(CXMLResdata XMLResdata, std::li
 
   if (XMLResdata.strUpstreamURL.find(".github") != std::string::npos)  //if URL is github, we download a directory tree to get SHA versions
   {
+    printf(" Langlist");
     strtemp.clear();
     strGitHubURL.clear();
     strGitHubURL = g_HTTPHandler.GetGitHUBAPIURL(XMLResdata.strUpstreamURL, (XMLResdata.Restype == SKIN || XMLResdata.Restype == CORE)?
