@@ -189,12 +189,17 @@ size_t CFile::GetFileAge(std::string strFileName)
   struct stat b;
   time_t now = std::time(0);
   if (g_File.FileExist(strFileName + ".time"))
-    return now-
-
-  if (!stat(strFileName.c_str(), &b)) 
   {
+    time_t ReadFileAge = GetFileAgeFromFile(strFileName);
+    return now-ReadFileAge;
+  }
+
+  else if (!stat(strFileName.c_str(), &b))
+  {
+    WriteFileAgeToFile(strFileName, b.st_mtime);
     return now-b.st_mtime;
   }
+
   else
   {
     CLog::Log(logWARNING, "FileUtils: Unable to determine the last modify date for file: %s", strFileName.c_str());
@@ -300,9 +305,44 @@ int CFile::DeleteDirectory(std::string strDirPath)
   return nftw(strDirPath.c_str(), unlink_cb, 64, FTW_DEPTH | FTW_PHYS);
 }
 
-size_t CFile::GetFileAgeFromFile(std::string const & strFileName)
+time_t CFile::GetFileAgeFromFile(std::string strFileName)
 {
-  if (!FileExist(strFileName + ".time"))
-    return -1;
-  std::string strAge = g_File.ReadFileToStr(strFileName + ".time"); 
-}
+  strFileName = strFileName + ".time";
+
+  FILE * file;
+  time_t readTime;
+  file = fopen(strFileName.c_str(), "rb");
+  if (!file)
+    CLog::Log(logERROR, "FileUtils::GetFileAgeFromFile: unable to read file: %s", strFileName.c_str());
+
+  fseek(file, 0, SEEK_END);
+  int64_t fileLength = ftell(file);
+  fseek(file, 0, SEEK_SET);
+
+  if (fileLength != sizeof(time_t))
+    CLog::Log(logERROR, "FileUtils::GetFileAgeFromFile: wrong file length for time file: %s", strFileName.c_str());
+
+  unsigned int readBytes =  fread(&readTime, sizeof(time_t), 1, file);
+  fclose(file);
+
+  if (readBytes != 1)
+  {
+    CLog::Log(logERROR, "FileUtils: actual read data differs from file size, for string file: %s",strFileName.c_str());
+  }
+  return readTime;
+};
+
+bool CFile::WriteFileAgeToFile(std::string strFileName, time_t FileAgeTime)
+{
+  strFileName = strFileName + ".time";
+  FILE * pFile = fopen (strFileName.c_str(),"wb");
+  if (pFile == NULL)
+  {
+    CLog::Log(logERROR, "FileUtils: WriteFileAgeToFile failed for file: %s\n", strFileName.c_str());
+    return false;
+  }
+  fwrite(&FileAgeTime, sizeof(time_t), 1, pFile);
+  fclose(pFile);
+
+  return true;
+};

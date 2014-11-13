@@ -25,6 +25,7 @@
 #pragma once
 
 #include <string>
+#include <ctime>
 
 #ifdef WINDOWS
   #include <direct.h>
@@ -63,7 +64,8 @@ public:
   std::string GetCurrMonth();
   std::string GetCurrDay();
   std::string GetCurrMonthText();
-  size_t GetFileAgeFromFile(std::string const & strFileName);
+  time_t GetFileAgeFromFile(std::string strFileName);
+  bool WriteFileAgeToFile(std::string strFileName, time_t FileAgeTime);
 };
 
 extern CFile g_File;
