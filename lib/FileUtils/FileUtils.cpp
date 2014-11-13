@@ -187,9 +187,12 @@ void CFile::CopyFile(std::string strSourceFileName, std::string strDestFileName)
 size_t CFile::GetFileAge(std::string strFileName)
 {
   struct stat b;
+  time_t now = std::time(0);
+  if (g_File.FileExist(strFileName + ".time"))
+    return now-
+
   if (!stat(strFileName.c_str(), &b)) 
   {
-    time_t now = std::time(0);
     return now-b.st_mtime;
   }
   else
@@ -295,4 +298,11 @@ int unlink_cb(const char *fpath, const struct stat *sb, int typeflag, struct FTW
 int CFile::DeleteDirectory(std::string strDirPath)
 {
   return nftw(strDirPath.c_str(), unlink_cb, 64, FTW_DEPTH | FTW_PHYS);
+}
+
+size_t CFile::GetFileAgeFromFile(std::string const & strFileName)
+{
+  if (!FileExist(strFileName + ".time"))
+    return -1;
+  std::string strAge = g_File.ReadFileToStr(strFileName + ".time"); 
 }

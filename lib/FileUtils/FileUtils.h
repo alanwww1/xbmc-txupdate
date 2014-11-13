@@ -63,6 +63,7 @@ public:
   std::string GetCurrMonth();
   std::string GetCurrDay();
   std::string GetCurrMonthText();
+  size_t GetFileAgeFromFile(std::string const & strFileName);
 };
 
 extern CFile g_File;
