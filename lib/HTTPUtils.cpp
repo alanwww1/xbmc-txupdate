@@ -94,6 +94,7 @@ std::string CHTTPHandler::GetURLToSTR(std::string strURL)
   {
     printf("*");
     g_File.DeleteFile(strCacheFile + ".version");
+    g_File.DeleteFile(strCacheFile + ".time");
 
     long result = curlURLToCache(strCacheFile, strURL, strBuffer);
     if (result < 200 || result >= 400)
@@ -101,6 +102,8 @@ std::string CHTTPHandler::GetURLToSTR(std::string strURL)
 
     if (strWebFileVersion != "")
       g_File.WriteFileFromStr(strCacheFile + ".version", strWebFileVersion);
+
+    g_File.WriteNowToFileAgeFile(strCacheFile);
   }
   else
   {

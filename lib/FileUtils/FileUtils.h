@@ -66,6 +66,7 @@ public:
   std::string GetCurrMonthText();
   time_t GetFileAgeFromFile(std::string strFileName);
   bool WriteFileAgeToFile(std::string strFileName, time_t FileAgeTime);
+  void WriteNowToFileAgeFile(std::string strFileName);
 };
 
 extern CFile g_File;

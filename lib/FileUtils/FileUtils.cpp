@@ -188,6 +188,7 @@ size_t CFile::GetFileAge(std::string strFileName)
 {
   struct stat b;
   time_t now = std::time(0);
+
   if (g_File.FileExist(strFileName + ".time"))
   {
     time_t ReadFileAge = GetFileAgeFromFile(strFileName);
@@ -327,7 +328,7 @@ time_t CFile::GetFileAgeFromFile(std::string strFileName)
 
   if (readBytes != 1)
   {
-    CLog::Log(logERROR, "FileUtils: actual read data differs from file size, for string file: %s",strFileName.c_str());
+    CLog::Log(logERROR, "FileUtils::GetFileAgeFromFile actual read data differs from file size, for string file: %s",strFileName.c_str());
   }
   return readTime;
 };
@@ -338,7 +339,7 @@ bool CFile::WriteFileAgeToFile(std::string strFileName, time_t FileAgeTime)
   FILE * pFile = fopen (strFileName.c_str(),"wb");
   if (pFile == NULL)
   {
-    CLog::Log(logERROR, "FileUtils: WriteFileAgeToFile failed for file: %s\n", strFileName.c_str());
+    CLog::Log(logERROR, "FileUtils::WriteFileAgeToFile failed for file: %s\n", strFileName.c_str());
     return false;
   }
   fwrite(&FileAgeTime, sizeof(time_t), 1, pFile);
@@ -346,3 +347,9 @@ bool CFile::WriteFileAgeToFile(std::string strFileName, time_t FileAgeTime)
 
   return true;
 };
+
+void CFile::WriteNowToFileAgeFile(std::string strFileName)
+{
+  time_t now = std::time(0);
+  WriteFileAgeToFile(strFileName, now);
+}
