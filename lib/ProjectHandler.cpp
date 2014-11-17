@@ -193,12 +193,12 @@ bool CProjectHandler::CreateMergedResources()
       {
         CAddonXMLEntry AddonXMLEntryInPO, AddonENXMLEntryInPO;
         m_mapResourcesTX[*itResAvail].GetPOData(*itlang)->GetAddonMetaData(AddonXMLEntryInPO, AddonENXMLEntryInPO);
-        MergeAddonXMLEntry(AddonXMLEntryInPO, MergedAddonXMLEntry, *pENAddonXMLEntry, AddonENXMLEntryInPO);
+        MergeAddonXMLEntry(AddonXMLEntryInPO, MergedAddonXMLEntry, *pENAddonXMLEntry, AddonENXMLEntryInPO, false);
       }
       MergedAddonXMLEntryTX = MergedAddonXMLEntry;
       if ((pAddonXMLEntry = GetAddonDataFromXML(&m_mapResourcesUpstr, *itResAvail, *itlang)) != NULL)
         MergeAddonXMLEntry(*pAddonXMLEntry, MergedAddonXMLEntry, *pENAddonXMLEntry,
-                           *GetAddonDataFromXML(&m_mapResourcesUpstr, *itResAvail, "en"));
+                           *GetAddonDataFromXML(&m_mapResourcesUpstr, *itResAvail, "en"), true);
 
       if (*itResAvail != "xbmc.core")
       {
@@ -449,11 +449,17 @@ CPOHandler * CProjectHandler::SafeGetPOHandler(std::map<std::string, CResourceHa
 }
 
 void CProjectHandler::MergeAddonXMLEntry(CAddonXMLEntry const &EntryToMerge, CAddonXMLEntry &MergedAddonXMLEntry,
-                                         CAddonXMLEntry const &SourceENEntry, CAddonXMLEntry const &CurrENEntry)
+                                         CAddonXMLEntry const &SourceENEntry, CAddonXMLEntry const &CurrENEntry, bool UpstrToMerge)
 {
   if (!EntryToMerge.strDescription.empty() && MergedAddonXMLEntry.strDescription.empty() &&
       CurrENEntry.strDescription == SourceENEntry.strDescription)
     MergedAddonXMLEntry.strDescription = EntryToMerge.strDescription;
+  else if (UpstrToMerge && !MergedAddonXMLEntry.strDescription.empty() &&
+           EntryToMerge.strDescription != MergedAddonXMLEntry.strDescription &&
+           CurrENEntry.strDescription == SourceENEntry.strDescription)
+  {
+    sleep(2);
+  }
 
   if (!EntryToMerge.strDisclaimer.empty() && MergedAddonXMLEntry.strDisclaimer.empty() &&
     CurrENEntry.strDisclaimer == SourceENEntry.strDisclaimer)

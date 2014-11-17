@@ -56,7 +56,7 @@ protected:
   CAddonXMLEntry * const GetAddonDataFromXML(std::map<std::string, CResourceHandler> * pmapRes,
                                              const std::string &strResname, const std::string &strLangCode) const;
   void MergeAddonXMLEntry(CAddonXMLEntry const &EntryToMerge, CAddonXMLEntry &MergedAddonXMLEntry,
-                                           CAddonXMLEntry const &SourceENEntry, CAddonXMLEntry const &CurrENEntry);
+                                           CAddonXMLEntry const &SourceENEntry, CAddonXMLEntry const &CurrENEntry, bool UpstrToMerge);
   bool FindResInList(std::list<std::string> const &listResourceNamesTX, std::string strTXResName);
   std::list<std::string> GetLangsFromDir(std::string const &strLangDir);
   void CheckPOEntrySyntax(const CPOEntry * pPOEntry, std::string const &strLangCode, const CPOEntry * pcurrPOEntryEN);
