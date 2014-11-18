@@ -196,7 +196,8 @@ bool CProjectHandler::CreateMergedResources()
       {
         CAddonXMLEntry AddonXMLEntryInPO, AddonENXMLEntryInPO;
         m_mapResourcesTX[*itResAvail].GetPOData(*itlang)->GetAddonMetaData(AddonXMLEntryInPO, AddonENXMLEntryInPO);
-        MergeAddonXMLEntry(AddonXMLEntryInPO, MergedAddonXMLEntry, *pENAddonXMLEntry, AddonENXMLEntryInPO, false);
+        MergeAddonXMLEntry(AddonXMLEntryInPO, MergedAddonXMLEntry, *pENAddonXMLEntry, AddonENXMLEntryInPO, false,
+                           bResChangedFromUpstream);
       }
       // Save these strings from Transifex for later use
       MergedAddonXMLEntryTX = MergedAddonXMLEntry;
@@ -204,7 +205,7 @@ bool CProjectHandler::CreateMergedResources()
       // Get the addon.xml file translatable strings from upstream merged into the merged entry
       if ((pAddonXMLEntry = GetAddonDataFromXML(&m_mapResourcesUpstr, *itResAvail, *itlang)) != NULL)
         MergeAddonXMLEntry(*pAddonXMLEntry, MergedAddonXMLEntry, *pENAddonXMLEntry,
-                           *GetAddonDataFromXML(&m_mapResourcesUpstr, *itResAvail, "en"), true);
+                           *GetAddonDataFromXML(&m_mapResourcesUpstr, *itResAvail, "en"), true, bResChangedFromUpstream);
 
       if (*itResAvail != "xbmc.core")
       {
@@ -340,6 +341,7 @@ bool CProjectHandler::CreateMergedResources()
     CLog::LogTable(logCLOSETABLE, "merged",   "");
 
     mergedResHandler.SetChangedFromUpstream(bResChangedFromUpstream);
+    if (bResChangedFromUpstream) printf ("*");
 
     if (mergedResHandler.GetLangsCount() != 0 || !mergedResHandler.GetXMLHandler()->GetMapAddonXMLData()->empty())
       m_mapResMerged[*itResAvail] = mergedResHandler;
@@ -457,7 +459,8 @@ CPOHandler * CProjectHandler::SafeGetPOHandler(std::map<std::string, CResourceHa
 }
 
 void CProjectHandler::MergeAddonXMLEntry(CAddonXMLEntry const &EntryToMerge, CAddonXMLEntry &MergedAddonXMLEntry,
-                                         CAddonXMLEntry const &SourceENEntry, CAddonXMLEntry const &CurrENEntry, bool UpstrToMerge)
+                                         CAddonXMLEntry const &SourceENEntry, CAddonXMLEntry const &CurrENEntry, bool UpstrToMerge,
+                                         bool &bResChangedFromUpstream)
 {
   if (!EntryToMerge.strDescription.empty() && MergedAddonXMLEntry.strDescription.empty() &&
       CurrENEntry.strDescription == SourceENEntry.strDescription)
@@ -466,16 +469,28 @@ void CProjectHandler::MergeAddonXMLEntry(CAddonXMLEntry const &EntryToMerge, CAd
            EntryToMerge.strDescription != MergedAddonXMLEntry.strDescription &&
            CurrENEntry.strDescription == SourceENEntry.strDescription)
   {
-    printf("*");
+    bResChangedFromUpstream = true;
   }
 
   if (!EntryToMerge.strDisclaimer.empty() && MergedAddonXMLEntry.strDisclaimer.empty() &&
-    CurrENEntry.strDisclaimer == SourceENEntry.strDisclaimer)
+      CurrENEntry.strDisclaimer == SourceENEntry.strDisclaimer)
     MergedAddonXMLEntry.strDisclaimer = EntryToMerge.strDisclaimer;
+  else if (UpstrToMerge && !MergedAddonXMLEntry.strDisclaimer.empty() &&
+           EntryToMerge.strDisclaimer != MergedAddonXMLEntry.strDisclaimer &&
+           CurrENEntry.strDisclaimer == SourceENEntry.strDisclaimer)
+  {
+    bResChangedFromUpstream = true;
+  }
 
   if (!EntryToMerge.strSummary.empty() && MergedAddonXMLEntry.strSummary.empty() &&
-    CurrENEntry.strSummary == SourceENEntry.strSummary)
+      CurrENEntry.strSummary == SourceENEntry.strSummary)
     MergedAddonXMLEntry.strSummary = EntryToMerge.strSummary;
+    else if (UpstrToMerge && !MergedAddonXMLEntry.strSummary.empty() &&
+           EntryToMerge.strSummary != MergedAddonXMLEntry.strSummary &&
+           CurrENEntry.strSummary == SourceENEntry.strSummary)
+  {
+    bResChangedFromUpstream = true;
+  }
 }
 
 void CProjectHandler::InitUpdateXMLHandler(std::string strProjRootDir)

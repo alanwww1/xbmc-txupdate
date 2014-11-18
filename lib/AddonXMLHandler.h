@@ -39,9 +39,9 @@ class CAddonXMLHandler
 public:
   CAddonXMLHandler();
   ~CAddonXMLHandler();
-  bool UpdateAddonXMLFile (std::string strAddonXMLFilename);
+  bool UpdateAddonXMLFile (std::string strAddonXMLFilename, bool bUpdateVersion);
   bool FetchAddonXMLFileUpstr (std::string strURL);
-  bool UpdateAddonChangelogFile (std::string strFilename, std::string strFormat);
+  bool UpdateAddonChangelogFile (std::string strFilename, std::string strFormat, bool bUpdate);
   bool FetchAddonChangelogFile (std::string strURL);
   bool LoadCoreVersion(std::string filename);
   bool FetchCoreVersionUpstr(std::string strURL);

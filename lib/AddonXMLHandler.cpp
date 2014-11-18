@@ -252,9 +252,10 @@ bool CAddonXMLHandler::ProcessAddonXMLFile (std::string AddonXMLFilename, TiXmlD
   return true;
 };
 
-bool CAddonXMLHandler::UpdateAddonXMLFile (std::string strAddonXMLFilename)
+bool CAddonXMLHandler::UpdateAddonXMLFile (std::string strAddonXMLFilename, bool bUpdateVersion)
 {
-  UpdateVersionNumber();
+  if (bUpdateVersion)
+    UpdateVersionNumber();
 
   std::string strXMLEntry;
   size_t posS1, posE1, posS2, posE2;
@@ -356,7 +357,7 @@ std::string CAddonXMLHandler::GetXMLEntry (std::string const &strprefix, size_t 
   return m_strAddonXMLFile.substr(pos1, pos2 - pos1 +1);
 }
 
-bool CAddonXMLHandler::UpdateAddonChangelogFile (std::string strFilename, std::string strFormat)
+bool CAddonXMLHandler::UpdateAddonChangelogFile (std::string strFilename, std::string strFormat, bool bUpdate)
 {
   size_t pos1;
   if ((pos1 = strFormat.find("%i")) != std::string::npos)
@@ -370,7 +371,9 @@ bool CAddonXMLHandler::UpdateAddonChangelogFile (std::string strFilename, std::s
   if ((pos1 = strFormat.find("%M")) != std::string::npos)
     strFormat.replace(pos1, 2, g_File.GetCurrMonthText().c_str());
 
-  m_strChangelogFile = strFormat + m_strChangelogFile;
+  if  (bUpdate)
+    m_strChangelogFile = strFormat + m_strChangelogFile;
+
   return g_File.WriteFileFromStr(strFilename, m_strChangelogFile.c_str());
 }
 
