@@ -41,6 +41,8 @@ public:
   void AddPOData(CPOHandler &POHandler, std::string strLang) {m_mapPOFiles[strLang] = POHandler;}
   CAddonXMLHandler * GetXMLHandler () {return &m_AddonXMLHandler;}
   void SetXMLHandler (CAddonXMLHandler XMLHandler) {m_AddonXMLHandler = XMLHandler;}
+  void SetChangedFromUpstream (bool bChanged) {m_bChangedFromUpstream = bChanged;}
+  bool GetChangedFromUpstream () {return m_bChangedFromUpstream;}
 
 protected:
   void CreateMissingDirs(std::string strResRootDir, int resType);
@@ -48,4 +50,5 @@ protected:
 
   std::map<std::string, CPOHandler> m_mapPOFiles;
   CAddonXMLHandler m_AddonXMLHandler;
+  bool m_bChangedFromUpstream;
 };

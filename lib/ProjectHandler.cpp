@@ -146,6 +146,7 @@ bool CProjectHandler::CreateMergedResources()
     CLog::IncIdent(4);
 
     CResourceHandler mergedResHandler, updTXResHandler;
+    bool bResChangedFromUpstream = false;
 
     // Get available pretext for Resource Header. we use the upstream one
     std::string strResPreHeader;
@@ -189,13 +190,18 @@ bool CProjectHandler::CreateMergedResources()
 
       CAddonXMLEntry MergedAddonXMLEntry, MergedAddonXMLEntryTX;
       CAddonXMLEntry * pAddonXMLEntry;
+
+      // Get addon.xml file translatable strings from Transifex to the merged Entry
       if (m_mapResourcesTX.find(*itResAvail) != m_mapResourcesTX.end() && m_mapResourcesTX[*itResAvail].GetPOData(*itlang))
       {
         CAddonXMLEntry AddonXMLEntryInPO, AddonENXMLEntryInPO;
         m_mapResourcesTX[*itResAvail].GetPOData(*itlang)->GetAddonMetaData(AddonXMLEntryInPO, AddonENXMLEntryInPO);
         MergeAddonXMLEntry(AddonXMLEntryInPO, MergedAddonXMLEntry, *pENAddonXMLEntry, AddonENXMLEntryInPO, false);
       }
+      // Save these strings from Transifex for later use
       MergedAddonXMLEntryTX = MergedAddonXMLEntry;
+
+      // Get the addon.xml file translatable strings from upstream merged into the merged entry
       if ((pAddonXMLEntry = GetAddonDataFromXML(&m_mapResourcesUpstr, *itResAvail, *itlang)) != NULL)
         MergeAddonXMLEntry(*pAddonXMLEntry, MergedAddonXMLEntry, *pENAddonXMLEntry,
                            *GetAddonDataFromXML(&m_mapResourcesUpstr, *itResAvail, "en"), true);
@@ -333,6 +339,8 @@ bool CProjectHandler::CreateMergedResources()
     CLog::LogTable(logADDTABLEHEADER, "merged", "--------------------------------------------------------------------------------------------\n");
     CLog::LogTable(logCLOSETABLE, "merged",   "");
 
+    mergedResHandler.SetChangedFromUpstream(bResChangedFromUpstream);
+
     if (mergedResHandler.GetLangsCount() != 0 || !mergedResHandler.GetXMLHandler()->GetMapAddonXMLData()->empty())
       m_mapResMerged[*itResAvail] = mergedResHandler;
     if (updTXResHandler.GetLangsCount() != 0 || !updTXResHandler.GetXMLHandler()->GetMapAddonXMLData()->empty())
@@ -458,7 +466,7 @@ void CProjectHandler::MergeAddonXMLEntry(CAddonXMLEntry const &EntryToMerge, CAd
            EntryToMerge.strDescription != MergedAddonXMLEntry.strDescription &&
            CurrENEntry.strDescription == SourceENEntry.strDescription)
   {
-    sleep(2);
+    printf("*");
   }
 
   if (!EntryToMerge.strDisclaimer.empty() && MergedAddonXMLEntry.strDisclaimer.empty() &&
