@@ -206,6 +206,9 @@ bool CProjectHandler::CreateMergedResources()
       if ((pAddonXMLEntry = GetAddonDataFromXML(&m_mapResourcesUpstr, *itResAvail, *itlang)) != NULL)
         MergeAddonXMLEntry(*pAddonXMLEntry, MergedAddonXMLEntry, *pENAddonXMLEntry,
                            *GetAddonDataFromXML(&m_mapResourcesUpstr, *itResAvail, "en"), true, bResChangedFromUpstream);
+      else if (!MergedAddonXMLEntryTX.strDescription.empty() || !MergedAddonXMLEntryTX.strSummary.empty() ||
+               !MergedAddonXMLEntryTX.strDisclaimer.empty())
+        bResChangedFromUpstream = true;
 
       if (*itResAvail != "xbmc.core")
       {
@@ -239,6 +242,11 @@ bool CProjectHandler::CreateMergedResources()
           mergedPOHandler.AddNumPOEntryByID(numID, *pPOEntryTX, *pcurrPOEntryEN, true);
           if (g_Settings.GetForceTXUpdate())
             updTXPOHandler.AddNumPOEntryByID(numID, *pPOEntryTX, *pcurrPOEntryEN, true);
+          //Check if the string is new on TX or changed from the upstream one -> Addon version bump later
+          if ((!pPOEntryUpstr || pPOEntryUpstr->msgStr.empty() ||
+              (!pPOEntryUpstr->msgID.empty() && pPOEntryUpstr->msgID != pcurrPOEntryEN->msgID)) &&
+              (!pPOEntryUpstr || pPOEntryUpstr->msgStr != pPOEntryTX->msgStr))
+              bResChangedFromUpstream = true;
         }
         //2. Tx entry plural
         else if (pPOEntryTX && !pcurrPOEntryEN->msgIDPlur.empty() && !pPOEntryTX->msgStrPlural.empty() &&
@@ -247,6 +255,11 @@ bool CProjectHandler::CreateMergedResources()
           mergedPOHandler.AddNumPOEntryByID(numID, *pPOEntryTX, *pcurrPOEntryEN, true);
           if (g_Settings.GetForceTXUpdate())
             updTXPOHandler.AddNumPOEntryByID(numID, *pPOEntryTX, *pcurrPOEntryEN, true);
+          //Check if the string is new on TX or changed from the upstream one -> Addon version bump later
+          if ((!pPOEntryUpstr || pPOEntryUpstr->msgStrPlural.empty() ||
+              (!pPOEntryUpstr->msgID.empty() && pPOEntryUpstr->msgID != pcurrPOEntryEN->msgID)) &&
+              (!pPOEntryUpstr || pPOEntryUpstr->msgStrPlural != pPOEntryTX->msgStrPlural))
+              bResChangedFromUpstream = true;
         }
         //3. Upstr entry single
         else if (pPOEntryUpstr && pcurrPOEntryEN->msgIDPlur.empty() && !pPOEntryUpstr->msgStr.empty() &&
@@ -266,8 +279,8 @@ bool CProjectHandler::CreateMergedResources()
       }
 
 
-      
-      
+
+
       // Handle classic non-id based po entries
       for (size_t POEntryIdx = 0; pcurrPOHandlerEN && POEntryIdx != pcurrPOHandlerEN->GetClassEntriesCount(); POEntryIdx++)
       {
@@ -291,12 +304,30 @@ bool CProjectHandler::CreateMergedResources()
           mergedPOHandler.AddClassicEntry(*pPOEntryTX, *pcurrPOEntryEN, true);
           if (g_Settings.GetForceTXUpdate())
             updTXPOHandler.AddClassicEntry(*pPOEntryTX, *pcurrPOEntryEN, true);
+          //Check if the string is new on TX or changed from the upstream one -> Addon version bump later
+          if (!pPOEntryUpstr || pPOEntryUpstr->msgStr.empty())
+          {
+            CPOEntry POEntryToCompare = *pPOEntryTX;
+            POEntryToCompare.msgIDPlur.clear();
+            POEntryToCompare.Type = 0;
+            if (!pPOEntryUpstr || !(*pPOEntryUpstr == POEntryToCompare))
+              bResChangedFromUpstream = true;
+          }
         }
         else if (pPOEntryTX && !pcurrPOEntryEN->msgIDPlur.empty() && !pPOEntryTX->msgStrPlural.empty()) // Tx entry plural
         {
           mergedPOHandler.AddClassicEntry(*pPOEntryTX, *pcurrPOEntryEN, true);
           if (g_Settings.GetForceTXUpdate())
             updTXPOHandler.AddClassicEntry(*pPOEntryTX, *pcurrPOEntryEN, true);
+          //Check if the string is new on TX or changed from the upstream one -> Addon version bump later
+          if (!pPOEntryUpstr || pPOEntryUpstr->msgStrPlural.empty())
+          {
+            CPOEntry POEntryToCompare = *pPOEntryTX;
+            POEntryToCompare.msgID.clear();
+            POEntryToCompare.Type = 0;
+            if (!pPOEntryUpstr || !(*pPOEntryUpstr == POEntryToCompare))
+              bResChangedFromUpstream = true;
+          }
         }
         else if (pPOEntryUpstr && pcurrPOEntryEN->msgIDPlur.empty() && !pPOEntryUpstr->msgStr.empty()) // Upstr entry single
         {
@@ -309,9 +340,7 @@ bool CProjectHandler::CreateMergedResources()
           updTXPOHandler.AddClassicEntry(*pPOEntryUpstr, *pcurrPOEntryEN, false);
         }
       }
-      
-      
-      
+
       CPOHandler * pPOHandlerTX;
       pPOHandlerTX = SafeGetPOHandler(m_mapResourcesTX, *itResAvail, strLangCode);
 
