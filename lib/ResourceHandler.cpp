@@ -223,10 +223,19 @@ bool CResourceHandler::WritePOToFiles(std::string strProjRootDir, std::string st
       CLog::Log(logERROR, "ResHandler: No resourcetype defined for resource: %s",strResname.c_str());
   }
 
+  if (bTXUpdFile && !m_mapPOFiles.empty())
+    printf("Languages to update from upstream to upload to Transifex:");
+  size_t counter = 0;
+
   for (T_itmapPOFiles itmapPOFiles = m_mapPOFiles.begin(); itmapPOFiles != m_mapPOFiles.end(); itmapPOFiles++)
   {
     std::string strLang = g_LCodeHandler.FindLang(itmapPOFiles->first);
     std::string strPODir = strLangDir + strLang;
+
+    if (bTXUpdFile && counter < 20)
+      printf (" %s", itmapPOFiles->first.c_str());
+    if ((bTXUpdFile && counter == 19) && m_mapPOFiles.size() != 20)
+      printf ("+%i Langs", m_mapPOFiles.size()-19);
 
     CPOHandler * pPOHandler = &m_mapPOFiles[itmapPOFiles->first];
     if (XMLResdata.bWritePO || bTXUpdFile)
@@ -238,6 +247,9 @@ bool CResourceHandler::WritePOToFiles(std::string strProjRootDir, std::string st
     CLog::LogTable(logINFO, "writepo", "\t\t\t%s\t\t%i\t\t%i", itmapPOFiles->first.c_str(), pPOHandler->GetNumEntriesCount(),
               pPOHandler->GetClassEntriesCount());
   }
+  if (bTXUpdFile && !m_mapPOFiles.empty())
+    printf("\n");
+
   CLog::LogTable(logADDTABLEHEADER, "writepo", "--------------------------------------------------------------\n");
   CLog::LogTable(logADDTABLEHEADER, "writepo", "WritePOFiles:\tLang\t\tIDEntry\t\tClassEntry\n");
   CLog::LogTable(logADDTABLEHEADER, "writepo", "--------------------------------------------------------------\n");
