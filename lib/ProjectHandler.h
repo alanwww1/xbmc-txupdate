@@ -63,6 +63,7 @@ protected:
   void CheckPOEntrySyntax(const CPOEntry * pPOEntry, std::string const &strLangCode, const CPOEntry * pcurrPOEntryEN);
   std::string GetEntryContent(const CPOEntry * pPOEntry, std::string const &strLangCode);
   void CheckCharCount(const CPOEntry * pPOEntry, std::string const &strLangCode, const CPOEntry * pcurrPOEntryEN, char chrToCheck);
+  void PrintChangedLangs(std::list<std::string> lChangedLangs);
 
   std::map<std::string, CResourceHandler> m_mapResourcesTX;
   std::map<std::string, CResourceHandler> m_mapResourcesUpstr;

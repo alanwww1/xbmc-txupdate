@@ -246,9 +246,10 @@ bool CResourceHandler::WritePOToFiles(std::string strProjRootDir, std::string st
   // update local addon.xml file
   if (strResname != "xbmc.core" && strPrefixDir == g_Settings.GetMergedLangfilesDir())
   {
-    m_AddonXMLHandler.UpdateAddonXMLFile(strResourceDir + "addon.xml" + XMLResdata.strAddonXMLSuffix, m_bChangedFromUpstream);
+    bool bResChangedFromUpstream = !m_lChangedLangsFromUpstream.empty() || !m_lChangedLangsInAddXMLFromUpstream.empty();
+    m_AddonXMLHandler.UpdateAddonXMLFile(strResourceDir + "addon.xml" + XMLResdata.strAddonXMLSuffix, bResChangedFromUpstream);
     if (XMLResdata.bHasChangelog)
-      m_AddonXMLHandler.UpdateAddonChangelogFile(strResourceDir + XMLResdata.strLogFilename, XMLResdata.strLogFormat, m_bChangedFromUpstream);
+      m_AddonXMLHandler.UpdateAddonChangelogFile(strResourceDir + XMLResdata.strLogFilename, XMLResdata.strLogFormat, bResChangedFromUpstream);
   }
 
   return true;

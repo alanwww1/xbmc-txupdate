@@ -104,6 +104,21 @@ bool CProjectHandler::WriteResourcesToFile(std::string strProjRootDir)
   for (T_itmapRes itmapResources = m_mapResMerged.begin(); itmapResources != m_mapResMerged.end(); itmapResources++)
   {
     printf("Writing merged resources to HDD: %s\n", itmapResources->first.c_str());
+    std::list<std::string> lChangedLangsFromUpstream = m_mapResMerged[itmapResources->first].GetChangedLangsFromUpstream();
+    std::list<std::string> lChangedAddXMLLangsFromUpstream = m_mapResMerged[itmapResources->first].GetChangedLangsInAddXMLFromUpstream();
+    if (!lChangedAddXMLLangsFromUpstream.empty())
+    {
+      printf("    Changed Langs in addon.xml file from upstream: ");
+      PrintChangedLangs(lChangedAddXMLLangsFromUpstream);
+      printf("\n");
+    }
+    if (!lChangedLangsFromUpstream.empty())
+    {
+      printf("    Changed Langs in strings files from upstream: ");
+      PrintChangedLangs(lChangedLangsFromUpstream);
+      printf ("\n");
+    }
+
     CLog::Log(logLINEFEED, "");
     CLog::Log(logINFO, "ProjHandler: *** Write Merged Resource: %s ***", itmapResources->first.c_str());
     CLog::IncIdent(4);
@@ -111,6 +126,7 @@ bool CProjectHandler::WriteResourcesToFile(std::string strProjRootDir)
     m_mapResMerged[itmapResources->first].WritePOToFiles (strProjRootDir, strPrefixDir, itmapResources->first, XMLResdata, false);
     CLog::DecIdent(4);
   }
+  printf ("\n\n");
 
   strPrefixDir = g_Settings.GetTXUpdateLangfilesDir();
   CLog::Log(logINFO, "Deleting tx update language file directory");
@@ -146,7 +162,7 @@ bool CProjectHandler::CreateMergedResources()
     CLog::IncIdent(4);
 
     CResourceHandler mergedResHandler, updTXResHandler;
-    bool bResChangedFromUpstream = false;
+    std::list<std::string> lAddXMLLangsChgedFromUpstream, lLangsChgedFromUpstream;
 
     // Get available pretext for Resource Header. we use the upstream one
     std::string strResPreHeader;
@@ -183,6 +199,7 @@ bool CProjectHandler::CreateMergedResources()
       CPOHandler mergedPOHandler, updTXPOHandler;
       const CPOEntry* pPOEntryTX;
       const CPOEntry* pPOEntryUpstr;
+      bool bResChangedInAddXMLFromUpstream = false; bool bResChangedFromUpstream = false;
 
       mergedPOHandler.SetIfIsEnglish(strLangCode == "en");
       updTXPOHandler.SetIfIsEnglish(strLangCode == "en");
@@ -197,7 +214,7 @@ bool CProjectHandler::CreateMergedResources()
         CAddonXMLEntry AddonXMLEntryInPO, AddonENXMLEntryInPO;
         m_mapResourcesTX[*itResAvail].GetPOData(*itlang)->GetAddonMetaData(AddonXMLEntryInPO, AddonENXMLEntryInPO);
         MergeAddonXMLEntry(AddonXMLEntryInPO, MergedAddonXMLEntry, *pENAddonXMLEntry, AddonENXMLEntryInPO, false,
-                           bResChangedFromUpstream);
+                           bResChangedInAddXMLFromUpstream);
       }
       // Save these strings from Transifex for later use
       MergedAddonXMLEntryTX = MergedAddonXMLEntry;
@@ -205,10 +222,10 @@ bool CProjectHandler::CreateMergedResources()
       // Get the addon.xml file translatable strings from upstream merged into the merged entry
       if ((pAddonXMLEntry = GetAddonDataFromXML(&m_mapResourcesUpstr, *itResAvail, *itlang)) != NULL)
         MergeAddonXMLEntry(*pAddonXMLEntry, MergedAddonXMLEntry, *pENAddonXMLEntry,
-                           *GetAddonDataFromXML(&m_mapResourcesUpstr, *itResAvail, "en"), true, bResChangedFromUpstream);
+                           *GetAddonDataFromXML(&m_mapResourcesUpstr, *itResAvail, "en"), true, bResChangedInAddXMLFromUpstream);
       else if (!MergedAddonXMLEntryTX.strDescription.empty() || !MergedAddonXMLEntryTX.strSummary.empty() ||
                !MergedAddonXMLEntryTX.strDisclaimer.empty())
-        bResChangedFromUpstream = true;
+        bResChangedInAddXMLFromUpstream = true;
 
       if (*itResAvail != "xbmc.core")
       {
@@ -363,14 +380,21 @@ bool CProjectHandler::CreateMergedResources()
       CLog::LogTable(logINFO, "merged", "\t\t\t%s\t\t%i\t\t%i\t\t%i\t\t%i", strLangCode.c_str(), mergedPOHandler.GetNumEntriesCount(),
                      mergedPOHandler.GetClassEntriesCount(), updTXPOHandler.GetNumEntriesCount(), updTXPOHandler.GetClassEntriesCount());
 
+     //store what languages changed from upstream in strings.po and addon.xml files
+     if (bResChangedFromUpstream)
+       lLangsChgedFromUpstream.push_back(strLangCode);
+     if (bResChangedInAddXMLFromUpstream)
+       lAddXMLLangsChgedFromUpstream.push_back(strLangCode);
     }
     CLog::LogTable(logADDTABLEHEADER, "merged", "--------------------------------------------------------------------------------------------\n");
     CLog::LogTable(logADDTABLEHEADER, "merged", "MergedPOHandler:\tLang\t\tmergedID\tmergedClass\tupdID\t\tupdClass\n");
     CLog::LogTable(logADDTABLEHEADER, "merged", "--------------------------------------------------------------------------------------------\n");
     CLog::LogTable(logCLOSETABLE, "merged",   "");
 
-    mergedResHandler.SetChangedFromUpstream(bResChangedFromUpstream);
-    if (bResChangedFromUpstream) printf ("*");
+    mergedResHandler.SetChangedLangsFromUpstream(lLangsChgedFromUpstream);
+    mergedResHandler.SetChangedLangsInAddXMLFromUpstream(lAddXMLLangsChgedFromUpstream);
+
+    if (!lLangsChgedFromUpstream.empty() || !lAddXMLLangsChgedFromUpstream.empty()) printf ("*");
 
     if (mergedResHandler.GetLangsCount() != 0 || !mergedResHandler.GetXMLHandler()->GetMapAddonXMLData()->empty())
       m_mapResMerged[*itResAvail] = mergedResHandler;
@@ -733,5 +757,21 @@ void CProjectHandler::CheckCharCount(const CPOEntry * pPOEntry, std::string cons
           CLog::SyntaxLog(logWARNING, "Warning: count missmatch of char \"%s\"%s",
                           g_CharsetUtils.EscapeStringCPP(g_CharsetUtils.ChrToStr(chrToCheck)).c_str(), GetEntryContent(pPOEntry, strLangCode).c_str());
       }
+  }
+}
+
+void CProjectHandler::PrintChangedLangs(std::list<std::string> lChangedLangs)
+{
+  std::list<std::string>::iterator itLangs;
+  std::size_t counter = 0;
+  for (itLangs = lChangedLangs.begin() ; itLangs != lChangedLangs.end(); itLangs++)
+  {
+    printf ("%s ", itLangs->c_str());
+    counter++;
+    if (counter > 19)
+    {
+      printf ("+ %i langs ", lChangedLangs.size() - 20);
+      break;
+    }
   }
 }
