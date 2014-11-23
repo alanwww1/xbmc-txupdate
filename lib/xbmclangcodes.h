@@ -26,6 +26,7 @@
 
 #include <string>
 #include <map>
+#include <list>
 
 struct CLangcodes
 {
@@ -46,11 +47,14 @@ public:
   int GetnPlurals(std::string LangToLook);
   std::string GetPlurForm(std::string LangToLook);
   std::string VerifyLangCode(std::string LangCode);
+  void ReadWhiteBlackLangList (std::string strPath);
 private:
   std::map <std::string, CLangcodes> m_mapLCodes;
   std::map <std::string, CLangcodes>::iterator itmapLCodes;
   std::string FindCustomLangCode(std::string LangToLook);
   std::string FindCustomLang(std::string LangCode);
+  std::list<std::string> m_BlacklistLangCodes, m_BlacklistLangs;
+  std::list<std::string> m_WhitelistLangCodes, m_WhitelistLangs;
 };
 
 extern CLCodeHandler g_LCodeHandler;

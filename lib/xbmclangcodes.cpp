@@ -25,6 +25,7 @@
 #include "Log.h"
 #include "HTTPUtils.h"
 #include "JSONHandler.h"
+#include "TinyXML/tinyxml.h"
 
 using namespace std;
 
@@ -121,4 +122,59 @@ std::string CLCodeHandler::VerifyLangCode(std::string LangCode)
     return LangCode;
   CLog::Log(logERROR, "LangCodes::VerifyLangCode: unable to find language code: %s", LangCode.c_str());
   return "UNKNOWN";
+}
+
+void CLCodeHandler::ReadWhiteBlackLangList (std::string strPath)
+{
+  std::string strXMLBuffer = g_File.ReadFileToStr(strPath);
+  if (strXMLBuffer.empty())
+    CLog::Log(logERROR, "CLCodeHandler::ReadWhiteBlackLangList: file error reading XML file from path: %s", strPath.c_str());
+
+  std::list<std::string> * pListLangCodes;
+  std::list<std::string> * pListLangs;
+
+  TiXmlDocument XMLDoc;
+
+  strXMLBuffer.push_back('\n');
+
+  if (!XMLDoc.Parse(strXMLBuffer.c_str(), 0, TIXML_DEFAULT_ENCODING))
+    CLog::Log(logERROR, "CLCodeHandler::ReadWhiteBlackLangList: xml file problem: %s %s\n", XMLDoc.ErrorDesc(), strPath.c_str());
+
+  TiXmlElement* pRootElement = XMLDoc.RootElement();
+
+  if (!pRootElement || pRootElement->NoChildren() || pRootElement->ValueTStr()=="blacklist")
+  {
+    pListLangCodes = &m_BlacklistLangCodes;
+    pListLangs = &m_BlacklistLangs;
+  }
+  if (!pRootElement || pRootElement->NoChildren() || pRootElement->ValueTStr()=="whitelist")
+  {
+    pListLangCodes = &m_WhitelistLangCodes;
+    pListLangs = &m_WhitelistLangs;
+  }
+  else
+    CLog::Log(logERROR, "CLCodeHandler::ReadWhiteBlackLangList: No root element or no child found in input XML file: %s\n", strPath.c_str());
+
+  const TiXmlElement *pChildElement = pRootElement->FirstChildElement("lang");
+  const char* pAttrId = NULL;
+  const char* pValue = NULL;
+  std::string valueString;
+  std::string strLcode;
+
+  while (pChildElement)
+  {
+    pAttrId=pChildElement->Attribute("lcode");
+    if (pAttrId && !pChildElement->NoChildren())
+    {
+      strLcode = pAttrId;
+      pValue = pChildElement->FirstChild()->Value();
+      valueString = pValue;
+      pListLangCodes->push_back(strLcode);
+      pListLangs->push_back(valueString);
+    }
+    pChildElement = pChildElement->NextSiblingElement("lang");
+  }
+  // Free up the allocated memory for the XML file
+  XMLDoc.Clear();
+  return;
 }
