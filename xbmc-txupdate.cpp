@@ -139,6 +139,8 @@ int main(int argc, char* argv[])
     CProjectHandler TXProject;
     TXProject.InitUpdateXMLHandler(WorkingDir);
     g_LCodeHandler.Init("https://raw.github.com/xbmc/translations/master/tool/TXLanguages/all_languages.json");
+    g_LCodeHandler.ReadWhiteBlackLangList(WorkingDir + "langwhitelist.xml");
+    g_LCodeHandler.ReadWhiteBlackLangList(WorkingDir + "langblacklist.xml");
 
     if (bDownloadNeeded)
     {

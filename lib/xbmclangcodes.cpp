@@ -126,6 +126,9 @@ std::string CLCodeHandler::VerifyLangCode(std::string LangCode)
 
 void CLCodeHandler::ReadWhiteBlackLangList (std::string strPath)
 {
+  if (!g_File.FileExist(strPath))
+    return;
+
   std::string strXMLBuffer = g_File.ReadFileToStr(strPath);
   if (strXMLBuffer.empty())
     CLog::Log(logERROR, "CLCodeHandler::ReadWhiteBlackLangList: file error reading XML file from path: %s", strPath.c_str());
@@ -147,7 +150,7 @@ void CLCodeHandler::ReadWhiteBlackLangList (std::string strPath)
     pListLangCodes = &m_BlacklistLangCodes;
     pListLangs = &m_BlacklistLangs;
   }
-  if (!pRootElement || pRootElement->NoChildren() || pRootElement->ValueTStr()=="whitelist")
+  else if (!pRootElement || pRootElement->NoChildren() || pRootElement->ValueTStr()=="whitelist")
   {
     pListLangCodes = &m_WhitelistLangCodes;
     pListLangs = &m_WhitelistLangs;
@@ -177,4 +180,13 @@ void CLCodeHandler::ReadWhiteBlackLangList (std::string strPath)
   // Free up the allocated memory for the XML file
   XMLDoc.Clear();
   return;
+}
+
+bool CLCodeHandler::CheckIfLangCodeBlacklisted (std::string strLcode)
+{
+  bool bBlacklisted = false;
+  if (strLcode.find("_") != std::string::npos)
+  {
+    m_WhitelistLangCodes.find(strLcode);
+  }
 }
