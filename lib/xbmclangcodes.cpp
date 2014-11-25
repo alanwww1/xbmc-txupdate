@@ -133,8 +133,7 @@ void CLCodeHandler::ReadWhiteBlackLangList (std::string strPath)
   if (strXMLBuffer.empty())
     CLog::Log(logERROR, "CLCodeHandler::ReadWhiteBlackLangList: file error reading XML file from path: %s", strPath.c_str());
 
-  std::list<std::string> * pListLangCodes;
-  std::list<std::string> * pListLangs;
+  std::map<std::string, std::string>  * pList;
 
   TiXmlDocument XMLDoc;
 
@@ -146,15 +145,9 @@ void CLCodeHandler::ReadWhiteBlackLangList (std::string strPath)
   TiXmlElement* pRootElement = XMLDoc.RootElement();
 
   if (!pRootElement || pRootElement->NoChildren() || pRootElement->ValueTStr()=="blacklist")
-  {
-    pListLangCodes = &m_BlacklistLangCodes;
-    pListLangs = &m_BlacklistLangs;
-  }
+    pList = &m_BlackList;
   else if (!pRootElement || pRootElement->NoChildren() || pRootElement->ValueTStr()=="whitelist")
-  {
-    pListLangCodes = &m_WhitelistLangCodes;
-    pListLangs = &m_WhitelistLangs;
-  }
+    pList = &m_WhiteList;
   else
     CLog::Log(logERROR, "CLCodeHandler::ReadWhiteBlackLangList: No root element or no child found in input XML file: %s\n", strPath.c_str());
 
@@ -172,8 +165,7 @@ void CLCodeHandler::ReadWhiteBlackLangList (std::string strPath)
       strLcode = pAttrId;
       pValue = pChildElement->FirstChild()->Value();
       valueString = pValue;
-      pListLangCodes->push_back(strLcode);
-      pListLangs->push_back(valueString);
+      pList->operator[](strLcode) = valueString;
     }
     pChildElement = pChildElement->NextSiblingElement("lang");
   }
@@ -184,9 +176,20 @@ void CLCodeHandler::ReadWhiteBlackLangList (std::string strPath)
 
 bool CLCodeHandler::CheckIfLangCodeBlacklisted (std::string strLcode)
 {
-  bool bBlacklisted = false;
   if (strLcode.find("_") != std::string::npos)
-  {
-    m_WhitelistLangCodes.find(strLcode);
-  }
+    return m_WhiteList.find(strLcode) == m_WhiteList.end();
+  else
+    return m_BlackList.find(strLcode) != m_BlackList.end();
+}
+
+bool CLCodeHandler::CheckIfLangBlacklisted (std::string strLang)
+{
+  std::string strLcode = FindLang(strLang);
+  if (strLcode == "UNKNOWN")
+    CLog::Log(logERROR, "CLCodeHandler::CheckIfLangBlacklisted: invalid language: %s", strLang.c_str());
+
+  if (strLcode.find("_") != std::string::npos)
+    return m_WhiteList.find(strLcode) == m_WhiteList.end();
+  else
+    return m_BlackList.find(strLcode) != m_BlackList.end();
 }

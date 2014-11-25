@@ -81,6 +81,7 @@ std::list<std::string> CJSONHandler::ParseAvailLanguagesTX(std::string strJSON, 
   const Json::Value langs = root;
   std::string strLangsToFetch;
   std::string strLangsToDrop;
+  std::string strLangsBlacklisted;
 
   for(Json::ValueIterator itr = langs.begin() ; itr != langs.end() ; itr++)
   {
@@ -92,20 +93,29 @@ std::list<std::string> CJSONHandler::ParseAvailLanguagesTX(std::string strJSON, 
     std::string strCompletedPerc = valu.get("completed", "unknown").asString();
     std::string strModTime = valu.get("last_update", "unknown").asString();
 
+    bool bLangBlacklisted = g_LCodeHandler.CheckIfLangCodeBlacklisted(lang);
+
     // we only add language codes to the list which has a minimum ready percentage defined in the xml file
     // we make an exception with all English derived languages, as they can have only a few srings changed
     if (lang.find("en_") != std::string::npos || strtol(&strCompletedPerc[0], NULL, 10) > g_Settings.GetMinCompletion()-1 || !bIsXBMCCore)
     {
-      strLangsToFetch += lang + ": " + strCompletedPerc + ", ";
-      listLangs.push_back(lang);
-      g_Fileversion.SetVersionForURL(strURL + "translation/" + lang + "/?file", strModTime);
+      if (!bLangBlacklisted)
+      {
+        strLangsToFetch += lang + ": " + strCompletedPerc + ", ";
+        listLangs.push_back(lang);
+        g_Fileversion.SetVersionForURL(strURL + "translation/" + lang + "/?file", strModTime);
+      }
+      else
+      {
+	strLangsBlacklisted += lang + ": " + strCompletedPerc + ", ";
+      }
     }
     else
       strLangsToDrop += lang + ": " + strCompletedPerc + ", ";
   };
   CLog::Log(logINFO, "JSONHandler: ParseAvailLangs: Languages to be Fetcehed: %s", strLangsToFetch.c_str());
-  CLog::Log(logINFO, "JSONHandler: ParseAvailLangs: Languages to be Dropped (not enough completion): %s",
-            strLangsToDrop.c_str());
+  CLog::Log(logINFO, "JSONHandler: ParseAvailLangs: Languages to be Dropped (not enough completion): %s", strLangsToDrop.c_str());
+  CLog::Log(logINFO, "JSONHandler: ParseAvailLangs: Languages to be Dropped due they are blacklisted: %s",strLangsBlacklisted.c_str());
   return listLangs;
 };
 
@@ -141,9 +151,15 @@ std::list<std::string> CJSONHandler::ParseAvailLanguagesGITHUB(std::string strJS
     if (strVersion == "unknown")
       CLog::Log(logERROR, "CJSONHandler::ParseAvailLanguagesGITHUB: no valid sha JSON data downloaded from Github");
 
-    listLangs.push_back(g_LCodeHandler.FindLangCode(lang));
-
-    g_Fileversion.SetVersionForURL(strURL + lang + "/strings." + (bisPO ? "po" : "xml"), strVersion);
+    if (!g_LCodeHandler.CheckIfLangBlacklisted(lang))
+    {
+      listLangs.push_back(g_LCodeHandler.FindLangCode(lang));
+      g_Fileversion.SetVersionForURL(strURL + lang + "/strings." + (bisPO ? "po" : "xml"), strVersion);
+    }
+    else
+    {
+      printf("");;
+    } 
   };
 
   return listLangs;
