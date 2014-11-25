@@ -158,7 +158,7 @@ std::list<std::string> CJSONHandler::ParseAvailLanguagesGITHUB(std::string strJS
     }
     else
     {
-      printf("");;
+      printf("");
     } 
   };
 

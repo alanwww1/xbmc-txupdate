@@ -184,7 +184,7 @@ bool CLCodeHandler::CheckIfLangCodeBlacklisted (std::string strLcode)
 
 bool CLCodeHandler::CheckIfLangBlacklisted (std::string strLang)
 {
-  std::string strLcode = FindLang(strLang);
+  std::string strLcode = FindLangCode(strLang);
   if (strLcode == "UNKNOWN")
     CLog::Log(logERROR, "CLCodeHandler::CheckIfLangBlacklisted: invalid language: %s", strLang.c_str());
 
