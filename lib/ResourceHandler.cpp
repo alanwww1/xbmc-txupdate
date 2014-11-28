@@ -147,7 +147,7 @@ bool CResourceHandler::FetchPOFilesUpstreamToMem(CXMLResdata XMLResdata, std::li
     CLog::Log(logINFO, "ResHandler: using language list previously got from Transifex");
     listLangs = listLangsTX;
   }
-  else if (XMLResdata.strLangsFromUpstream == "github_all")
+  else if (XMLResdata.strLangsFromUpstream == "github_all" || XMLResdata.strUpstreamURL.find("github") != std::string::npos)
   {
     CLog::Log(logINFO, "ResHandler: using language list dwonloaded with github API");
     listLangs=listGithubLangs;
