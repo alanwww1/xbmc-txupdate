@@ -349,7 +349,7 @@ void CPODocument::ParseEntry()
   }
   if (g_Settings.GetRebrand() && pPlaceToParse)
     g_CharsetUtils.reBrandXBMCToKodi(pPlaceToParse);
-  if ((m_Entry.Type == MSGID_FOUND || m_Entry.Type == MSGID_PLURAL_FOUND) &&  m_Entry.msgID == "")
+  if ((m_Entry.Type == ID_FOUND || m_Entry.Type == MSGID_FOUND || m_Entry.Type == MSGID_PLURAL_FOUND) &&  m_Entry.msgID == "")
   {
     m_Entry.msgID = " ";
     CLog::Log(logWARNING, "POParser: empty msgid field corrected to a space char. Failed entry: %s", m_Entry.Content.c_str());
