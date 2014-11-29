@@ -394,8 +394,6 @@ bool CProjectHandler::CreateMergedResources()
     mergedResHandler.SetChangedLangsFromUpstream(lLangsChgedFromUpstream);
     mergedResHandler.SetChangedLangsInAddXMLFromUpstream(lAddXMLLangsChgedFromUpstream);
 
-    if (!lLangsChgedFromUpstream.empty() || !lAddXMLLangsChgedFromUpstream.empty()) printf ("*");
-
     if (mergedResHandler.GetLangsCount() != 0 || !mergedResHandler.GetXMLHandler()->GetMapAddonXMLData()->empty())
       m_mapResMerged[*itResAvail] = mergedResHandler;
     if (updTXResHandler.GetLangsCount() != 0 || !updTXResHandler.GetXMLHandler()->GetMapAddonXMLData()->empty())

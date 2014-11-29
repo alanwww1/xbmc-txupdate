@@ -307,6 +307,11 @@ void CPODocument::ParseEntry()
     else if (HasPrefix(strLine, "#:") && strLine.size() > 2)
     {
       std::string strCommnt = strLine.substr(2);
+      if (strCommnt.at(0) != ' ')
+      {
+        strCommnt = " " + strCommnt;
+        CLog::Log(logWARNING, "POParser: Wrong comment format. Space needed. Failed entry: %s", m_Entry.Content.c_str());
+      }
       m_Entry.referenceComm.push_back(strCommnt);
     }
 
@@ -315,6 +320,11 @@ void CPODocument::ParseEntry()
       std::string strCommnt = strLine.substr(2);
       if (g_Settings.GetRebrand())
         g_CharsetUtils.reBrandXBMCToKodi(&strCommnt);
+      if (strCommnt.at(0) != ' ')
+      {
+        strCommnt = " " + strCommnt;
+        CLog::Log(logWARNING, "POParser: Wrong comment format. Space needed. Failed entry: %s", m_Entry.Content.c_str());
+      }
       m_Entry.extractedComm.push_back(strCommnt);
     }
 
@@ -339,6 +349,11 @@ void CPODocument::ParseEntry()
   }
   if (g_Settings.GetRebrand() && pPlaceToParse)
     g_CharsetUtils.reBrandXBMCToKodi(pPlaceToParse);
+  if ((m_Entry.Type == MSGID_FOUND || m_Entry.Type == MSGID_PLURAL_FOUND) &&  m_Entry.msgID == "")
+  {
+    m_Entry.msgID = " ";
+    CLog::Log(logWARNING, "POParser: empty msgid field corrected to a space char. Failed entry: %s", m_Entry.Content.c_str());
+  }
   return;
 };
 
