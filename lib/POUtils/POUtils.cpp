@@ -310,7 +310,7 @@ void CPODocument::ParseEntry()
       if (strCommnt.at(0) != ' ')
       {
         strCommnt = " " + strCommnt;
-        CLog::Log(logWARNING, "POParser: Wrong comment format. Space needed. Failed entry: %s", m_Entry.Content.c_str());
+        CLog::SyntaxLog(logWARNING, "POParser: Wrong comment format. Space needed. Failed entry: %s", m_Entry.Content.c_str());
       }
       m_Entry.referenceComm.push_back(strCommnt);
     }
@@ -323,7 +323,7 @@ void CPODocument::ParseEntry()
       if (strCommnt.at(0) != ' ')
       {
         strCommnt = " " + strCommnt;
-        CLog::Log(logWARNING, "POParser: Wrong comment format. Space needed. Failed entry: %s", m_Entry.Content.c_str());
+        CLog::SyntaxLog(logWARNING, "POParser: Wrong comment format. Space needed. Failed entry: %s", m_Entry.Content.c_str());
       }
       m_Entry.extractedComm.push_back(strCommnt);
     }
@@ -353,6 +353,7 @@ void CPODocument::ParseEntry()
   {
     m_Entry.msgID = " ";
     CLog::Log(logWARNING, "POParser: empty msgid field corrected to a space char. Failed entry: %s", m_Entry.Content.c_str());
+    CLog::SyntaxLog(logWARNING, "POParser: empty msgid field corrected to a space char. Failed entry: %s", m_Entry.Content.c_str());
   }
   return;
 };
