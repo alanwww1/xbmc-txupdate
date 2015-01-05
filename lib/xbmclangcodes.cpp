@@ -97,6 +97,14 @@ std::string CLCodeHandler::FindLang(std::string LangCode)
 
 std::string CLCodeHandler::FindLangCode(std::string Lang)
 {
+  std::string strOldLang = Lang;
+
+  if (Lang == "Chinese") Lang = "Chinese (Simple)";
+
+  if (strOldLang != Lang)
+    CLog::Log(logWARNING, "LangCodes: problematic language: %s was corrected to %s", strOldLang.c_str(), Lang.c_str());
+
+
   for (itmapLCodes = m_mapLCodes.begin(); itmapLCodes != m_mapLCodes.end() ; itmapLCodes++)
   {
     if (Lang == itmapLCodes->second.Langname)
@@ -114,7 +122,7 @@ std::string CLCodeHandler::VerifyLangCode(std::string LangCode)
   if (LangCode == "kr") LangCode = "ko";
   if (LangCode == "cr") LangCode = "hr";
   if (LangCode == "cz") LangCode = "cs";
- 
+
   if (strOldCode != LangCode)
     CLog::Log(logWARNING, "LangCodes: problematic language code: %s was corrected to %s", strOldCode.c_str(), LangCode.c_str());
 
